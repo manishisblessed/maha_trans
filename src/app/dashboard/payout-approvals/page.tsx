@@ -26,6 +26,7 @@ type PayoutStatus =
   | "PENDING_APPROVAL"
   | "APPROVED"
   | "PROCESSING"
+  | "NEEDS_REVIEW"
   | "SUCCESS"
   | "FAILED"
   | "REJECTED"
@@ -66,6 +67,7 @@ const STATUS_VARIANT: Record<PayoutStatus, "success" | "danger" | "warning" | "b
   REJECTED: "danger",
   REVERSED: "danger",
   PROCESSING: "brand",
+  NEEDS_REVIEW: "warning",
   APPROVED: "brand",
   PENDING_APPROVAL: "warning",
   DRAFT: "default",
@@ -82,6 +84,7 @@ const STATUS_LABEL: Record<PayoutStatus, string> = {
   REJECTED: "Rejected",
   REVERSED: "Reversed",
   PROCESSING: "Processing",
+  NEEDS_REVIEW: "Verifying",
   APPROVED: "Approved",
   PENDING_APPROVAL: "Pending",
   DRAFT: "Draft",
