@@ -3,6 +3,7 @@ import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { dec, toNumber } from "@/lib/money";
 import { buildPayoutLedgerMemos } from "@/lib/payout/ledgerMemos";
+import { buildBreakdowns } from "@/lib/wallet/breakdown";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -64,14 +65,16 @@ export async function GET(req: Request) {
         orderBy: { createdAt: "desc" },
         take: EXPORT_CAP,
       });
+      const breakdownOf = await buildBreakdowns(rows);
       const esc = (v: unknown) => {
         const s = String(v ?? "");
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
       const header =
-        "Date,User,Email,Role,Wallet,Direction,Reason,Amount,BalanceAfter,RefType,RefId,Note";
-      const lines = rows.map((t) =>
-        [
+        "Date,User,Email,Role,Wallet,Direction,Reason,TxnAmount,Charges,Amount,BalanceAfter,RefType,RefId,Note";
+      const lines = rows.map((t) => {
+        const b = breakdownOf(t);
+        return [
           t.createdAt.toISOString(),
           esc(t.user.name),
           esc(t.user.email),
@@ -79,13 +82,15 @@ export async function GET(req: Request) {
           t.walletType,
           t.direction,
           t.reason,
+          b.txnAmount ?? "",
+          b.charges ?? "",
           toNumber(dec(t.amount)),
           toNumber(dec(t.balanceAfter)),
           esc(t.refType),
           esc(t.refId),
           esc(t.note),
-        ].join(",")
-      );
+        ].join(",");
+      });
       const csvContent = [header, ...lines].join("\n");
       const dateStr = new Date().toISOString().slice(0, 10);
 
@@ -170,6 +175,8 @@ export async function GET(req: Request) {
       walletType: string;
       direction: "CREDIT" | "DEBIT";
       reason: string;
+      txnAmount: number | null;
+      charges: number | null;
       amount: number;
       balanceAfter: number | null;
       refType: string | null;
@@ -179,6 +186,10 @@ export async function GET(req: Request) {
       memo: boolean;
     };
 
+    // Resolve the per-row charge breakdown across both real rows and memos in a
+    // single batched query (payouts + service txns).
+    const breakdownOf = await buildBreakdowns([...rows, ...memos]);
+
     const realEntries: Entry[] = rows.map((t) => ({
       id: t.id,
       userId: t.userId,
@@ -186,6 +197,7 @@ export async function GET(req: Request) {
       walletType: t.walletType,
       direction: t.direction,
       reason: t.reason,
+      ...breakdownOf(t),
       amount: toNumber(dec(t.amount)),
       balanceAfter: toNumber(dec(t.balanceAfter)),
       refType: t.refType,
@@ -206,6 +218,7 @@ export async function GET(req: Request) {
         walletType: "PRIMARY",
         direction: m.direction,
         reason: m.reason,
+        ...breakdownOf(m),
         amount: m.amount,
         balanceAfter: null,
         refType: m.refType,

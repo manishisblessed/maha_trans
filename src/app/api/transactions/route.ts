@@ -53,7 +53,9 @@ export async function GET(req: Request) {
   if (statusFilter && statusFilter !== "All") {
     const map: Record<string, TxnStatus[]> = {
       Success: ["SUCCESS"],
-      Pending: ["INITIATED", "PROCESSING"],
+      // NEEDS_REVIEW (indeterminate hold) and HOLD both read as "Pending" to the
+      // retailer — funds are retained, not refunded — so they belong here too.
+      Pending: ["INITIATED", "PROCESSING", "NEEDS_REVIEW", "HOLD"],
       Failed: ["FAILED", "REFUNDED"],
     };
     if (map[statusFilter]) where.status = { in: map[statusFilter] };

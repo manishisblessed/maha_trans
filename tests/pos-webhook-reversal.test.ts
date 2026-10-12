@@ -121,11 +121,27 @@ describe("verifySamedayPosWebhook — signature verification", () => {
     expect(result).toBe("STALE");
   });
 
-  it("returns SKIP when SAMEDAY_POS_WEBHOOK_SECRET is not set", () => {
+  it("returns SKIP when SAMEDAY_POS_WEBHOOK_SECRET is not set (non-prod)", () => {
     delete process.env.SAMEDAY_POS_WEBHOOK_SECRET;
     const body = JSON.stringify({ event: "pos.transaction.reversed" });
     const result = verifySamedayPosWebhook(body, null, null);
     expect(result).toBe("SKIP");
+  });
+
+  it("returns MISCONFIGURED (fail-closed) when the secret is missing in production", () => {
+    delete process.env.SAMEDAY_POS_WEBHOOK_SECRET;
+    // `process.env.NODE_ENV` is typed read-only; cast to mutate it for the test.
+    const envObj = process.env as Record<string, string | undefined>;
+    const prevNodeEnv = envObj.NODE_ENV;
+    // Vitest runs with NODE_ENV=test; simulate production for this assertion.
+    envObj.NODE_ENV = "production";
+    try {
+      const body = JSON.stringify({ event: "pos.transaction.reversed" });
+      const result = verifySamedayPosWebhook(body, null, null);
+      expect(result).toBe("MISCONFIGURED");
+    } finally {
+      envObj.NODE_ENV = prevNodeEnv;
+    }
   });
 
   it("strips sha256= prefix from signature before comparison", () => {

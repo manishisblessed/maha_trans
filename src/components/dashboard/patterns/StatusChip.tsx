@@ -44,6 +44,7 @@ const MAP: Record<string, Mapped> = {
   PENDING_KYC: { variant: "warning", dot: true, label: "Pending KYC" },
   PENDING_APPROVAL: { variant: "warning", dot: true, label: "Pending approval" },
   UNDER_REVIEW: { variant: "warning", dot: true, label: "Under review" },
+  NEEDS_REVIEW: { variant: "warning", dot: true, label: "Verifying" },
   IN_REVIEW: { variant: "warning", dot: true, label: "In review" },
   IN_PROGRESS: { variant: "warning", dot: true, label: "In progress" },
   PROCESSING: { variant: "warning", dot: true },

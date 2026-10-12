@@ -33,6 +33,7 @@ import { processKycVideoBaseline } from "@/lib/kyc/video/service";
 import { runLedgerIntegrityAudit } from "@/lib/recon/integrity";
 import { runDailyPayoutReconciliation } from "@/lib/recon/payouts";
 import { runBbpsReconciliation } from "@/lib/recon/bbps";
+import { runRechargekitReconciliation } from "@/lib/recon/rechargekit";
 import { runTopupReconciliation, runTopupIntegrityCheck } from "@/lib/recon/topups";
 import { getPartner } from "@/lib/partners";
 import { viableChannelHealth, viableConfigured } from "@/lib/partners/viable-pg";
@@ -129,6 +130,20 @@ async function main() {
     }
   });
   await boss.schedule(QUEUES.BBPS_RECONCILE, "*/5 * * * *");
+
+  // QUEUES.RECHARGEKIT_RECONCILE — same sweep for the SameDay RechargeKit CC-2
+  // rail: drains PROCESSING + NEEDS_REVIEW rows and settles/refunds via the
+  // shared finalizer (held rows are NEVER blind-refunded).
+  await boss.work(QUEUES.RECHARGEKIT_RECONCILE, async () => {
+    const r = await runRechargekitReconciliation();
+    if (!r.skipped) {
+      log(
+        `rechargekit.reconcile: drained=${r.drained} settled=${r.settled} refunded=${r.refunded} ` +
+          `stuck=${r.stuck} heldEscalated=${r.heldEscalated}`
+      );
+    }
+  });
+  await boss.schedule(QUEUES.RECHARGEKIT_RECONCILE, "*/5 * * * *");
 
   // QUEUES.TOPUP_RECONCILE — wallet top-up / PG-collect reconciliation. Viable
   // PG has no webhook, so this sweep is the safety net that settles payins where
@@ -458,11 +473,14 @@ async function main() {
   });
   await boss.schedule(QUEUES.PG_SETTLEMENT_INSTANT, "*/3 * * * *", {}, { tz: "Asia/Kolkata" });
 
-  // QUEUES.POS_RENTAL_BILLING — admin console Phase 5. Runs every hour; only
-  // fires billing when the current IST hour matches the admin-configured hour.
+  // QUEUES.POS_RENTAL_BILLING — admin console Phase 5. Runs every hour.
+  // At the admin-configured hour: full billing (new invoices + retry FAILED).
+  // Every other hour: retry-only sweep — settles FAILED invoices the moment the
+  // user's wallet has balance, regardless of HOW the balance arrived.
   // Idempotent per (subscription, YYYY-MM) via the unique invoice key.
   await boss.work(QUEUES.POS_RENTAL_BILLING, async () => {
     const cfg = await getSetting("pos.rental_billing");
+    if (!cfg.enabled) return;
     const istHour = Number(
       new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Kolkata",
@@ -470,12 +488,37 @@ async function main() {
         hour12: false,
       }).format(new Date())
     );
-    if (istHour !== cfg.hour) return;
-    const r = await runPosRentalBilling();
-    if (r.processed > 0)
-      log(`pos.rental.billing: billed=${r.billed} failed=${r.failed} skipped=${r.skipped}`);
+    if (istHour === cfg.hour) {
+      // Configured hour → full billing: create new invoices + retry failed
+      const r = await runPosRentalBilling();
+      if (r.processed > 0)
+        log(`pos.rental.billing: billed=${r.billed} failed=${r.failed} skipped=${r.skipped}`);
+    } else {
+      // Every other hour → retry-only sweep (no new invoices, just settle FAILED)
+      const r = await runPosRentalBilling(new Date(), { retryOnly: true });
+      if (r.processed > 0)
+        log(
+          `pos.rental.billing.retry-sweep: billed=${r.billed} failed=${r.failed} skipped=${r.skipped}`
+        );
+    }
   });
   await boss.schedule(QUEUES.POS_RENTAL_BILLING, "0 * * * *", {}, { tz: "Asia/Kolkata" });
+
+  // QUEUES.POS_RENTAL_BILLING_RETRY — demand-driven (no cron schedule).
+  // Enqueued by creditWallet() the moment a PRIMARY wallet credit commits for a
+  // user who has FAILED POS rental invoices in the current period. Retries only
+  // that user's outstanding invoices so rent is collected as soon as the wallet
+  // has sufficient funds — rather than waiting for the nightly billing window.
+  // Idempotent per (subscription, YYYY-MM) via the same invoice/ledger keys as
+  // the main billing run; rapid consecutive credits are de-duped by singletonKey.
+  await boss.work(QUEUES.POS_RENTAL_BILLING_RETRY, async (job) => {
+    const { userId } = job!.data as { userId: string };
+    const r = await runPosRentalBilling(new Date(), { userId, retryOnly: true });
+    if (r.processed > 0)
+      log(
+        `pos.rental.billing.retry: user=${userId} billed=${r.billed} failed=${r.failed} skipped=${r.skipped}`
+      );
+  });
 
   // QUEUES.INCENTIVE_MONTHLY — monthly volume-incentive / reverse-cashback
   // engine. Scheduled hourly; fires only on the LAST IST day of the month at the

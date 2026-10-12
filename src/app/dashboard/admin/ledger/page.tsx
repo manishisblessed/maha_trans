@@ -19,6 +19,10 @@ type Entry = {
   walletType: string;
   direction: "CREDIT" | "DEBIT";
   reason: string;
+  /** Base transaction amount (null when the row has no charge breakdown). */
+  txnAmount: number | null;
+  /** Charges on top of the base amount (null when not applicable). */
+  charges: number | null;
   amount: number;
   /** Null for payout reservation memos — a hold/release never moves the balance. */
   balanceAfter: number | null;
@@ -174,6 +178,28 @@ export default function LedgerExplorerPage() {
         ),
     },
     { key: "reason", header: "Reason", render: (r) => r.reason.replace(/_/g, " ") },
+    {
+      key: "txnAmount",
+      header: "Txn amount",
+      align: "right",
+      render: (r) =>
+        r.txnAmount == null ? (
+          <span className="text-ink-400">—</span>
+        ) : (
+          <span className="text-ink-700">{formatINR(r.txnAmount)}</span>
+        ),
+    },
+    {
+      key: "charges",
+      header: "Charges",
+      align: "right",
+      render: (r) =>
+        r.charges == null ? (
+          <span className="text-ink-400">—</span>
+        ) : (
+          <span className="text-amber-700">{formatINR(r.charges)}</span>
+        ),
+    },
     {
       key: "amount",
       header: "Amount",

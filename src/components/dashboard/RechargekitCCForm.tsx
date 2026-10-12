@@ -278,6 +278,24 @@ export function RechargekitCCForm() {
           : "PIN verification failed";
       }
 
+      // INDETERMINATE hold: the provider may have charged, so the payment is
+      // HELD (funds retained, NOT refunded) while we verify. Surface it as a
+      // reassuring pending state and let reconciliation settle it — never show
+      // a failure that implies the money came back.
+      if (data.status === "NEEDS_REVIEW") {
+        setPinOpen(false);
+        setPollStatus(
+          "Payment is being verified with the provider. Your money is safe and held until it's confirmed — no need to pay again. Check transaction history for the final status."
+        );
+        setPolling({
+          txnId: data.data?.txnId,
+          requestId: data.data?.requestId,
+          refId: data.refId,
+          attempt: 0,
+        });
+        return null;
+      }
+
       if (data.status === "PROCESSING" || data.status === "INITIATED") {
         setPinOpen(false);
         setPollStatus("Payment is being processed…");

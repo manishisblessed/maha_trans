@@ -16,6 +16,10 @@ import {
   Users,
   Receipt,
   X,
+  Zap,
+  Clock,
+  CalendarClock,
+  Search,
 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DataTable, type Column } from "@/components/dashboard/DataTable";
@@ -24,8 +28,9 @@ import { Button } from "@/components/ui/Button";
 import { formatINR } from "@/lib/utils";
 import { type ReportColumn } from "@/lib/reports";
 import { ReportActions } from "@/components/dashboard/ReportActions";
+import { AssignUserPicker, type PickerUser } from "@/components/ui/AssignUserPicker";
 
-// â”€â”€ API contract (mirrors src/lib/pos/settlementReport.ts) â”€â”€
+// ── API contract (mirrors src/lib/pos/settlementReport.ts) ──
 
 type ReportRetailer = {
   id: string;
@@ -67,6 +72,33 @@ type RollupRow = {
   mdrAmount: number;
   netSettled: number;
   myCommission: number | null;
+  // B — historical split within the selected range, by how each entry settled.
+  instantSettledNet: number;
+  instantSettledCount: number;
+  t1SettledNet: number;
+  t1SettledCount: number;
+  pendingNet: number;
+  pendingCount: number;
+};
+
+// A — today's forward-looking book (per user).
+type TodayRow = {
+  userId: string;
+  name: string;
+  shopName: string | null;
+  userCode: string | null;
+  role: string;
+  instantNet: number;
+  instantCount: number;
+  t1Net: number;
+  t1Count: number;
+};
+
+type TodaySummary = {
+  instantNet: number;
+  instantCount: number;
+  t1Net: number;
+  t1Count: number;
 };
 
 type ReportSummary = {
@@ -78,12 +110,19 @@ type ReportSummary = {
   settledCount: number;
   pendingCount: number;
   failedCount: number;
+  // B — range net split by settlement leg.
+  instantSettledNet: number;
+  instantSettledCount: number;
+  t1SettledNet: number;
+  t1SettledCount: number;
+  pendingNet: number;
 };
 
 type ReportResponse = {
   rows: ReportRow[];
   rollup: RollupRow[];
   summary: ReportSummary;
+  today: { rows: TodayRow[]; summary: TodaySummary };
   pagination: {
     page: number;
     pageSize: number;
@@ -100,6 +139,11 @@ const ROLE_LABELS: Record<string, string> = {
   MASTER_DISTRIBUTOR: "Master Distributor",
   DISTRIBUTOR: "Distributor",
   RETAILER: "Retailer",
+};
+
+const EMPTY_TODAY: ReportResponse["today"] = {
+  rows: [],
+  summary: { instantNet: 0, instantCount: 0, t1Net: 0, t1Count: 0 },
 };
 
 async function postFetcher<T>([url, body]: readonly [string, unknown]): Promise<T> {
@@ -135,37 +179,78 @@ function fmtTime(iso: string) {
   });
 }
 
+function settledViaLabel(v: string | null): string {
+  switch (v) {
+    case "INSTANT_AUTO":
+      return "Instant (auto)";
+    case "INSTANT_BUTTON":
+      return "Instant (manual)";
+    case "QR_INSTANT_APPROVAL":
+      return "Instant (QR)";
+    case "T1_CRON":
+      return "T+1 sweep";
+    case "MANUAL_RECONCILE":
+      return "Manual";
+    default:
+      return "—";
+  }
+}
+
 function settlementBadge(status: string) {
   if (status === "SETTLED") return <Badge variant="success">Settled</Badge>;
   if (status === "FAILED") return <Badge variant="danger">Failed</Badge>;
   return <Badge variant="warning">Pending · T+1</Badge>;
 }
 
-function retailerCell(r: { retailer: ReportRetailer | null }) {
-  if (!r.retailer) return <span className="text-xs text-ink-400">â€”</span>;
+function merchantCell(r: {
+  shopName: string | null;
+  name: string;
+  userCode: string | null;
+  role: string;
+}) {
   return (
     <div className="flex flex-col">
-      <span className="max-w-[150px] truncate text-xs font-semibold text-ink-900">
-        {r.retailer.shopName || r.retailer.name}
-      </span>
+      <span className="max-w-[180px] truncate text-xs font-semibold text-ink-900">{r.shopName || r.name}</span>
       <span className="text-[11px] text-ink-500">
-        {r.retailer.userCode ? <span className="font-medium text-brand-600">{r.retailer.userCode}</span> : null}
-        {r.retailer.userCode ? " · " : ""}
-        {ROLE_LABELS[r.retailer.role] ?? r.retailer.role}
+        {r.userCode ? <span className="font-medium text-brand-600">{r.userCode}</span> : null}
+        {r.userCode ? " · " : ""}
+        {ROLE_LABELS[r.role] ?? r.role}
       </span>
     </div>
   );
 }
 
-type View = "transactions" | "rollup";
+function retailerCell(r: { retailer: ReportRetailer | null }) {
+  if (!r.retailer) return <span className="text-xs text-ink-400">—</span>;
+  return merchantCell(r.retailer);
+}
+
+/** Right-aligned "net + N txn" stack used by the split columns. */
+function amountCount(net: number, count: number, tone: string) {
+  return (
+    <div className="flex flex-col items-end">
+      <span className={`font-semibold ${tone}`}>{formatINR(net)}</span>
+      <span className="text-[11px] text-ink-400">{count.toLocaleString("en-IN")} txn</span>
+    </div>
+  );
+}
+
+type View = "today" | "transactions" | "rollup";
 
 export function SettlementReportTab({
   initialFrom,
   initialTo,
+  endpoint = "/api/pos/settlement-report",
+  allowUserSearch = false,
 }: {
   /** Optional deep-link range (YYYY-MM-DD), e.g. from the "POS Today" card. */
   initialFrom?: string | null;
   initialTo?: string | null;
+  /** Report API endpoint. Defaults to the downline-scoped retailer endpoint;
+   *  the admin page passes the platform-wide `/api/admin/pos-settlement-report`. */
+  endpoint?: string;
+  /** Admin-only: show a "filter to a specific user" search over all users. */
+  allowUserSearch?: boolean;
 } = {}) {
   const defaults = defaultDateRange();
   const [dateFrom, setDateFrom] = useState(initialFrom || defaults.from);
@@ -174,8 +259,9 @@ export function SettlementReportTab({
   const [modeFilter, setModeFilter] = useState("");
   const [retailerId, setRetailerId] = useState<string | null>(null);
   const [retailerLabel, setRetailerLabel] = useState<string | null>(null);
-  const [view, setView] = useState<View>("transactions");
+  const [view, setView] = useState<View>("today");
   const [page, setPage] = useState(1);
+  const [userPickerOpen, setUserPickerOpen] = useState(false);
 
   const body = useMemo(
     () => ({
@@ -191,7 +277,7 @@ export function SettlementReportTab({
   );
 
   const { data, error, isLoading, mutate } = useSWR<ReportResponse>(
-    ["/api/pos/settlement-report", body],
+    [endpoint, body],
     postFetcher,
     { revalidateOnFocus: false, keepPreviousData: true }
   );
@@ -200,12 +286,20 @@ export function SettlementReportTab({
   const pagination = data?.pagination;
   const rows = data?.rows ?? [];
   const rollup = data?.rollup ?? [];
+  const today = data?.today ?? EMPTY_TODAY;
   const showCommission = data?.showCommission ?? false;
 
   const drillToUser = useCallback((r: RollupRow) => {
     setRetailerId(r.userId);
     setRetailerLabel(r.shopName || r.name);
     setView("transactions");
+    setPage(1);
+  }, []);
+
+  const pickUser = useCallback((u: PickerUser) => {
+    setRetailerId(u.id);
+    setRetailerLabel(u.shop || u.name);
+    setUserPickerOpen(false);
     setPage(1);
   }, []);
 
@@ -217,7 +311,7 @@ export function SettlementReportTab({
 
   // Export: fetch every matching row (server-side, ownership scoped).
   const fetchAllRows = useCallback(async (): Promise<ReportRow[]> => {
-    const res = await fetch("/api/pos/settlement-report", {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...body, export: true }),
@@ -230,11 +324,11 @@ export function SettlementReportTab({
     const d = await res.json();
     if (d.truncated) {
       toast.warning(
-        `Report capped at ${Number(d.returned).toLocaleString("en-IN")} rows â€” narrow the date range for the rest.`
+        `Report capped at ${Number(d.returned).toLocaleString("en-IN")} rows — narrow the date range for the rest.`
       );
     }
     return (d.rows as ReportRow[]) ?? [];
-  }, [body, rows]);
+  }, [endpoint, body, rows]);
 
   const exportCols: ReportColumn<ReportRow>[] = [
     { key: "txnTime", header: "Time", render: (r) => new Date(r.txnTime).toLocaleString("en-IN") },
@@ -250,6 +344,7 @@ export function SettlementReportTab({
     { key: "netSettled", header: "Settled (INR)", format: "money", render: (r) => r.netSettled.toFixed(2) },
     { key: "settlementStatus", header: "Settlement", render: (r) => r.settlementStatus },
     { key: "settlementMode", header: "Mode (T0/T1)", render: (r) => r.settlementMode },
+    { key: "settledVia", header: "Settled Via", render: (r) => settledViaLabel(r.settledVia) },
     ...(showCommission
       ? [
           {
@@ -265,15 +360,15 @@ export function SettlementReportTab({
   const txnCols: Column<ReportRow>[] = [
     { key: "txnTime", header: "Time", render: (r) => <span className="text-xs">{fmtTime(r.txnTime)}</span> },
     { key: "retailer", header: "Merchant", render: retailerCell },
-    { key: "terminalId", header: "TID", render: (r) => <span className="font-mono text-xs">{r.terminalId ?? "â€”"}</span> },
-    { key: "paymentMode", header: "Mode", render: (r) => <Badge variant="default">{r.paymentMode ?? "â€”"}</Badge> },
+    { key: "terminalId", header: "TID", render: (r) => <span className="font-mono text-xs">{r.terminalId ?? "—"}</span> },
+    { key: "paymentMode", header: "Mode", render: (r) => <Badge variant="default">{r.paymentMode ?? "—"}</Badge> },
     {
       key: "cardBrand",
       header: "Card",
-      render: (r) => (r.cardBrand ? <span className="text-xs">{[r.cardBrand, r.cardType].filter(Boolean).join(" ")}</span> : "â€”"),
+      render: (r) => (r.cardBrand ? <span className="text-xs">{[r.cardBrand, r.cardType].filter(Boolean).join(" ")}</span> : "—"),
     },
     { key: "grossAmount", header: "Amount", align: "right", render: (r) => <span className="font-semibold text-ink-900">{formatINR(r.grossAmount)}</span> },
-    { key: "mdrAmount", header: "MDR", align: "right", render: (r) => <span className="text-rose-600">âˆ’{formatINR(r.mdrAmount)}</span> },
+    { key: "mdrAmount", header: "MDR", align: "right", render: (r) => <span className="text-rose-600">−{formatINR(r.mdrAmount)}</span> },
     { key: "netSettled", header: "Settled", align: "right", render: (r) => <span className="font-semibold text-emerald-700">{formatINR(r.netSettled)}</span> },
     { key: "settlementStatus", header: "Status", render: (r) => settlementBadge(r.settlementStatus) },
     ...(showCommission
@@ -292,21 +387,15 @@ export function SettlementReportTab({
     {
       key: "name",
       header: "Merchant",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="max-w-[180px] truncate text-xs font-semibold text-ink-900">{r.shopName || r.name}</span>
-          <span className="text-[11px] text-ink-500">
-            {r.userCode ? <span className="font-medium text-brand-600">{r.userCode}</span> : null}
-            {r.userCode ? " · " : ""}
-            {ROLE_LABELS[r.role] ?? r.role}
-          </span>
-        </div>
-      ),
+      render: (r) => merchantCell(r),
     },
     { key: "txnCount", header: "Txns", align: "right", render: (r) => <span className="font-semibold">{r.txnCount.toLocaleString("en-IN")}</span> },
     { key: "grossAmount", header: "Volume", align: "right", render: (r) => <span className="font-semibold text-ink-900">{formatINR(r.grossAmount)}</span> },
-    { key: "mdrAmount", header: "MDR", align: "right", render: (r) => <span className="text-rose-600">âˆ’{formatINR(r.mdrAmount)}</span> },
-    { key: "netSettled", header: "Settled", align: "right", render: (r) => <span className="font-semibold text-emerald-700">{formatINR(r.netSettled)}</span> },
+    { key: "mdrAmount", header: "MDR", align: "right", render: (r) => <span className="text-rose-600">−{formatINR(r.mdrAmount)}</span> },
+    { key: "instantSettled", header: "Instant (T0)", align: "right", render: (r) => amountCount(r.instantSettledNet, r.instantSettledCount, "text-emerald-700") },
+    { key: "t1Settled", header: "T+1 settled", align: "right", render: (r) => amountCount(r.t1SettledNet, r.t1SettledCount, "text-brand-700") },
+    { key: "pending", header: "Pending", align: "right", render: (r) => amountCount(r.pendingNet, r.pendingCount, "text-amber-600") },
+    { key: "netSettled", header: "Net total", align: "right", render: (r) => <span className="font-semibold text-ink-900">{formatINR(r.netSettled)}</span> },
     ...(showCommission
       ? [
           {
@@ -332,6 +421,13 @@ export function SettlementReportTab({
     },
   ];
 
+  const todayCols: Column<TodayRow>[] = [
+    { key: "name", header: "Merchant", render: (r) => merchantCell(r) },
+    { key: "instant", header: "Settling today (instant)", align: "right", render: (r) => amountCount(r.instantNet, r.instantCount, "text-emerald-700") },
+    { key: "t1", header: "Settling T+1 (tomorrow)", align: "right", render: (r) => amountCount(r.t1Net, r.t1Count, "text-brand-700") },
+    { key: "total", header: "Captured today", align: "right", render: (r) => <span className="font-semibold text-ink-900">{formatINR(r.instantNet + r.t1Net)}</span> },
+  ];
+
   const reportSubtitle =
     `${dateFrom} to ${dateTo}` +
     (statusFilter ? ` · ${statusFilter}` : "") +
@@ -339,22 +435,13 @@ export function SettlementReportTab({
 
   return (
     <>
-      {/* Summary cards */}
+      {/* Summary cards (selected date range) */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Transactions" value={summary ? summary.totalTransactions.toLocaleString("en-IN") : "..."} icon={ArrowLeftRight} accent="brand" />
         <StatCard label="Total Volume" value={summary ? formatINR(summary.totalGross) : "..."} icon={IndianRupee} accent="violet" />
         <StatCard label="MDR Deducted" value={summary ? formatINR(summary.totalMdr) : "..."} icon={Scissors} accent="accent" />
-        <StatCard label="Amount Settled" value={summary ? formatINR(summary.totalSettled) : "..."} icon={Banknote} accent="emerald" />
-        {showCommission ? (
-          <StatCard label="My Commission" value={summary ? formatINR(summary.totalCommission ?? 0) : "..."} icon={Wallet} accent="brand" />
-        ) : (
-          <StatCard
-            label="Settled / Pending"
-            value={summary ? `${summary.settledCount} / ${summary.pendingCount}` : "..."}
-            icon={Wallet}
-            accent="emerald"
-          />
-        )}
+        <StatCard label="Instant settled (T0)" value={summary ? formatINR(summary.instantSettledNet) : "..."} hint={summary ? `${summary.instantSettledCount.toLocaleString("en-IN")} txn` : undefined} icon={Zap} accent="emerald" />
+        <StatCard label="T+1 settled" value={summary ? formatINR(summary.t1SettledNet) : "..."} hint={summary ? `${summary.t1SettledCount.toLocaleString("en-IN")} txn` : undefined} icon={CalendarClock} accent="violet" />
       </div>
 
       {/* Filters */}
@@ -408,6 +495,11 @@ export function SettlementReportTab({
           <Button variant="outline" size="sm" onClick={() => mutate()} title="Refresh">
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
+          {allowUserSearch && (
+            <Button variant="outline" size="sm" onClick={() => setUserPickerOpen(true)} title="Filter to a specific user">
+              <Search className="h-4 w-4" /> Filter user
+            </Button>
+          )}
 
           <div className="ml-auto flex flex-wrap gap-2">
             <ReportActions<ReportRow>
@@ -437,8 +529,9 @@ export function SettlementReportTab({
       {/* View toggle */}
       <div className="flex gap-1 rounded-xl border border-ink-100 bg-ink-50/60 p-1">
         {([
+          { id: "today", label: "Today's Book", icon: Zap },
           { id: "transactions", label: "Per Transaction", icon: Receipt },
-          { id: "rollup", label: "By Merchant / Downline", icon: Users },
+          { id: "rollup", label: "By User (range)", icon: Users },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -459,10 +552,45 @@ export function SettlementReportTab({
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error instanceof Error ? error.message : "Failed to load the settlement report."}
         </div>
+      ) : view === "today" ? (
+        <>
+          {/* Today's forward-looking book — instant (today) vs T+1 (tomorrow) */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard
+              label="Settling today (instant)"
+              value={formatINR(today.summary.instantNet)}
+              hint={`${today.summary.instantCount.toLocaleString("en-IN")} transactions · credited today (T0)`}
+              icon={Zap}
+              accent="emerald"
+            />
+            <StatCard
+              label="Settling T+1 (tomorrow)"
+              value={formatINR(today.summary.t1Net)}
+              hint={`${today.summary.t1Count.toLocaleString("en-IN")} transactions · next-day sweep`}
+              icon={CalendarClock}
+              accent="violet"
+            />
+            <StatCard
+              label="Captured today (total)"
+              value={formatINR(today.summary.instantNet + today.summary.t1Net)}
+              hint={`${(today.summary.instantCount + today.summary.t1Count).toLocaleString("en-IN")} transactions`}
+              icon={Clock}
+              accent="brand"
+            />
+          </div>
+          <DataTable
+            title="Today's settlement book — per user"
+            description="Of transactions captured today (IST): what settles instantly today vs what is queued for the T+1 sweep tomorrow."
+            columns={todayCols}
+            data={today.rows}
+            loading={isLoading}
+            empty="No POS captures today yet."
+          />
+        </>
       ) : view === "transactions" ? (
         <>
           <DataTable
-            title="POS Settlement â€” per transaction"
+            title="POS Settlement — per transaction"
             description={
               pagination
                 ? `${pagination.total.toLocaleString("en-IN")} transaction${pagination.total === 1 ? "" : "s"} · page ${pagination.page} of ${pagination.totalPages}`
@@ -488,10 +616,10 @@ export function SettlementReportTab({
         </>
       ) : (
         <DataTable
-          title="Settlement rollup â€” by merchant / downline"
+          title="Settlement rollup — by user (selected range)"
           description={
             rollup.length
-              ? `${rollup.length} merchant${rollup.length === 1 ? "" : "s"} with POS activity in this period`
+              ? `${rollup.length} merchant${rollup.length === 1 ? "" : "s"} with POS activity in this period · net split by how it settled`
               : isLoading
                 ? "Loading..."
                 : "No data yet"
@@ -499,8 +627,29 @@ export function SettlementReportTab({
           columns={rollupCols}
           data={rollup}
           loading={isLoading}
-          empty="No POS activity in your network for the selected filters."
+          empty="No POS activity for the selected filters."
         />
+      )}
+
+      {/* Admin user filter modal */}
+      {allowUserSearch && userPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-ink-950/40 p-4 pt-16 backdrop-blur-sm"
+          onClick={() => setUserPickerOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white p-5 shadow-xl ring-1 ring-ink-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-ink-900">Filter to a specific user</h3>
+              <button onClick={() => setUserPickerOpen(false)} className="rounded-full p-1 text-ink-400 hover:bg-ink-50 hover:text-ink-700" aria-label="Close">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <AssignUserPicker onSelect={pickUser} autoFocus />
+          </div>
+        </div>
       )}
     </>
   );

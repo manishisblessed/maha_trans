@@ -18,6 +18,8 @@
     "backfill:network-services": "tsx scripts/backfill-network-services.ts",
     "audit:pos-classification": "tsx scripts/audit-pos-classification.ts",
     "recon:pos-reversals": "tsx scripts/pos-back-reconcile.ts",
+    "txn:diag": "tsx scripts/diag-txn.ts",
+    "txn:resolve": "tsx scripts/resolve-txn.ts",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { buildPayoutLedgerMemos } from "@/lib/payout/ledgerMemos";
+import { buildBreakdowns } from "@/lib/wallet/breakdown";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,8 @@ type RecentTxn = {
   id: string;
   direction: "CREDIT" | "DEBIT";
   reason: string;
+  txnAmount: number | null;
+  charges: number | null;
   amount: number;
   balanceAfter: number | null;
   note: string | null;
@@ -71,10 +74,15 @@ export async function GET(req: Request) {
     monthlyAgg.find((a) => a.direction === "DEBIT")?._sum.amount ?? 0
   );
 
+  // Resolve the per-row charge breakdown across real rows and memos in one
+  // batched query (payouts + service txns).
+  const breakdownOf = await buildBreakdowns([...recent, ...memos]);
+
   const realTxns: RecentTxn[] = recent.map((t) => ({
     id: t.id,
     direction: t.direction,
     reason: t.reason,
+    ...breakdownOf(t),
     amount: Number(t.amount),
     balanceAfter: Number(t.balanceAfter),
     note: t.note,
@@ -90,6 +98,7 @@ export async function GET(req: Request) {
       id: m.id,
       direction: m.direction,
       reason: m.reason,
+      ...breakdownOf(m),
       amount: m.amount,
       balanceAfter: null,
       note: m.note,

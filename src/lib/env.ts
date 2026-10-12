@@ -54,11 +54,13 @@ const schema = z.object({
   SAMEDAY_POS_BASE_URL: z.string().url().default("https://api.samedaysolution.in"),
   SAMEDAY_POS_API_KEY: z.string().min(1).optional(),
   SAMEDAY_POS_API_SECRET: z.string().min(1).optional(),
-  // Signing secret for INCOMING POS capture webhooks (POST /api/pos/webhook).
-  // When unset, the webhook accepts requests unverified (bootstrap phase before
-  // Same Day supplies/confirms the secret); once set, every webhook must carry a
-  // valid HMAC-SHA256 signature or it is rejected 401. See docs / the message to
-  // Same Day for the exact scheme.
+  // SHARED signing secret for ALL incoming Same Day webhooks — the POS channel
+  // (POST /api/pos/webhook) and the BBPS-2/Pay2New channel (POST
+  // /api/services/bbps/webhook). Same Day signs every channel with this one
+  // secret (routed by the X-Sameday-Event header). Off-prod + unset = accept
+  // unverified (dev bootstrap); in production unset = fail-closed (503). Once
+  // set, every webhook must carry a valid HMAC-SHA256 signature or it is
+  // rejected 401. See docs / the message to Same Day for the exact scheme.
   SAMEDAY_POS_WEBHOOK_SECRET: z.string().min(1).optional(),
 
   // Same Day Solution — BBPS-2 (Pay2New) credit card bill payments and
@@ -313,6 +315,15 @@ export function productionSecretIssues(): string[] {
 
   if (!env.ALERT_WEBHOOK_URL) {
     issues.push("ALERT_WEBHOOK_URL is not set — critical alerts are log-only");
+  }
+
+  // Incoming POS capture/reversal webhooks move retailer money. With POS live
+  // but no signing secret, /api/pos/webhook fails CLOSED (503) — captures stall
+  // rather than being accepted unsigned. Surface it so the secret gets added.
+  if (flags.pos && !env.SAMEDAY_POS_WEBHOOK_SECRET) {
+    issues.push(
+      "SAMEDAY_POS_WEBHOOK_SECRET is not set but POS is enabled — incoming capture webhooks will be rejected (503) until it is configured"
+    );
   }
 
   return issues;

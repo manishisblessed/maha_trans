@@ -50,6 +50,20 @@ export type SamedayError = {
   [k: string]: unknown;
 };
 
+/** Max time to wait for a Same Day response before treating the call as an
+ *  INDETERMINATE timeout (the provider may still have acted). */
+const SAMEDAY_TIMEOUT_MS = 45_000;
+
+/**
+ * An HTTP status is INDETERMINATE when the gateway/upstream never returned a
+ * definitive business answer: 5xx (upstream may have completed), 408 (request
+ * timeout), 429 (rate limited → provider may retry). A 4xx / HTTP 200 +
+ * success:false is a DEFINITIVE decline — safe to fail and refund.
+ */
+function isIndeterminateHttp(status: number): boolean {
+  return status >= 500 || status === 408 || status === 429;
+}
+
 /**
  * Fire a signed request. Same Day responses always carry `success`; business
  * failures can come back with HTTP 200 + success:false, so we normalize both.
@@ -78,12 +92,15 @@ export async function samedayRequest<T extends { success?: boolean }>(
     if (params.toString()) url += `?${params}`;
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SAMEDAY_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
       method,
       headers,
       body: bodyString || undefined,
       cache: "no-store",
+      signal: controller.signal,
     });
     const json = (await res.json().catch(() => ({}))) as T & SamedayError;
     if (!res.ok || json.success === false) {
@@ -99,11 +116,23 @@ export async function samedayRequest<T extends { success?: boolean }>(
         code: json.error?.code || topCode || `HTTP_${res.status}`,
         message: json.error?.message || topMessage || res.statusText || "Same Day request failed",
         raw: json,
+        // INDETERMINATE for HTTP 5xx/408/429 (the upstream may have completed);
+        // an explicit HTTP 200 + success:false is DEFINITIVE and leaves it unset.
+        indeterminate: isIndeterminateHttp(res.status),
       };
     }
     return { ok: true, data: json, raw: json };
   } catch (e) {
-    return { ok: false, code: "NETWORK", message: (e as Error).message };
+    // A thrown fetch (socket drop, DNS, TLS, abort/timeout) means we got NO
+    // answer at all — always indeterminate; the provider may have charged.
+    return {
+      ok: false,
+      code: "NETWORK",
+      message: (e as Error).name === "AbortError" ? "Same Day request timed out" : (e as Error).message,
+      indeterminate: true,
+    };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

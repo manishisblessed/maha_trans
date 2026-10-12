@@ -29,6 +29,7 @@ import type {
   PartnerResult,
 } from "./types";
 import { samedayCredentials, samedayRequest } from "./sameday-core";
+import { sendOpsAlert } from "@/lib/monitoring/alerts";
 
 const P = "/api/partner/pay2new";
 const DEFAULT_PINCODE = "414002";
@@ -63,11 +64,18 @@ type PayResponse = {
   operator_reference?: string;
   request_id?: string;
   charge?: number;
+  // Set by the provider when this success is a REPLAY of a prior attempt on the
+  // same bill_fetch_ref — i.e. NO new money moved for THIS call. We surface it
+  // so a duplicate that slipped past the pre-pay guard is loudly visible to ops
+  // and recon instead of silently settling a second charge.
+  idempotent_replay?: boolean;
+  idempotent?: boolean;
 };
 
 type StatusResponse = {
   success: boolean;
   order_id?: string | null;
+  request_id?: string | null;
   status?: string;
   operator_reference?: string | null;
 };
@@ -224,6 +232,22 @@ export const samedayBbps: BbpsProvider = {
       pincode: cc.pincode,
     });
     if (!r.ok) return r;
+    // Backstop to the pre-pay duplicate guard: if the provider says this
+    // success is a replay of an earlier attempt on the same bill_fetch_ref,
+    // flag it so recon/ops can confirm the customer was charged only once.
+    // Best-effort and non-blocking — we still return success (the bill IS paid).
+    if (r.data.idempotent_replay || r.data.idempotent) {
+      void sendOpsAlert({
+        title: "BBPS pay returned an idempotent replay",
+        severity: "warning",
+        details: {
+          billerCode: input.billerCode,
+          billFetchRef,
+          orderId: r.data.order_id ?? r.data.request_id ?? "(none)",
+          note: "Provider replayed a prior attempt — verify no double charge for this card.",
+        },
+      }).catch(() => {});
+    }
     return {
       ok: true,
       data: {
@@ -236,9 +260,16 @@ export const samedayBbps: BbpsProvider = {
   },
 
   async status(ref) {
-    const body = ref.orderId ? { order_id: ref.orderId } : { request_id: ref.requestId };
-    if (!body.order_id && !body.request_id) {
-      return { ok: false, code: "BAD_PARAMS", message: "status() needs orderId or requestId" };
+    // Pay2New's bill/status accepts the pay-step order_id, the request_id, OR —
+    // since the Oct-2026 release — the bill-fetch reference we always retain
+    // (`bill_fetch_ref`). The last one is what lets us recover a payment whose
+    // pay response was lost without ever needing the pay-step id.
+    const body: Record<string, string> = {};
+    if (ref.orderId) body.order_id = ref.orderId;
+    else if (ref.requestId) body.request_id = ref.requestId;
+    else if (ref.billFetchRef) body.bill_fetch_ref = ref.billFetchRef;
+    else {
+      return { ok: false, code: "BAD_PARAMS", message: "status() needs orderId, requestId or billFetchRef" };
     }
     const r = await samedayRequest<StatusResponse>(creds(), "POST", `${P}/bill/status`, body);
     if (!r.ok) return r;
@@ -247,6 +278,10 @@ export const samedayBbps: BbpsProvider = {
       data: {
         status: mapPay2NewStatus(r.data.status),
         operatorRef: r.data.operator_reference ?? undefined,
+        // Echo the authoritative pay-step references so callers stamp the real
+        // partnerTxnId (not the bill_fetch_ref we may have queried with).
+        orderId: r.data.order_id ?? undefined,
+        requestId: r.data.request_id ?? undefined,
       },
       raw: r.raw,
     };

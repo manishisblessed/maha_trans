@@ -7,7 +7,8 @@ import { DataTable, type Column } from "@/components/dashboard/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatINR, istDayRangeUtc } from "@/lib/utils";
-import { CreditCard, RefreshCw, Clock, PlayCircle, DownloadCloud, Zap, Save, Gauge } from "lucide-react";
+import { CreditCard, RefreshCw, Clock, PlayCircle, DownloadCloud, Zap, Save, Gauge, Receipt, Settings2 } from "lucide-react";
+import { SettlementReportTab } from "@/app/dashboard/pos/SettlementReportTab";
 
 type PosT1 = { enabled: boolean; hour: number; paused: boolean; minAmount: number };
 type PosInstant = {
@@ -135,6 +136,7 @@ export default function PosSettlementPage() {
   const [running, setRunning] = useState<string | null>(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [tab, setTab] = useState<"report" | "ops">("report");
 
   const notify = useCallback((text: string, ok: boolean) => {
     if (ok) toast.success(text);
@@ -332,6 +334,32 @@ export default function PosSettlementPage() {
         }
       />
 
+      {/* In-page tabs: the per-user settlement report (default) is the
+          master-admin view of per-user transactions + what settles instant
+          (today) vs T+1 (tomorrow); the ops console configures the engine. */}
+      <div className="flex gap-1 rounded-xl border border-ink-100 bg-ink-50/60 p-1">
+        {([
+          { id: "report", label: "Per-User Settlement Report", icon: Receipt },
+          { id: "ops", label: "Engine & Operations", icon: Settings2 },
+        ] as const).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={
+              tab === id
+                ? "flex-1 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-ink-900 shadow-sm"
+                : "flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-ink-500 transition-colors hover:text-ink-700"
+            }
+          >
+            <span className="flex items-center justify-center gap-2"><Icon className="h-4 w-4" /> {label}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "report" ? (
+        <SettlementReportTab endpoint="/api/admin/pos-settlement-report" allowUserSearch />
+      ) : (
+        <>
       {/* Instant settlement — prominent, retailer-controlled control */}
       <div className="rounded-3xl bg-brand-50/60 p-5 ring-1 ring-inset ring-brand-100 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -677,6 +705,8 @@ export default function PosSettlementPage() {
         <h3 className="mb-4 text-sm font-bold text-ink-900">Recent settlement entries</h3>
         <DataTable columns={columns} data={data?.entries ?? []} loading={loading} />
       </div>
+        </>
+      )}
     </div>
   );
 }

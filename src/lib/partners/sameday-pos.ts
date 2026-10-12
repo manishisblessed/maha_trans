@@ -156,10 +156,11 @@ export function canonicalPosCaptureRef(input: {
 const WEBHOOK_MAX_SKEW_SEC = 300; // 5 minutes
 
 export type WebhookVerifyResult =
-  | "SKIP"      // no secret configured — bootstrap phase, accept unverified
-  | "VALID"     // signature present, fresh timestamp, HMAC valid
-  | "STALE"     // timestamp outside tolerance (> 5 min skew) — caller returns 400
-  | "INVALID";  // secret configured but signature missing/wrong — caller returns 401
+  | "SKIP"          // no secret configured (non-prod only) — accept unverified
+  | "VALID"         // signature present, fresh timestamp, HMAC valid
+  | "STALE"         // timestamp outside tolerance (> 5 min skew) — caller returns 400
+  | "INVALID"       // secret configured but signature missing/wrong — caller returns 401
+  | "MISCONFIGURED"; // secret missing IN PRODUCTION — fail-closed, caller returns 503
 
 /**
  * Verify an INCOMING Same Day POS webhook (POST /api/pos/webhook).
@@ -172,13 +173,16 @@ export type WebhookVerifyResult =
  * time; stale timestamps (> 5 min skew) are rejected to blunt replay attacks.
  *
  * Return value:
- *   "SKIP"    — SAMEDAY_POS_WEBHOOK_SECRET is not configured yet. The caller
- *               ACCEPTS the webhook but flags it unverified. This is the bootstrap
- *               phase: captures keep saving while we await Same Day's signing
- *               secret. Set the env var to turn enforcement on (fail-closed).
- *   "VALID"   — signature present, timestamp fresh, and HMAC valid.
- *   "STALE"   — timestamp missing or outside the tolerance window → caller rejects 400.
- *   "INVALID" — secret configured but signature missing or incorrect → caller rejects 401.
+ *   "SKIP"          — SAMEDAY_POS_WEBHOOK_SECRET is not configured AND we are NOT
+ *                     in production. The caller ACCEPTS the webhook but flags it
+ *                     unverified. This is the dev/bootstrap phase only.
+ *   "VALID"         — signature present, timestamp fresh, and HMAC valid.
+ *   "STALE"         — timestamp missing or outside the tolerance window → caller rejects 400.
+ *   "INVALID"       — secret configured but signature missing or incorrect → caller rejects 401.
+ *   "MISCONFIGURED" — secret missing in PRODUCTION. We refuse to process an
+ *                     unverified money-movement webhook: fail-closed. The caller
+ *                     returns 503 so Same Day retries while ops is alerted to add
+ *                     the secret — captures are never silently accepted unsigned.
  */
 export function verifySamedayPosWebhook(
   rawBody: string,
@@ -186,7 +190,12 @@ export function verifySamedayPosWebhook(
   timestamp: string | null
 ): WebhookVerifyResult {
   const secret = process.env.SAMEDAY_POS_WEBHOOK_SECRET;
-  if (!secret) return "SKIP";
+  if (!secret) {
+    // Fail-OPEN only off-production (local/dev/test bootstrap). In production a
+    // missing signing secret is a configuration error, never a licence to accept
+    // unsigned capture/reversal webhooks that move retailer money.
+    return process.env.NODE_ENV === "production" ? "MISCONFIGURED" : "SKIP";
+  }
   if (!signature || !timestamp) return "INVALID";
 
   // Replay protection: reject timestamps outside the tolerance window.

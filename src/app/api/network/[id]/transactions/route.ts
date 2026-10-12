@@ -52,7 +52,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     if (statusFilter && statusFilter !== "All") {
       const map: Record<string, TxnStatus[]> = {
         Success: ["SUCCESS"],
-        Pending: ["INITIATED", "PROCESSING"],
+        Pending: ["INITIATED", "PROCESSING", "NEEDS_REVIEW", "HOLD"],
         Failed: ["FAILED", "REFUNDED"],
       };
       if (map[statusFilter]) where.status = { in: map[statusFilter] };

@@ -24,6 +24,10 @@ type WalletTxn = {
   id: string;
   direction: "CREDIT" | "DEBIT";
   reason: string;
+  /** Base transaction amount (null when the row has no charge breakdown). */
+  txnAmount: number | null;
+  /** Charges on top of the base amount (null when not applicable). */
+  charges: number | null;
   amount: number;
   /** Null for reservation memos — a hold/release never moves the balance. */
   balanceAfter: number | null;
@@ -115,6 +119,16 @@ export default function LedgerPage() {
     { key: "reason", header: "Reason", render: (r) => REASON_LABELS[r.reason] ?? r.reason },
     { key: "note", header: "Description" },
     { key: "refId", header: "Reference" },
+    {
+      key: "txnAmount",
+      header: "Txn amount (INR)",
+      render: (r) => (r.txnAmount == null ? "—" : formatINR(r.txnAmount)),
+    },
+    {
+      key: "charges",
+      header: "Charges (INR)",
+      render: (r) => (r.charges == null ? "—" : formatINR(r.charges)),
+    },
     { key: "amount", header: "Amount (INR)", format: "money" },
     { key: "balanceAfter", header: "Balance after (INR)", format: "money" },
   ];
@@ -234,6 +248,8 @@ export default function LedgerPage() {
                 <tr>
                   <th className="px-5 py-3 font-semibold">Type</th>
                   <th className="px-5 py-3 font-semibold">Description</th>
+                  <th className="px-5 py-3 text-right font-semibold">Txn amount</th>
+                  <th className="px-5 py-3 text-right font-semibold">Charges</th>
                   <th className="px-5 py-3 text-right font-semibold">Amount</th>
                   <th className="px-5 py-3 text-right font-semibold">Balance after</th>
                   <th className="px-5 py-3 font-semibold">Date</th>
@@ -289,6 +305,20 @@ export default function LedgerPage() {
                           {t.refId && <div className="font-mono text-[11px] text-ink-400">{t.refId}</div>}
                         </div>
                       </div>
+                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums text-ink-700">
+                      {t.txnAmount == null ? (
+                        <span className="text-ink-300">—</span>
+                      ) : (
+                        formatINR(t.txnAmount)
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums">
+                      {t.charges == null ? (
+                        <span className="text-ink-300">—</span>
+                      ) : (
+                        <span className="text-amber-700">{formatINR(t.charges)}</span>
+                      )}
                     </td>
                     <td
                       className={cn(

@@ -56,6 +56,10 @@ export const QUEUES = {
   // Debits each active subscription and raises invoices; idempotent per
   // (subscription, period). See src/lib/pos/rental.ts.
   POS_RENTAL_BILLING: "pos.rental.billing",
+  // Demand-driven POS rental billing retry — enqueued by creditWallet() when a
+  // PRIMARY wallet credit commits for a user who has FAILED POS rental invoices
+  // in the current period. See schedulePosRentalRetryIfNeeded in ledger.ts.
+  POS_RENTAL_BILLING_RETRY: "pos.rental.billing.retry",
   // POS acquirer T+1 settlement — sweeps PENDING PosSettlementEntries into
   // retailer wallets daily at the configured IST hour.
   POS_SETTLEMENT_T1: "pos.settlement.t1",
@@ -72,6 +76,7 @@ export const QUEUES = {
   // and settles them. This sweep is the safety net for PENDING payments.
   // Runs every 5 minutes.
   BBPS_RECONCILE: "bbps.reconcile",
+  RECHARGEKIT_RECONCILE: "rechargekit.reconcile",
   // QR collection T+1 settlement — sweeps approved (SETTLEABLE) claims the
   // retailer didn't instant-settle into their wallet the next IST day, net of
   // the scheme's T1 MDR. Scheduled hourly; fires only at the configured hour.

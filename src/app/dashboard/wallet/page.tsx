@@ -44,6 +44,8 @@ type WalletTxn = {
   id: string;
   direction: "CREDIT" | "DEBIT";
   reason: string;
+  txnAmount: number | null;
+  charges: number | null;
   amount: number;
   balanceAfter: number;
   note: string | null;
@@ -313,6 +315,28 @@ export default function WalletPage() {
           {t.note && <div className="text-xs text-ink-500">{t.note}</div>}
         </div>
       ),
+    },
+    {
+      key: "txnAmount",
+      header: "Txn amount",
+      align: "right",
+      render: (t) =>
+        t.txnAmount == null ? (
+          <span className="text-ink-300">—</span>
+        ) : (
+          <span className="tabular-nums text-ink-700">{formatINR(t.txnAmount)}</span>
+        ),
+    },
+    {
+      key: "charges",
+      header: "Charges",
+      align: "right",
+      render: (t) =>
+        t.charges == null ? (
+          <span className="text-ink-300">—</span>
+        ) : (
+          <span className="tabular-nums text-amber-700">{formatINR(t.charges)}</span>
+        ),
     },
     {
       key: "amount",

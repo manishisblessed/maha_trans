@@ -55,6 +55,20 @@ function istMidnight(y: number, m: number, day: number): Date {
 }
 
 /**
+ * True when a subscription was created AFTER this billing period's anchor date.
+ * A mid-cycle subscription is not due this period (first charge is next cycle).
+ * Compared at IST date granularity, so a subscription created ON its billing
+ * day (e.g. started Oct 1, billingDay=1) is still billed for that period.
+ */
+function startedAfterCurrentAnchor(startedAt: Date, billingDay: number, now: Date): boolean {
+  const { y, m } = istYmd(now);
+  const anchor = istMidnight(y, m, billingDay);
+  const s = istYmd(startedAt);
+  const startFloor = istMidnight(s.y, s.m, s.d);
+  return startFloor.getTime() > anchor.getTime();
+}
+
+/**
  * The volume-measurement window the rent waiver evaluates when billing runs at
  * `now`. It is the ~1-month cycle that just completed: from the previous
  * billing anchor up to the most recent one (≤ now). Business done by a machine
@@ -136,13 +150,34 @@ export function computeRentalAmounts(baseRent: number | string, includeGst: bool
   return { rent, gst, total };
 }
 
-export async function runPosRentalBilling(now = new Date()): Promise<{
+export async function runPosRentalBilling(
+  now = new Date(),
+  opts: {
+    /**
+     * When provided, only processes subscriptions belonging to this user.
+     * Used by the demand-driven retry path (POS_RENTAL_BILLING_RETRY queue)
+     * that fires immediately after a PRIMARY wallet credit lands for a user
+     * who has FAILED invoices in the current period. The full billing run
+     * (no userId) continues to own the initial deduction each month.
+     */
+    userId?: string;
+    /**
+     * When true, only settles subscriptions that ALREADY have a FAILED invoice
+     * for the current period — it never raises a brand-new invoice. This makes
+     * the credit-triggered retry a pure recovery pass: a wallet credit can only
+     * clear an outstanding (FAILED) rent, never trigger a fresh debit on some
+     * other machine that merely happens to be due.
+     */
+    retryOnly?: boolean;
+  } = {}
+): Promise<{
   processed: number;
   billed: number;
   failed: number;
   skipped: number;
   waived: number;
 }> {
+  const { userId, retryOnly = false } = opts;
   const cfg = await getSetting("pos.rental_billing");
   if (!cfg.enabled) return { processed: 0, billed: 0, failed: 0, skipped: 0, waived: 0 };
 
@@ -152,7 +187,11 @@ export async function runPosRentalBilling(now = new Date()): Promise<{
   const today = istDayOfMonth(now);
 
   const subs = await prisma.posSubscription.findMany({
-    where: { status: "ACTIVE", billingDay: { lte: today } },
+    where: {
+      status: "ACTIVE",
+      billingDay: { lte: today },
+      ...(userId ? { userId } : {}),
+    },
     include: { plan: true },
   });
 
@@ -189,6 +228,22 @@ export async function runPosRentalBilling(now = new Date()): Promise<{
       where: { subscriptionId_periodKey: { subscriptionId: sub.id, periodKey } },
     });
     if (existing && existing.status !== "FAILED") {
+      skipped++;
+      continue;
+    }
+
+    // Retry pass (credit-triggered): only settle an invoice that already exists
+    // and FAILED. Never raise a fresh invoice here — a wallet credit must only
+    // recover outstanding rent, not initiate a new charge on another machine.
+    if (retryOnly && !existing) {
+      skipped++;
+      continue;
+    }
+
+    // Mid-cycle guard: a subscription created AFTER this period's billing anchor
+    // is not due this period (its first charge is the next cycle). Only applies
+    // when raising a NEW invoice; an existing FAILED invoice is still retried.
+    if (!existing && startedAfterCurrentAnchor(sub.startedAt, sub.billingDay, now)) {
       skipped++;
       continue;
     }

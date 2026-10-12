@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { creditWallet, debitWallet, LedgerError } from "@/lib/ledger";
+import { creditWallet, debitWallet, LedgerError, schedulePosRentalRetryIfNeeded } from "@/lib/ledger";
 import { toNumber } from "@/lib/money";
 import { isAdminRole } from "@/lib/security/ownership";
 import { assertKycCurrent, ReKycRequiredError } from "@/lib/security/kycGate";
@@ -160,6 +160,9 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     }
     throw e;
   }
+
+  // Transaction committed — recover any outstanding POS rent for the requester.
+  void schedulePosRentalRetryIfNeeded(fundReq.requesterId);
 
   await prisma.auditLog.create({
     data: {

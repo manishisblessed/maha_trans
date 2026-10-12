@@ -679,6 +679,12 @@ enum TxnStatus {
   FAILED
   REFUNDED
   HOLD
+  // Non-terminal HOLD for an INDETERMINATE partner pay outcome (lost response /
+  // HTTP 5xx / timeout): the provider may have charged, so the reserve is held
+  // (never auto-refunded) until an authoritative outcome is known via the recon
+  // status poll, an admin resolution, or a confirmed re-call. Treated like
+  // PROCESSING everywhere (pending/non-terminal).
+  NEEDS_REVIEW
 }
 
 model Transaction {

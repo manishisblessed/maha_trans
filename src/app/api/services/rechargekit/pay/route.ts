@@ -131,11 +131,15 @@ export async function POST(req: Request) {
     });
 
     // PROCESSING/INITIATED are async-pending (accepted, provider not yet terminal)
-    // → 202 Accepted, never 502. Only a genuine FAILED is an upstream error.
+    // → 202 Accepted, never 502. NEEDS_REVIEW is an INDETERMINATE hold (funds
+    // retained, not refunded) and is likewise pending from the retailer's view.
+    // Only a genuine FAILED is an upstream error.
     const httpStatus =
       result.status === "SUCCESS"
         ? 200
-        : result.status === "PROCESSING" || result.status === "INITIATED"
+        : result.status === "PROCESSING" ||
+            result.status === "INITIATED" ||
+            result.status === "NEEDS_REVIEW"
           ? 202
           : 502;
 

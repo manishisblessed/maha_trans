@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { buildPayoutLedgerMemos } from "@/lib/payout/ledgerMemos";
+import { buildBreakdowns } from "@/lib/wallet/breakdown";
 import { bankLogoSlug } from "@/lib/bank-logos";
 import { resolveTxnBankName } from "@/lib/txn/bankName";
 
@@ -13,6 +14,8 @@ type LedgerRow = {
   id: string;
   direction: "CREDIT" | "DEBIT";
   reason: string;
+  txnAmount: number | null;
+  charges: number | null;
   amount: number;
   balanceAfter: number | null;
   note: string | null;
@@ -128,10 +131,15 @@ export async function GET(req: Request) {
       : Promise.resolve([]),
   ]);
 
+  // Resolve the per-row charge breakdown across real rows and memos in one
+  // batched query (payouts + service txns).
+  const breakdownOf = await buildBreakdowns([...txns, ...memos]);
+
   const realRows: LedgerRow[] = txns.map((t) => ({
     id: t.id,
     direction: t.direction,
     reason: t.reason,
+    ...breakdownOf(t),
     amount: Number(t.amount),
     balanceAfter: Number(t.balanceAfter),
     note: t.note,
@@ -150,7 +158,8 @@ export async function GET(req: Request) {
     });
   }
 
-  const merged = [...realRows, ...memos].sort(byNewest);
+  const memoRows: LedgerRow[] = memos.map((m) => ({ ...m, ...breakdownOf(m) }));
+  const merged = [...realRows, ...memoRows].sort(byNewest);
   const pageRows = merged.slice((page - 1) * pageSize, page * pageSize);
 
   return NextResponse.json({

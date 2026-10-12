@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { CreditCard, Lightning, ShieldCheck } from "@phosphor-icons/react";
 import { OperatorSelect } from "@/components/ui/OperatorSelect";
 import { Button } from "@/components/ui/Button";
@@ -66,6 +66,7 @@ export function CreditCardBillForm({ route }: { route?: string } = {}) {
   const [fetching, setFetching] = useState(false);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
   const [pinOpen, setPinOpen] = useState(false);
   const [result, setResult] = useState<TxnResult>(null);
 
@@ -173,6 +174,7 @@ export function CreditCardBillForm({ route }: { route?: string } = {}) {
   async function payWithPin(pin: string): Promise<string | null> {
     if (!bill) return "No bill loaded";
     setPaying(true);
+    setPending(null);
     try {
       const res = await fetch("/api/services/bbps/pay", {
         method: "POST",
@@ -196,6 +198,32 @@ export function CreditCardBillForm({ route }: { route?: string } = {}) {
         }),
       });
       const data = await res.json();
+      // Same-amount debounce (NOT a failure): the retailer just submitted this
+      // exact amount on this card. Keep the fetched bill so they can simply wait
+      // out the short cooldown and pay again — or change the amount, which is
+      // allowed immediately.
+      if (res.status === 429 && data?.code === "DUPLICATE_COOLDOWN") {
+        setPinOpen(false);
+        setError(
+          typeof data.error === "string"
+            ? data.error
+            : "Please wait a moment before repeating the same amount on this card."
+        );
+        return null;
+      }
+      // INDETERMINATE hold or async pending — funds are HELD/in-flight, NOT
+      // refunded. Show a reassuring pending notice (never a red failure that
+      // implies the money came back); reconciliation settles it.
+      if (data.status === "NEEDS_REVIEW" || data.status === "PROCESSING" || data.status === "INITIATED") {
+        setPinOpen(false);
+        setPending(
+          data.status === "NEEDS_REVIEW"
+            ? "Payment is being verified with the provider. Your money is safe and held until it's confirmed — do NOT pay again. Check transaction history for the final status."
+            : "Payment is processing. Check your transaction history for the final status — do NOT pay again."
+        );
+        resetBill();
+        return null;
+      }
       if (!res.ok || data.status !== "SUCCESS") {
         // PIN problems stay inside the dialog; other failures surface on the form.
         if (data.txnPin) return typeof data.error === "string" ? data.error : "PIN verification failed";
@@ -370,6 +398,12 @@ export function CreditCardBillForm({ route }: { route?: string } = {}) {
             {error && (
               <Notice tone="danger" icon={<AlertCircle className="h-4 w-4" />}>
                 {error}
+              </Notice>
+            )}
+
+            {pending && (
+              <Notice tone="warning" icon={<Loader2 className="h-4 w-4 animate-spin" />}>
+                {pending}
               </Notice>
             )}
 
