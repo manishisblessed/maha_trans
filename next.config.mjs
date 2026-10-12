@@ -28,6 +28,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },
+  // The in-build `tsc` type-check is the single biggest memory consumer of
+  // `next build` and OOM-kills (exit 137) the small production instance AFTER
+  // webpack has already compiled — leaving PM2 serving the stale build. Types
+  // are validated on every change in dev and via `tsc --noEmit` before deploy,
+  // so skipping the redundant build-time pass makes the prod build fit in RAM
+  // and finish far faster. Keep local/CI type-checking as the real gate.
+  typescript: { ignoreBuildErrors: true },
   // pdfkit loads its built-in AFM font-data files from disk at runtime; bundling
   // it with webpack breaks those file reads, so keep it external on the server.
   // Renamed from experimental.serverComponentsExternalPackages and stabilized in Next 15.
