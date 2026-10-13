@@ -185,6 +185,10 @@ export const MONEY_VERTICALS = ["upi", "payout", "aeps", "dmt", "bbps"] as const
 export function moneyRailsOnMock(): Vertical[] {
   const onMock: Vertical[] = [];
   for (const v of MONEY_VERTICALS) {
+    // A DISABLED rail (PARTNER_*_ENABLED=false) intentionally resolves to a mock
+    // and is never invoked in prod, so it is NOT a misconfiguration. Only an
+    // ENABLED money rail resolving to a mock is the phantom-balance risk.
+    if (!flags[v]) continue;
     try {
       if (isMockProvider(getPartner(v))) onMock.push(v);
     } catch {

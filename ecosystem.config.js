@@ -11,7 +11,7 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
       },
-      max_memory_restart: "512M",
+      max_memory_restart: "768M",
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       error_file: "/home/ubuntu/logs/emoney-error.log",
       out_file: "/home/ubuntu/logs/emoney-out.log",
