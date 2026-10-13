@@ -118,6 +118,17 @@ export const QUEUES = {
   // and credits the reward. Idempotent per (user, scheme, YYYY-MM). See
   // src/lib/incentive/engine.ts.
   INCENTIVE_MONTHLY: "incentive.monthly",
+  // Outcome verification sweep (hourly): re-polls recent TERMINAL service rows
+  // (SUCCESS/FAILED/REFUNDED on BBPS + RechargeKit) against the provider and
+  // flags provider clawbacks, false refunds, and amount mismatches (surfaced on
+  // Money-at-Risk). Never moves money. See src/lib/recon/clawbackDetect.ts.
+  TXN_OUTCOME_VERIFY: "txn.outcome.verify",
+  // Money-at-risk threshold alert (every 30 min): NEEDS_REVIEW txn + payout
+  // exposure, outstanding liens, outcome anomalies. See src/lib/recon/exposure.ts.
+  EXPOSURE_ALERT: "recon.exposure.alert",
+  // Lien governance report (daily): flags ageing + large ACTIVE liens for ops.
+  // Never writes off or releases a lien. See src/lib/recon/lienGovernance.ts.
+  LIEN_AGING_REPORT: "recon.lien.aging",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

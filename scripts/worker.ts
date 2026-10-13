@@ -35,6 +35,9 @@ import { runDailyPayoutReconciliation } from "@/lib/recon/payouts";
 import { runBbpsReconciliation } from "@/lib/recon/bbps";
 import { runRechargekitReconciliation } from "@/lib/recon/rechargekit";
 import { runTopupReconciliation, runTopupIntegrityCheck } from "@/lib/recon/topups";
+import { runOutcomeVerificationSweep } from "@/lib/recon/clawbackDetect";
+import { runExposureThresholdAlert } from "@/lib/recon/exposure";
+import { runLienAgingReport } from "@/lib/recon/lienGovernance";
 import { getPartner } from "@/lib/partners";
 import { viableChannelHealth, viableConfigured } from "@/lib/partners/viable-pg";
 import { recordWorkerHeartbeat, persistGatewayHealth } from "@/lib/ops/telemetry";
@@ -656,6 +659,37 @@ async function main() {
     if (!r.skipped) log(`kyc.video.retention: purged ${r.purged}, failed ${r.failed}`);
   });
   await boss.schedule(QUEUES.KYC_VIDEO_RETENTION, "30 1 * * *", {}, { tz: "Asia/Kolkata" });
+
+  // QUEUES.TXN_OUTCOME_VERIFY — proactive clawback / false-refund detector (hourly).
+  // Re-polls recent TERMINAL service rows against the provider and flags
+  // PROVIDER_CLAWBACK, FALSE_REFUND, AMOUNT_MISMATCH (surfaced on Money-at-Risk).
+  // Each row is polled at most once; NO money is moved — operators resolve manually.
+  await boss.work(QUEUES.TXN_OUTCOME_VERIFY, async () => {
+    const r = await runOutcomeVerificationSweep();
+    if (r.providerClawback > 0 || r.falseRefund > 0 || r.amountMismatch > 0) {
+      log(
+        `txn.outcome.verify: providerClawback=${r.providerClawback} falseRefund=${r.falseRefund} ` +
+          `amountMismatch=${r.amountMismatch} verifiedOk=${r.verifiedOk} scanned=${r.scanned}`
+      );
+    }
+  });
+  await boss.schedule(QUEUES.TXN_OUTCOME_VERIFY, "15 * * * *", {}, { tz: "Asia/Kolkata" });
+
+  // QUEUES.EXPOSURE_ALERT — money-at-risk threshold check (every 30 min). Read-only.
+  await boss.work(QUEUES.EXPOSURE_ALERT, async () => {
+    const r = await runExposureThresholdAlert();
+    if (r.breached) log(`recon.exposure.alert: BREACHED totalAtRisk=${r.risk.totalAtRisk.toFixed(2)}`);
+  });
+  await boss.schedule(QUEUES.EXPOSURE_ALERT, "*/30 * * * *", {}, { tz: "Asia/Kolkata" });
+
+  // QUEUES.LIEN_AGING_REPORT — lien governance (daily 03:00 IST). Never writes off.
+  await boss.work(QUEUES.LIEN_AGING_REPORT, async () => {
+    const r = await runLienAgingReport();
+    if (r.agingCount > 0 || r.largeCount > 0) {
+      log(`recon.lien.aging: aging=${r.agingCount} large=${r.largeCount} outstanding=${r.totalOutstanding.toFixed(2)}`);
+    }
+  });
+  await boss.schedule(QUEUES.LIEN_AGING_REPORT, "0 3 * * *", {}, { tz: "Asia/Kolkata" });
 
   // Phase 5 — secrets hardening: loudly flag weak/missing production secrets
   // at startup (never crashes the worker; ops gets one alert per boot).

@@ -69,7 +69,7 @@ export async function generatePgFormPdf(data: PgFormData): Promise<Uint8Array> {
       { align: "center", width: contentWidth }
     );
     doc.y += 2;
-    doc.font("Helvetica").fontSize(10).fillColor(MUTED).text(
+    doc.font("Hindi").fontSize(10).fillColor(MUTED).text(
       "भुगतान गेटवे ऑनबोर्डिंग प्रपत्र",
       { align: "center", width: contentWidth }
     );

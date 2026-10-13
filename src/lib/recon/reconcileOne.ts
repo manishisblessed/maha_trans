@@ -45,12 +45,18 @@ function railFor(partner: string | null, service: ServiceCode): Rail | null {
 async function resolveProviderStatus(
   rail: Rail,
   refs: string[]
-): Promise<{ status: ProviderStatus; payRef: string | null; raw: unknown } | null> {
+): Promise<{ status: ProviderStatus; payRef: string | null; amount: number | null; raw: unknown } | null> {
   if (rail === "rechargekit") {
     for (const ref of refs) {
       let r = await rechargekitStatus({ txnId: ref });
       if (!r.ok) r = await rechargekitStatus({ requestId: ref });
-      if (r.ok) return { status: r.data.status, payRef: r.data.txnId || r.data.requestId || ref, raw: r.raw };
+      if (r.ok)
+        return {
+          status: r.data.status,
+          payRef: r.data.txnId || r.data.requestId || ref,
+          amount: typeof r.data.amount === "number" && r.data.amount > 0 ? r.data.amount : null,
+          raw: r.raw,
+        };
     }
     return null;
   }
@@ -60,9 +66,21 @@ async function resolveProviderStatus(
     let r = await bbps.status({ orderId: ref });
     if (!r.ok) r = await bbps.status({ requestId: ref });
     if (!r.ok) r = await bbps.status({ billFetchRef: ref });
-    if (r.ok) return { status: r.data.status, payRef: r.data.orderId ?? r.data.requestId ?? ref, raw: r.raw };
+    if (r.ok)
+      return {
+        status: r.data.status,
+        payRef: r.data.orderId ?? r.data.requestId ?? ref,
+        amount: typeof r.data.amount === "number" && r.data.amount > 0 ? r.data.amount : null,
+        raw: r.raw,
+      };
   }
   return null;
+}
+
+/** True when the provider-reported amount matches the row (or is unknown). */
+function providerAmountMatches(providerAmount: number | null, rowAmount: number): boolean {
+  if (providerAmount == null) return true; // unknown → defer to unique-constraint backstop
+  return Math.abs(providerAmount - rowAmount) <= 0.01;
 }
 
 export type CorrectOneResult =
@@ -79,7 +97,9 @@ export type CorrectOneResult =
         | "refunded" // non-terminal → FAILED/REFUNDED (reserve returned)
         | "noop" // already consistent with the provider
         | "unresolved" // provider couldn't confirm from any ref
+        | "amount_mismatch" // provider SUCCESS but a DIFFERENT amount (twin attempt)
         | "not_applicable"; // rail has no status API / unsupported service
+      providerAmount?: number;
       clawback?: { placed: boolean; refunded: number; lienId: string | null };
     };
 
@@ -115,6 +135,35 @@ export async function correctOneTransaction(
   // promotion + lien clawback.
   if (isTerminalFailed) {
     if (resolved.status === "SUCCESS") {
+      // Amount cross-check BEFORE any clawback: if the provider confirms SUCCESS
+      // for a DIFFERENT amount than this row, this is almost certainly a twin
+      // double-attempt (same bill_fetch_ref, two amounts). Clawing back here
+      // could hit the wrong leg — refuse and flag for a human instead.
+      if (!providerAmountMatches(resolved.amount, Number(txn.amount))) {
+        await prisma.auditLog.create({
+          data: {
+            userId: opts.actorId,
+            action: "txn.resolve.amount_mismatch",
+            entity: "Transaction",
+            entityId: txn.id,
+            meta: {
+              refId: txn.refId,
+              rowAmount: Number(txn.amount),
+              providerAmount: resolved.amount,
+              source,
+            },
+          },
+        });
+        return {
+          found: true,
+          refId: txn.refId,
+          rail,
+          status: txn.status,
+          providerStatus: "SUCCESS",
+          outcome: "amount_mismatch",
+          providerAmount: resolved.amount ?? undefined,
+        };
+      }
       const r = await correctTerminalToSuccess({ txn, partnerTxnId, raw: resolved.raw, actorId: opts.actorId, source, remarks: opts.remarks });
       return {
         found: true,

@@ -228,6 +228,14 @@ export interface BbpsProvider {
        *  partnerTxnId even when the status was polled by bill_fetch_ref. */
       orderId?: string;
       requestId?: string;
+      /**
+       * Provider-reported paid amount (rupees), when the status payload carries
+       * it. Corrective flows cross-check this against the row amount BEFORE a
+       * clawback so a twin double-attempt (same bill_fetch_ref, two amounts) can
+       * never claw back the wrong leg. Absent → callers fall back to the
+       * partnerTxnId uniqueness backstop.
+       */
+      amount?: Money;
     }>
   >;
 }

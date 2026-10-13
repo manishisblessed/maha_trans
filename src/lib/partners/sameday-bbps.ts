@@ -78,6 +78,7 @@ type StatusResponse = {
   request_id?: string | null;
   status?: string;
   operator_reference?: string | null;
+  amount?: number | string | null;
 };
 
 // ---------- pure mapping helpers (unit-tested) ----------
@@ -282,6 +283,10 @@ export const samedayBbps: BbpsProvider = {
         // partnerTxnId (not the bill_fetch_ref we may have queried with).
         orderId: r.data.order_id ?? undefined,
         requestId: r.data.request_id ?? undefined,
+        // Provider-reported amount (for the corrective amount cross-check guard).
+        amount: Number.isFinite(Number(r.data.amount)) && Number(r.data.amount) > 0
+          ? Number(r.data.amount)
+          : undefined,
       },
       raw: r.raw,
     };

@@ -51,6 +51,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
+    // Provider confirms SUCCESS but for a DIFFERENT amount than the row — almost
+    // certainly a twin double-attempt (same bill_fetch_ref, two amounts). Refuse
+    // the clawback and surface both amounts for a human to pick the correct leg.
+    if (result.found && result.outcome === "amount_mismatch") {
+      return NextResponse.json(
+        {
+          error:
+            `Amount mismatch vs provider — the provider confirms SUCCESS for ₹${result.providerAmount ?? "?"}, ` +
+            "which differs from this row's amount. This looks like a twin double-attempt; no clawback was placed. " +
+            "Resolve the correct leg manually.",
+          result,
+        },
+        { status: 409 }
+      );
+    }
+
     // Provider couldn't confirm the outcome from any reference — hold stays put.
     if (result.outcome === "unresolved") {
       return NextResponse.json(
