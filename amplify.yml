@@ -33,6 +33,10 @@ applications:
             # OOMs (exit 134) even though the Amplify container has 8GiB. Raise
             # the heap to 6GB to leave headroom for the OS and worker threads.
             - NODE_OPTIONS=--max-old-space-size=6144 npm run build
+            # Remove heavy build artifacts that bloat the deploy package
+            # beyond Amplify's 220 MB limit. The cache is for faster rebuilds
+            # (already saved separately below) and traces are dev diagnostics.
+            - rm -rf .next/cache
       artifacts:
         baseDirectory: .next
         files:
