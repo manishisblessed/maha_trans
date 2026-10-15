@@ -17,9 +17,9 @@ export default function UpiPage() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
-  const upiId = "eMoney@axisbank";
-  const link = `upi://pay?pa=${upiId}&pn=eMoney&am=${amount}&tn=${encodeURIComponent(
-    note || "eMoney payment"
+  const upiId = "TRANSPE@axisbank";
+  const link = `upi://pay?pa=${upiId}&pn=TRANSPE&am=${amount}&tn=${encodeURIComponent(
+    note || "TRANSPE payment"
   )}&cu=INR`;
 
   function copy() {
@@ -80,7 +80,7 @@ export default function UpiPage() {
             </div>
             <AsideTips
               items={[
-                { icon: <Lightning weight="duotone" />, text: "Payments settle to your eMoney wallet instantly." },
+                { icon: <Lightning weight="duotone" />, text: "Payments settle to your TRANSPE wallet instantly." },
                 { icon: <DeviceMobile weight="duotone" />, text: "Leave the amount blank to let the customer enter it." },
               ]}
             />

@@ -41,32 +41,32 @@ const ROLES: Role[] = [
   {
     key: "retailer",
     label: "Retailer",
-    headline: "Your counter, now a bank branch.",
-    sub: "Serve cash, transfers and bills to the customers already walking in.",
+    headline: "Transform foot traffic into steady income.",
+    sub: "Dispense cash, process transfers and accept bills — all for the customers who already know your shop.",
     bullets: [
       {
         icon: Fingerprint,
         tone: "brand",
-        title: "Cash withdrawal with a thumb",
-        copy: "AePS pays up to ₹6 per withdrawal. Customers come back daily."
+        title: "AePS — cash on a fingerprint",
+        copy: "Earn up to ₹6 every time a customer withdraws. Repeat footfall, daily."
       },
       {
         icon: Coins,
         tone: "accent",
-        title: "Commission in seconds",
-        copy: "Every success credits your wallet instantly. Withdraw 24x7."
+        title: "Instant commission credit",
+        copy: "Every completed transaction adds to your wallet balance in real time. Withdraw anytime via IMPS."
       },
       {
         icon: Headset,
         tone: "royal",
-        title: "Help in your language",
-        copy: "Priority WhatsApp support in 9 languages, 7 days a week."
+        title: "Support in 9 languages",
+        copy: "Priority WhatsApp helpline, Mon–Sat, in the language your region speaks."
       }
     ],
     mock: {
-      title: "Today at Yadav Mobile",
-      value: "₹2,184",
-      sub: "commission · 63 transactions",
+      title: "Today at Gupta Digital Point",
+      value: "₹2,340",
+      sub: "commission · 68 transactions",
       rows: [
         { label: "AePS withdrawals", value: "₹1,120 · 24", pct: 86 },
         { label: "Send Money", value: "₹640 · 18", pct: 52 },
@@ -78,26 +78,26 @@ const ROLES: Role[] = [
   {
     key: "distributor",
     label: "Distributor",
-    headline: "Earn on every shop you bring on.",
-    sub: "Onboard the retailers around you. Their transactions pay you a slice — every day.",
+    headline: "Build a network, earn on every transaction it generates.",
+    sub: "Recruit the retailers around you. Their daily volume generates override income for you — automatically.",
     bullets: [
       {
         icon: UsersThree,
         tone: "brand",
-        title: "Onboard from your phone",
-        copy: "Add a retailer in minutes. KYC and activation handled for you."
+        title: "Mobile-first onboarding",
+        copy: "Add a retailer from your phone. KYC, activation and wallet setup happen end to end."
       },
       {
         icon: TreeStructure,
         tone: "royal",
-        title: "Override commissions",
-        copy: "Set slabs per retailer. You earn the difference automatically."
+        title: "Override commission engine",
+        copy: "Configure slabs per retailer or service. The margin between their slab and yours is your earning."
       },
       {
         icon: ChartLineUp,
         tone: "accent",
-        title: "Network dashboard",
-        copy: "See who's active, who's slowing down, and where to push."
+        title: "Live network analytics",
+        copy: "Track who is active, who is slowing and where to focus recruitment next."
       }
     ],
     mock: {
@@ -115,8 +115,8 @@ const ROLES: Role[] = [
   {
     key: "master",
     label: "Master Distributor",
-    headline: "Run a district, not a shop.",
-    sub: "Appoint distributors, set their slabs, and earn on every rupee flowing beneath you.",
+    headline: "Manage a region, not a single outlet.",
+    sub: "Appoint distributors, define their commission tiers and earn on every rupee moving through your territory.",
     bullets: [
       {
         icon: Crown,
@@ -152,8 +152,8 @@ const ROLES: Role[] = [
   {
     key: "merchant",
     label: "Merchant",
-    headline: "Get paid any way they want to pay.",
-    sub: "QR, POS, payment links — money settles into your bank the next morning.",
+    headline: "Accept every payment method, settle by morning.",
+    sub: "QR, POS, payment links — customers pay the way they prefer, money lands in your bank the next day.",
     bullets: [
       {
         icon: QrCode,
@@ -211,9 +211,9 @@ export function ForEveryRole() {
         <Reveal>
           <SectionHeading
             align="center"
-            eyebrow="Built for every role"
-            title={<span id="roles-heading">Whatever you run, eMoney pays you for it.</span>}
-            sub="Pick your seat. The platform reshapes itself around how you earn."
+            eyebrow="Designed for every role"
+            title={<span id="roles-heading">Retailer, distributor or merchant — TRANSPE adapts to you.</span>}
+            sub="Select your role. The dashboard, commissions and tools reconfigure around the way you operate."
           />
         </Reveal>
 

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * so the artwork is never stretched or distorted.
  *
  * When no logo matches — or the asset fails to load — it degrades to the
- * generic credit-card glyph on the Emoney energy gradient, exactly as
+ * generic credit-card glyph on the TRANSPE energy gradient, exactly as
  * required by the fallback spec.
  */
 export function BankLogo({
@@ -62,7 +62,7 @@ export function BankLogo({
           className="object-contain"
         />
       ) : (
-        // Generic fallback — Emoney energy gradient tile with a card glyph.
+        // Generic fallback — TRANSPE energy gradient tile with a card glyph.
         <span className="grid h-full w-full place-items-center bg-energy-gradient text-white">
           <CreditCard style={{ width: size * 0.5, height: size * 0.5 }} strokeWidth={1.75} />
         </span>

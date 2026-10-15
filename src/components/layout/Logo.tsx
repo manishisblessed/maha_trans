@@ -3,10 +3,10 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * eMoney brand mark — compact gradient circular "e" with speed lines.
- * Used only for icon-only contexts (e.g. collapsed sidebar). Everywhere else
- * we render the full official logo artwork via <Logo />.
- * Uses `currentColor` where possible so dark/light variants work out of the box.
+ * TRANSPE brand mark — rounded teal squircle with a navy "t" + white "p",
+ * matching the official Transpe app-icon. Used only for icon-only contexts
+ * (e.g. collapsed sidebar). Everywhere else we render the full official logo
+ * artwork via <Logo />.
  */
 export function LogoMark({
   className,
@@ -27,37 +27,26 @@ export function LogoMark({
         className
       )}
       role="img"
-      aria-label="eMoney logo"
+      aria-label="TRANSPE logo"
     >
-      <defs>
-        <linearGradient
-          id="emoney-mark-grad-cmp"
-          x1="4"
-          y1="4"
-          x2="44"
-          y2="44"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0%" stopColor="#7c3aed" />
-          <stop offset="50%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#22c55e" />
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="22" fill="url(#emoney-mark-grad-cmp)" />
+      <rect x="0" y="0" width="48" height="48" rx="12" fill="#17B8A6" />
+      <polygon points="15,10 21,10 18,5" fill="#172B6B" />
       <path
-        d="M34 29c-2 3.2-5.6 5.3-9.7 5.3-6.3 0-11.3-5-11.3-11.3s5-11.3 11.3-11.3c6.2 0 11.2 4.9 11.3 11 0 .7-.6 1.3-1.3 1.3H17.5"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="3.4"
+        d="M12 15 H25 M18 11 V36 Q18 39 21 39 H24"
+        stroke="#172B6B"
+        strokeWidth="4.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        fill="none"
       />
+      <circle cx="33" cy="26" r="7" stroke="#FFFFFF" strokeWidth="4.5" fill="none" />
+      <line x1="28" y1="24" x2="28" y2="42" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" />
     </svg>
   );
 }
 
 /** Brand tagline shown beside the logo. Change here to update it everywhere. */
-export const LOGO_TAGLINE = "Every Shop's Fintech OS";
+export const LOGO_TAGLINE = "Payments. Powered for Bharat.";
 
 const sizeMap = {
   sm: "h-8",
@@ -66,13 +55,13 @@ const sizeMap = {
 } as const;
 
 /**
- * Full eMoney logo lockup — renders the official brand artwork
- * (`/emoney-logo.svg`: the gradient "e" + "eMoney" wordmark + rising arrow).
+ * Full TRANSPE logo lockup — renders the "trans" (navy) + "pe" (teal) wordmark
+ * from /logo.svg.
  *
  * - On light surfaces (navbar, auth, sidebar) the full-colour logo is used.
  * - On dark surfaces pass `variant="light"` to render a crisp white
  *   monochrome version of the same artwork.
- * - Pass `iconOnly` to render just the circular "e" mark (collapsed sidebar).
+ * - Pass `iconOnly` to render just the squircle "tp" mark (collapsed sidebar).
  * - Pass `tagline` to show the theme-gradient tagline beside the mark.
  * - Use `size` to scale the lockup ("sm" | "md" | "lg").
  */
@@ -94,41 +83,40 @@ export function Logo({
       <Link
         href="/"
         className={cn("group relative inline-flex items-center", className)}
-        aria-label="eMoney home"
+        aria-label="TRANSPE home"
       >
         <LogoMark size={34} />
-        {/* Live brand-dot — subtle pulse that signals "the Emoney platform is
-            on". The single detail users notice first versus the Nextgen logo. */}
+        {/* Live brand-dot — subtle pulse that signals "the Transpe platform is on". */}
         <span
           aria-hidden
           className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5"
         >
-          <span className="absolute inline-flex h-full w-full rounded-full bg-coral-400 opacity-70 animate-ping-soft" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-500 to-coral-500 ring-2 ring-white" />
+          <span className="absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-70 animate-ping-soft" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-700 to-accent-500 ring-2 ring-white" />
         </span>
       </Link>
     );
   }
 
+  const logoSrc = variant === "light" ? "/logo-light.svg" : "/logo.svg";
+
   return (
     <Link
       href="/"
       className={cn("group relative inline-flex items-center gap-3", className)}
-      aria-label="eMoney home"
+      aria-label="TRANSPE home"
     >
       <span className="relative inline-flex">
         <Image
-          src="/emoney-logo.svg"
-          alt="eMoney"
-          width={1694}
-          height={699}
+          src={logoSrc}
+          alt="TRANSPE"
+          width={320}
+          height={72}
           priority
           unoptimized
           className={cn(
             "w-auto transition-transform duration-300 group-hover:scale-[1.03]",
-            sizeMap[size],
-            // Render the dark-text artwork as clean white on dark surfaces
-            variant === "light" && "brightness-0 invert"
+            sizeMap[size]
           )}
         />
         {/* Live brand-dot — tucked at the top-right of the wordmark. */}
@@ -139,12 +127,12 @@ export function Logo({
           <span
             className={cn(
               "absolute inline-flex h-full w-full rounded-full opacity-70 animate-ping-soft",
-              variant === "light" ? "bg-white" : "bg-coral-400"
+              variant === "light" ? "bg-white" : "bg-accent-400"
             )}
           />
           <span
             className={cn(
-              "relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-500 to-coral-500",
+              "relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-700 to-accent-500",
               variant === "light" ? "ring-2 ring-white/70" : "ring-2 ring-white"
             )}
           />
@@ -158,8 +146,8 @@ export function Logo({
             variant === "light" ? "border-white/25" : "border-ink-200"
           )}
         >
-          {/* The tagline carries the signature Emoney gradient-sweep (animated
-              purple→blue→coral) that `globals.css .gradient-text` applies. */}
+          {/* The tagline carries the signature Transpe gradient-sweep
+              (animated navy→royal→teal) via `globals.css .gradient-text`. */}
           <span className="gradient-text whitespace-nowrap text-[11px] font-bold uppercase leading-tight tracking-[0.14em]">
             {LOGO_TAGLINE}
           </span>

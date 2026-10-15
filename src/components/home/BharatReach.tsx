@@ -7,10 +7,10 @@ import { CountUp } from "./_shared/CountUp";
 import { SectionHeading } from "./_shared/SectionHeading";
 
 const BIG_NUMBERS = [
-  { value: "28", label: "States & UTs", sub: "every corner of Bharat" },
-  { value: "72K+", label: "Shops live", sub: "and hundreds joining daily" },
-  { value: "1,400+", label: "Billers", sub: "via BBPS and direct rails" },
-  { value: "₹240 Cr+", label: "Monthly volume", sub: "through counters like yours" }
+  { value: "28", label: "States & UTs", sub: "coverage across the country" },
+  { value: "68K+", label: "Active outlets", sub: "with new partners joining every day" },
+  { value: "1,400+", label: "Billers", sub: "connected via BBPS & direct APIs" },
+  { value: "₹210 Cr+", label: "Monthly throughput", sub: "processed through partner counters" }
 ];
 
 export function BharatReach() {
@@ -28,9 +28,9 @@ export function BharatReach() {
         <Reveal>
           <SectionHeading
             dark
-            eyebrow="Bharat reach"
-            title={<span id="reach-heading">From Kanpur to Kochi, the counter is open.</span>}
-            sub="One network of shops doing what bank branches never reached. Yours can be the next pin on the map."
+            eyebrow="Pan-India presence"
+            title={<span id="reach-heading">From Nagpur to Thrissur — every counter is live.</span>}
+            sub="A nationwide mesh of retail points serving communities that bank branches never reached. Your shop could be the next one on the grid."
           />
         </Reveal>
 

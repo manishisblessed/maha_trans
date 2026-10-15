@@ -254,7 +254,7 @@ export default function PayoutApprovalsPage() {
           <>
             <ReportActions
               filename="payout-approvals"
-              title="JMP eMoney · Payout Approvals"
+              title="JMP TRANSPE · Payout Approvals"
               subtitle={filter === "PENDING" ? "Pending queue" : "All payouts"}
               columns={[
                 { key: "id", header: "Payout ID" },

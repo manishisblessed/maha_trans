@@ -2,12 +2,12 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney Card — Phase 1 redesign.
+ * TRANSPE Card — Phase 1 redesign.
  *
  * Shape language that differentiates from Nextgen:
  *  · `rounded-3xl` by default (24px) instead of `rounded-2xl` (16px).
  *  · Default surface still ships with just `shadow-sm` so dense admin tables
- *    stay calm, but a new `interactive` prop opts a card into the Emoney
+ *    stay calm, but a new `interactive` prop opts a card into the TRANSPE
  *    "lift + colored energy glow" hover microinteraction.
  *  · Optional inner highlight stroke (`inner-ring`) adds a crisp top edge
  *    reminiscent of brushed glass.
@@ -55,7 +55,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      // Clash Display at title scale with Emoney tracking.
+      // Clash Display at title scale with TRANSPE tracking.
       "font-display text-lg font-semibold tracking-[-0.02em] text-ink-900",
       className
     )}

@@ -49,7 +49,7 @@ const products: Product[] = [
     index: "02",
     name: "POS Terminals",
     headline: "A card machine that pays for itself in a week.",
-    text: "Android terminals on monthly rental. Card, UPI, BharatQR and tap-to-pay on one device, with every sale in your eMoney wallet by next morning.",
+    text: "Android terminals on monthly rental. Card, UPI, BharatQR and tap-to-pay on one device, with every sale in your TRANSPE wallet by next morning.",
     specs: [
       "Rental from ₹499 a month, no deposit",
       "Cards, UPI, BharatQR and Tap & Pay",
@@ -81,7 +81,7 @@ const products: Product[] = [
     text: "Share one account number and IFSC with distributors and customers. Every IMPS, NEFT or UPI credit lands in your wallet, named and reconciled.",
     specs: [
       "Unique account number + IFSC in minutes",
-      "Instant credit to your eMoney wallet",
+      "Instant credit to your TRANSPE wallet",
       "Zero charge on incoming transfers"
     ],
     href: "/dashboard/virtual-account",
@@ -231,14 +231,14 @@ export default function ProductsPage() {
           <SectionIntro
             eyebrow="Compare"
             title="Pick the one that fits your counter."
-            description="All four pay into the same eMoney wallet. Start with one, add the rest from the dashboard."
+            description="All four pay into the same TRANSPE wallet. Start with one, add the rest from the dashboard."
           />
           <Reveal>
             <div className="overflow-hidden rounded-3xl border border-ink-100 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse text-left text-sm">
                   <caption className="sr-only">
-                    Comparison of eMoney payment products
+                    Comparison of TRANSPE payment products
                   </caption>
                   <thead>
                     <tr className="bg-ink-950 text-white">

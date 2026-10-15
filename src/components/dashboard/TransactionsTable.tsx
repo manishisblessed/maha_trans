@@ -26,7 +26,7 @@ const firstTd =
   "relative before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:rounded-r-full before:bg-energy-gradient before:opacity-0 before:transition-opacity before:duration-200 before:content-[''] group-hover:before:opacity-100";
 
 /**
- * Emoney TransactionsTable — v2 look, same data contract.
+ * TRANSPE TransactionsTable — v2 look, same data contract.
  * Pending rows get a live `dot` badge; bank/issuer artwork comes from
  * `BankLogo`; loading renders shimmer rows; empty state is retailer-first.
  */

@@ -51,7 +51,7 @@ export function Footer() {
         className="pointer-events-none absolute inset-x-0 bottom-0 z-0 select-none overflow-hidden"
       >
         <span className="block translate-y-[18%] text-center font-display text-[22vw] font-bold leading-none text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.08)]">
-          eMoney
+          TRANSPE
         </span>
       </div>
       <div
@@ -100,9 +100,9 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Logo variant="light" size="md" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/55">
-              eMoney turns any shop into a bank counter. Cash withdrawal, money
-              transfer, bills, recharges and travel — your customers get it
-              here, you earn on every one.
+              TRANSPE powers the neighbourhood counter. Accept payments,
+              dispense cash, settle bills and book travel — every service
+              earns you a commission, every customer walks out served.
             </p>
             <div className="mt-8">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">

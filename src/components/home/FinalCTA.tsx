@@ -19,24 +19,24 @@ export function FinalCTA() {
         <Reveal>
           <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-white/80 backdrop-blur">
             <span className="brand-dot" aria-hidden />
-            Free to join · Earn from day one
+            Zero joining fee · Commissions from day one
           </span>
           <h2
             id="final-heading"
             className="mx-auto mt-7 max-w-4xl font-display text-4xl font-bold leading-[0.98] tracking-[-0.02em] md:text-6xl lg:text-7xl"
           >
-            Start earning from your counter today.
+            Your counter is ready. Activate it now.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-base text-white/65 md:text-lg">
-            Five minutes to sign up. One thumb to serve your first customer. Namaste to a
-            second income.
+            Five-minute registration. First transaction the same day. A second
+            income stream from the shop you already run.
           </p>
         </Reveal>
 
         <Reveal delay={0.1}>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <ButtonLink href="/register" size="xl">
-              Start earning today
+              Activate your counter
               <ArrowRight size={18} weight="bold" aria-hidden />
             </ButtonLink>
             <ButtonLink
@@ -45,7 +45,7 @@ export function FinalCTA() {
               size="xl"
               className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
             >
-              Talk to our team
+              Speak with our team
             </ButtonLink>
           </div>
         </Reveal>

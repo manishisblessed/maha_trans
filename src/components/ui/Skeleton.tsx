@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney Skeleton — v2 "Bharat Energy".
+ * TRANSPE Skeleton — v2 "Bharat Energy".
  *
  * A brand-tinted shimmer (ink → brand-50 → ink) sweeping left-to-right
  * instead of a flat gray pulse. Server-safe (no hooks) so it can be used from

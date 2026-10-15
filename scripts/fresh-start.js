@@ -14,7 +14,7 @@ const KEEP_IDS = [
 ];
 
 (async () => {
-  console.log("=== eMoney Fresh Start ===\n");
+  console.log("=== TRANSPE Fresh Start ===\n");
 
   // 1. List who we're deleting
   const toDelete = await p.user.findMany({

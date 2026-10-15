@@ -321,7 +321,7 @@ export default function AdminUsersPage() {
           <>
             <ReportActions
               filename="users"
-              title="JMP eMoney · Users & Shops"
+              title="JMP TRANSPE · Users & Shops"
               subtitle={`${users.length} users`}
               columns={[
                 { key: "id", header: "ID" },

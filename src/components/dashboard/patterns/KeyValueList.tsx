@@ -11,7 +11,7 @@ export type KeyValueItem = {
 };
 
 /**
- * Emoney KeyValueList — label/value rows for detail panels.
+ * TRANSPE KeyValueList — label/value rows for detail panels.
  *
  * `layout="rows"` renders hairline-divided rows (label left, value right);
  * `layout="grid"` renders a two-column tile grid (label above value) which

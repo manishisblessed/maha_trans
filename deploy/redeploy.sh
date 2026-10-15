@@ -2,10 +2,10 @@
 set -euo pipefail
 
 echo "=========================================="
-echo "  eMoney — Redeploy"
+echo "  TRANSPE — Redeploy"
 echo "=========================================="
 
-cd /home/ubuntu/emoney
+cd /home/ubuntu/TRANSPE
 
 echo "[1/6] Pulling latest code..."
 git pull origin main

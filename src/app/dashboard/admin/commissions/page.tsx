@@ -100,7 +100,7 @@ export default function AdminCommissionsPage() {
           <>
             <ReportActions
               filename="commission-master"
-              title="JMP eMoney · Commission Master"
+              title="JMP TRANSPE · Commission Master"
               subtitle="Service-wise rate-card"
               columns={[
                 { key: "service", header: "Service" },

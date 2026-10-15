@@ -26,7 +26,7 @@ import type { IconTone } from "@/components/ui/Icon";
 /**
  * Phosphor duotone glyph per service slug. `data.ts` stays on lucide for the
  * dashboard; the public home page maps slugs here so the silhouette is
- * unmistakably eMoney.
+ * unmistakably TRANSPE.
  */
 export const serviceIconBySlug: Record<string, Icon> = {
   "payment-gateway": CreditCard,

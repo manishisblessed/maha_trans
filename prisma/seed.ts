@@ -5,7 +5,7 @@ import { seedServiceRoutes } from "../src/lib/services/catalog";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("→ Seeding eMoney database…");
+  console.log("→ Seeding TRANSPE database…");
 
   // ── Demo password hash (Lion_9090702707) — shared by all demo accounts ──
   const roleHash = await bcrypt.hash("Lion_9090702707", 12);

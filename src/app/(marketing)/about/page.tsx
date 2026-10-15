@@ -19,21 +19,21 @@ import { company, heroStats } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Why eMoney",
+  title: "Why TRANSPE",
   description:
-    "eMoney turns Indian kirana and retail shops into bank counters. Here is why we exist, the numbers that matter and what we stand for."
+    "TRANSPE turns Indian kirana and retail shops into bank counters. Here is why we exist, the numbers that matter and what we stand for."
 };
 
 const milestones = [
   {
     when: "Jan 2026",
     title: "The idea",
-    text: "Two hundred shop visits across NCR. Same answer everywhere: the nearest bank is far, the customer is right here."
+    text: "Two hundred shop visits across Maharashtra and Western India. Same answer everywhere: the nearest bank is far, the customer is right here."
   },
   {
     when: "Mar 2026",
     title: "First 1,000 shops",
-    text: "AePS and money transfer go live for pilot retailers in Delhi NCR, Jaipur and Chandigarh."
+    text: "AePS and money transfer go live for pilot retailers in Pune, Nashik and Kolhapur."
   },
   {
     when: "Jun 2026",
@@ -86,15 +86,15 @@ export default function AboutPage() {
     <>
       <PageHero
         variant="dark"
-        eyebrow="Why eMoney"
-        breadcrumbs={[{ label: "Why eMoney", href: "/about" }]}
+        eyebrow="Why TRANSPE"
+        breadcrumbs={[{ label: "Why TRANSPE", href: "/about" }]}
         title={
           <>
             Your shop already has the trust.
             <br className="hidden md:block" /> We bring the bank.
           </>
         }
-        description="eMoney is a fintech distribution platform from Gurugram. We give kirana and retail shops the rails of a bank branch: cash withdrawal, money transfer, bills, recharges, payments and travel, all from one counter."
+        description="TRANSPE is a fintech distribution platform from Pune. We give kirana and retail shops the rails of a bank branch: cash withdrawal, money transfer, bills, recharges, payments and travel, all from one counter."
         actions={
           <>
             <Link href="/register" className="rounded-2xl focus-energy">
@@ -141,7 +141,7 @@ export default function AboutPage() {
                 ))}
               </div>
               <span className="text-xs text-white/55">
-                Written in Gurugram, {company.incorporated}
+                Written in Pune, {company.incorporated}
               </span>
             </div>
           </div>
@@ -176,15 +176,17 @@ export default function AboutPage() {
                 </StaggerItem>
                 <StaggerItem>
                   <p>
-                    We built eMoney so that shop can do what the branch does:
-                    hand over cash on a fingerprint, send money home, pay a
-                    bill, book a ticket. You earn a commission on each one.
+                    TRANSPE turns that shop into the branch. Withdraw cash on a
+                    fingerprint, send money anywhere in seconds, clear a
+                    pending bill, book a bus home. The shopkeeper earns a
+                    commission on every single transaction.
                   </p>
                 </StaggerItem>
                 <StaggerItem>
                   <p className="font-medium text-ink-900">
-                    No joining fee. No hidden charges. Settlement in your bank
-                    the same day. That is the whole pitch.
+                    Zero joining fee. Transparent charges on every screen.
+                    Same-day settlement straight to your bank. That is the
+                    TRANSPE promise.
                   </p>
                 </StaggerItem>
               </Stagger>

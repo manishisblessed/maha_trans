@@ -136,7 +136,7 @@ export function RechargeForm({
               rows={[
                 { label: numberLabel, value: number || "—", mono: true, muted: !number },
                 { label: "Operator", value: operator },
-                { label: "Paid from", value: "eMoney wallet" },
+                { label: "Paid from", value: "TRANSPE wallet" },
               ]}
               total={formatINR(amountNum)}
               totalLabel="You pay"

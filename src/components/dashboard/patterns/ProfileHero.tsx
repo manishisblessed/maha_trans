@@ -15,7 +15,7 @@ export function initialsOf(name: string | null | undefined) {
 }
 
 /**
- * Emoney ProfileHero — identity header card used on Profile, Performance
+ * TRANSPE ProfileHero — identity header card used on Profile, Performance
  * and Network member detail. Big gradient initials tile, Clash Display
  * name, a row of chips (role / userCode / status), optional meta lines
  * and a right-hand "aside" slot (e.g. wallet balance).

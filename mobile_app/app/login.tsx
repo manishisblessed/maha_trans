@@ -21,7 +21,7 @@ import { api, ApiError } from "@/lib/api";
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("retailer@emoney.today");
+  const [email, setEmail] = useState("retailer@transpe.net");
   const [password, setPassword] = useState("Demo@1234");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,7 @@ export default function Login() {
       const enrolled = await LocalAuth.isEnrolledAsync();
       if (!has || !enrolled) return signIn();
       const r = await LocalAuth.authenticateAsync({
-        promptMessage: "Sign in to eMoney",
+        promptMessage: "Sign in to TRANSPE",
         cancelLabel: "Use password",
         disableDeviceFallback: false
       });
@@ -145,7 +145,7 @@ export default function Login() {
           <View style={styles.demo}>
             <Text style={styles.demoText}>
               <Text style={{ fontWeight: "800" }}>Demo · </Text>
-              retailer@emoney.today / Demo@1234
+              retailer@transpe.net / Demo@1234
             </Text>
           </View>
         </View>

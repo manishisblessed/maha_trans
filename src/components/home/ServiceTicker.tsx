@@ -32,7 +32,7 @@ export function ServiceTicker() {
     >
       <div className="container-x mb-5 flex items-center justify-between gap-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">
-          60+ ways your counter earns
+          60+ services powering your counter
         </p>
         <Link
           href="/services"

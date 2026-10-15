@@ -107,7 +107,7 @@ function PosMock() {
       <div className="w-60 rounded-[2.25rem] bg-ink-950 p-3 shadow-[0_30px_60px_-20px_rgba(7,11,20,0.5)] ring-1 ring-white/10">
         <div className="rounded-[1.6rem] bg-ink-900 p-4">
           <div className="flex items-center justify-between text-[10px] text-white/40">
-            <span>eMoney POS</span>
+            <span>TRANSPE POS</span>
             <span className="inline-flex items-center gap-1 text-accent-400">
               <span className="h-1.5 w-1.5 rounded-full bg-accent-400" /> Online
             </span>
@@ -214,7 +214,7 @@ function QrMock() {
           )}
         </div>
         <p className="mt-3 text-center text-[11px] font-medium text-ink-700">
-          eMoney.desai@icici
+          TRANSPE.desai@icici
         </p>
         <p className="text-center text-[10px] text-ink-400">Desai Textiles · Counter 1</p>
       </div>

@@ -6,7 +6,7 @@ import { ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney Modal — Phase 1 redesign.
+ * TRANSPE Modal — Phase 1 redesign.
  *
  * Shape language that differentiates from Nextgen:
  *  · `rounded-3xl` surface with a gradient-tinted header slab.
@@ -78,7 +78,7 @@ export function Modal({
             transition={{ duration: reduce ? 0 : 0.22 }}
             onClick={onClose}
           />
-          {/* Panel — spring in, slight scale, Emoney 3xl corners */}
+          {/* Panel — spring in, slight scale, TRANSPE 3xl corners */}
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -104,7 +104,7 @@ export function Modal({
             {(title || eyebrow) && (
               <div
                 className={cn(
-                  // Signature Emoney header slab — tinted energy gradient tail
+                  // Signature TRANSPE header slab — tinted energy gradient tail
                   // with the brand-dot in the eyebrow position.
                   "relative flex shrink-0 items-start justify-between gap-4 overflow-hidden px-6 py-5",
                   "bg-gradient-to-br from-brand-50 via-white to-coral-50/40",

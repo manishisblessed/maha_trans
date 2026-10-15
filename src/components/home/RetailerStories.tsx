@@ -16,11 +16,11 @@ import { SectionHeading } from "./_shared/SectionHeading";
 
 /** Shop-type chip per storyteller (data.ts `Testimonial` has no such field). */
 const SHOP_TYPE: Record<string, string> = {
-  "Lakhan Yadav": "Mobile shop",
-  "Suresh Pillai": "Kirana store",
-  "Fatima Shaikh": "Aadhaar Seva Kendra",
-  "Jatin Bhatia": "POS merchant",
-  "Meenakshi Rao": "Travel agent"
+  "Ramesh Gupta": "Electronics & digital",
+  "Deepa Nambiar": "Telecom hub",
+  "Irfan Patel": "Seva kendra",
+  "Sonia Thakur": "POS merchant",
+  "Arjun Reddy": "Travel agent"
 };
 
 function splitRole(role: string) {
@@ -80,9 +80,9 @@ export function RetailerStories() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <Reveal>
             <SectionHeading
-              eyebrow="Retailer stories"
-              title={<span id="stories-heading">Real counters. Real numbers.</span>}
-              sub="No stock photos, no vague praise. Shopkeepers on what they earn and which service does it."
+              eyebrow="Partner stories"
+              title={<span id="stories-heading">Real outlets. Verified earnings.</span>}
+              sub="No staged testimonials — actual partners sharing which services drive their income and by how much."
             />
           </Reveal>
 

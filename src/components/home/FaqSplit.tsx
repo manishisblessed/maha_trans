@@ -23,9 +23,9 @@ export function FaqSplit() {
           <div className="lg:sticky lg:top-28">
             <Reveal>
               <SectionHeading
-                eyebrow="Questions"
-                title={<span id="faq-heading">Straight answers. No fine print.</span>}
-                sub="What shopkeepers ask us before they sign up — answered the way we'd say it across the counter."
+                eyebrow="Common questions"
+                title={<span id="faq-heading">Clear answers. Zero jargon.</span>}
+                sub="The questions partners ask before they sign up — answered the way we would explain it face to face."
               />
             </Reveal>
 
@@ -37,10 +37,10 @@ export function FaqSplit() {
                 />
                 <div className="relative z-10">
                   <p className="font-display text-2xl font-semibold tracking-[-0.02em]">
-                    Still stuck? WhatsApp us.
+                    Need more clarity? Chat with us.
                   </p>
                   <p className="mt-2 text-sm text-white/65">
-                    Real humans, 10 AM – 6 PM, Mon – Sat. Hindi, English and 7 more languages.
+                    Human support, 10 AM – 6 PM, Mon – Sat. Available in Hindi, English and 7 additional languages.
                   </p>
                   <div className="mt-5 flex flex-wrap items-center gap-3">
                     <a

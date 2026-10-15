@@ -34,9 +34,9 @@ export function PlansCompare() {
         <Reveal>
           <SectionHeading
             align="center"
-            eyebrow="Plans"
-            title={<span id="plans-heading">Start free. Upgrade when it pays for itself.</span>}
-            sub="Three plans, one rule: you should earn more than you pay in the first week."
+            eyebrow="Pricing"
+            title={<span id="plans-heading">Begin at zero. Scale when the math makes sense.</span>}
+            sub="Three tiers, one principle: your commission should exceed the plan cost within the first week."
           />
         </Reveal>
 

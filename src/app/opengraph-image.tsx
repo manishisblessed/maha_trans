@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "eMoney — Payment Gateway, POS & QR Payments";
+export const alt = "TRANSPE — Payments. Powered for Bharat.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -16,35 +16,31 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 80,
-          // eMoney gradient — blue → teal → green
+          // TRANSPE gradient — deep navy with a teal glow
           background:
-            "radial-gradient(60% 80% at 20% 20%, rgba(30,136,229,0.45) 0%, rgba(30,136,229,0) 60%), radial-gradient(50% 60% at 100% 100%, rgba(34,197,94,0.4) 0%, rgba(34,197,94,0) 60%), linear-gradient(135deg, #0b1f52 0%, #0f3a63 50%, #0b3b2a 100%)",
+            "radial-gradient(60% 80% at 20% 20%, rgba(31,59,139,0.55) 0%, rgba(31,59,139,0) 60%), radial-gradient(50% 60% at 100% 100%, rgba(23,184,166,0.42) 0%, rgba(23,184,166,0) 60%), linear-gradient(135deg, #0b1740 0%, #172b6b 50%, #0e5f58 100%)",
           color: "white",
           fontFamily: "system-ui, sans-serif"
         }}
       >
-        {/* Top: logo lockup — gradient "e" mark + wordmark */}
+        {/* Top: logo lockup — teal squircle + wordmark */}
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
           <svg width="86" height="86" viewBox="0 0 48 48" fill="none">
-            <defs>
-              <linearGradient id="og-mark" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#38BDF8" />
-                <stop offset="55%" stopColor="#2DD4BF" />
-                <stop offset="100%" stopColor="#4ADE80" />
-              </linearGradient>
-            </defs>
-            <circle cx="24" cy="24" r="22" fill="url(#og-mark)" />
+            <rect x="0" y="0" width="48" height="48" rx="12" fill="#17B8A6" />
+            <polygon points="15,10 21,10 18,5" fill="#172B6B" />
             <path
-              d="M34 29c-2 3.2-5.6 5.3-9.7 5.3-6.3 0-11.3-5-11.3-11.3s5-11.3 11.3-11.3c6.2 0 11.2 4.9 11.3 11 0 .7-.6 1.3-1.3 1.3H17.5"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="3.4"
+              d="M12 15 H25 M18 11 V36 Q18 39 21 39 H24"
+              stroke="#172B6B"
+              strokeWidth="4.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              fill="none"
             />
+            <circle cx="33" cy="26" r="7" stroke="#FFFFFF" strokeWidth="4.5" fill="none" />
+            <line x1="28" y1="24" x2="28" y2="42" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" />
           </svg>
           <div style={{ fontSize: 56, fontWeight: 800, letterSpacing: -1 }}>
-            eMoney
+            TRANSPE
           </div>
         </div>
 
@@ -62,7 +58,7 @@ export default async function OpengraphImage() {
             <span
               style={{
                 background:
-                  "linear-gradient(90deg, #38BDF8 0%, #4ADE80 100%)",
+                  "linear-gradient(90deg, #58d7bf 0%, #93e8d7 100%)",
                 backgroundClip: "text",
                 color: "transparent"
               }}
@@ -97,9 +93,9 @@ export default async function OpengraphImage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontWeight: 600 }}>emoney.today</span>
+            <span style={{ fontWeight: 600 }}>transpe.net</span>
             <span>·</span>
-            <span>support@emoney.today</span>
+            <span>support@transpe.net</span>
           </div>
           <div style={{ display: "flex", gap: 18 }}>
             {["PG", "POS", "QR", "AePS", "DMT", "BBPS"].map((tag) => (

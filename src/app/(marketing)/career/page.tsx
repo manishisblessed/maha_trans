@@ -24,7 +24,7 @@ import { company } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Careers",
   description:
-    "Build the counter that brings banking to every Indian shop. Open roles at eMoney across engineering, design, sales, operations and compliance."
+    "Build the counter that brings banking to every Indian shop. Open roles at TRANSPE across engineering, design, sales, operations and compliance."
 };
 
 const openings = [
@@ -37,7 +37,7 @@ const openings = [
   {
     title: "Product Designer (Retailer App)",
     team: "Design",
-    location: "Delhi NCR",
+    location: "Pune",
     type: "Full-time"
   },
   {
@@ -49,7 +49,7 @@ const openings = [
   {
     title: "Customer Success Lead",
     team: "Operations",
-    location: "Delhi NCR",
+    location: "Pune",
     type: "Full-time"
   },
   {
@@ -129,7 +129,7 @@ export default function CareerPage() {
             <br className="hidden md:block" /> brings the bank to the shop.
           </>
         }
-        description="We are a small team in Gurugram with people in the field across India. Engineers, designers, salespeople and compliance folks who have all stood behind a shop counter."
+        description="We are a small team in Pune with people in the field across India. Engineers, designers, salespeople and compliance folks who have all stood behind a shop counter."
         stats={[
           { value: String(openings.length), label: "Open roles" },
           { value: "5", label: "Teams hiring" },
@@ -159,19 +159,20 @@ export default function CareerPage() {
                 <span className="brand-dot" aria-hidden /> How we work
               </span>
               <p className="mt-6 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-6xl">
-                We ship every Friday. We visit a shop every month. We never
-                hide a fee.
+                Move fast, stay honest, put the shopkeeper first. Everything
+                else follows.
               </p>
             </Reveal>
             <Reveal delay={0.1} className="space-y-5 text-base leading-relaxed text-white/65 md:text-lg lg:col-span-5 lg:pt-16">
               <p>
-                Our users run a business with thin margins and a queue at the
-                counter. Every decision here starts with what that person needs
-                at 7 pm on a Tuesday.
+                The people we build for run businesses with razor-thin margins
+                and a queue forming at the counter. Every product decision
+                starts with what that person needs right now.
               </p>
               <p>
-                Small teams, clear owners, short meetings. You will see your
-                work in a shop within weeks of joining.
+                Compact teams, clear ownership, no meetings that could be
+                messages. You will see your code serving real shops within
+                weeks of joining.
               </p>
             </Reveal>
           </div>

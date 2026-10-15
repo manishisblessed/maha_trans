@@ -197,7 +197,7 @@ export function DistributorOverview({ session }: { session: Session }) {
             <div className="mt-5">
               <Sparkline
                 values={Array.from({ length: 14 }, () => 0)}
-                color="#7c3aed"
+                color="#172b6b"
                 height={80}
               />
             </div>

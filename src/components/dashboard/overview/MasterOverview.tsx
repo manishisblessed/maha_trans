@@ -86,7 +86,7 @@ export function MasterOverview({ session }: { session: Session }) {
   const mtdTurnover = children.reduce((s, d) => s + (d.monthlyTurnover ?? 0), 0);
   const domain =
     wl?.customDomain ||
-    (wl?.subdomain ? `${wl.subdomain}.emoney.today` : null);
+    (wl?.subdomain ? `${wl.subdomain}.transpe.net` : null);
 
   const quickActions: QuickAction[] = [
     { label: isSuper ? "Invite MD" : "Invite DT", href: "/dashboard/network/onboard", icon: UserPlus, tone: "brand" },

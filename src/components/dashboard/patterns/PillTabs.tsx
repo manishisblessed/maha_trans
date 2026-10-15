@@ -15,7 +15,7 @@ export type PillTab<V extends string = string> = {
 };
 
 /**
- * Emoney PillTabs — controlled segmented tabs with a sliding gradient pill.
+ * TRANSPE PillTabs — controlled segmented tabs with a sliding gradient pill.
  *
  * Fully controlled via `value` / `onChange` so pages keep their existing
  * tab state and gating logic untouched. The active pill animates between

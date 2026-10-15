@@ -23,28 +23,28 @@ import {
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// eMoney — central brand & regulatory details.
-// TODO: Replace `cin`, `gstin`, `phone`, `incorporated`, officer names &
-// phone numbers with the actual registered values before going live.
+// TRANSPE — central brand & regulatory details.
+// TODO: Replace `cin`, `gstin`, `incorporated` with the actual registered
+// values before going live.
 // ─────────────────────────────────────────────────────────────────────────────
 export const company = {
-  legalName: "eMoney",
-  brand: "eMoney",
-  tradeName: "emoney",
-  domain: "emoney.today",
-  email: "support@emoney.today",
-  supportEmail: "support@emoney.today",
-  legalEmail: "legal@emoney.today",
-  grievanceEmail: "grievance@emoney.today",
-  nodalEmail: "nodal@emoney.today",
-  phone: "9650001862",
+  legalName: "TRANSPE",
+  brand: "TRANSPE",
+  tradeName: "transpe",
+  domain: "transpe.net",
+  email: "support@transpe.net",
+  supportEmail: "support@transpe.net",
+  legalEmail: "legal@transpe.net",
+  grievanceEmail: "grievance@transpe.net",
+  nodalEmail: "nodal@transpe.net",
+  phone: "9004080939",
   cin: "TBD",
   gstin: "TBD",
   incorporated: "2026",
-  jurisdiction: "Gurugram, Haryana",
+  jurisdiction: "Pune, Maharashtra",
   address:
-    "First Floor, JMD Empire Square, Mehrauli - Gurgaon Road, A-Block, DLF Phase-1, Sector-24, Gurugram, Haryana - 122002",
-  shortAddress: "JMD Empire Square, DLF Phase-1, Gurugram"
+    "S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra - 411037, IN",
+  shortAddress: "Shivtej Nagar, Indira Nagar, Pune"
 };
 
 // Mandatory under IT Rules 2021 (Intermediary Guidelines) & RBI Master Direction
@@ -52,19 +52,19 @@ export const company = {
 export const grievanceOfficer = {
   name: "Grievance Officer",
   designation: "Grievance Redressal Officer",
-  email: "grievance@emoney.today",
-  phone: "+91 9650001862",
+  email: "grievance@transpe.net",
+  phone: "+91 9004080939",
   hours: "Monday to Saturday, 10:00 AM – 6:00 PM IST",
   address:
-    "First Floor, JMD Empire Square, Mehrauli - Gurgaon Road, A-Block, DLF Phase-1, Sector-24, Gurugram, Haryana - 122002",
+    "S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra - 411037, IN",
   responseSla: "Acknowledgement within 24 hours · Resolution within 15 working days"
 };
 
 export const nodalOfficer = {
   name: "Nodal Officer",
   designation: "Principal Nodal Officer",
-  email: "nodal@emoney.today",
-  phone: "+91 9650001862"
+  email: "nodal@transpe.net",
+  phone: "+91 9004080939"
 };
 
 export type ServiceItem = {
@@ -82,7 +82,7 @@ export const services: ServiceItem[] = [
     slug: "payment-gateway",
     title: "Payment Gateway",
     description:
-      "Take UPI, cards and net banking online. Money lands in your bank next day.",
+      "Accept UPI, debit cards, credit cards and net banking — all in one checkout. Funds reach your account by next morning.",
     icon: CreditCard,
     href: "/dashboard/pg",
     category: "banking",
@@ -92,7 +92,7 @@ export const services: ServiceItem[] = [
     slug: "pos",
     title: "POS Terminals",
     description:
-      "Swipe, tap or scan at your counter. Rent a POS — no buying, no lock-in.",
+      "Rent an Android terminal for your counter — tap, swipe or scan. No upfront cost, swap anytime.",
     icon: Monitor,
     href: "/dashboard/pos",
     category: "banking",
@@ -102,7 +102,7 @@ export const services: ServiceItem[] = [
     slug: "qr-payments",
     title: "QR Code Payments",
     description:
-      "Put your own QR on the counter. Every payment pings your phone instantly.",
+      "Display your branded QR at the billing counter. Instant voice alert on every successful scan.",
     icon: QrCode,
     href: "/dashboard/qr",
     category: "banking",
@@ -112,7 +112,7 @@ export const services: ServiceItem[] = [
     slug: "aadhaar-pay",
     title: "Aadhaar Pay (AePS)",
     description:
-      "Pay out cash with just a thumb. Earn up to ₹6 per withdrawal — every time.",
+      "Dispense cash using fingerprint auth alone. Up to ₹6 credited per withdrawal — no card needed.",
     icon: Fingerprint,
     href: "/dashboard/aadhaar-pay",
     category: "banking"
@@ -120,7 +120,7 @@ export const services: ServiceItem[] = [
   {
     slug: "money-transfer",
     title: "Send Money (DMT)",
-    description: "Send money to any bank account in seconds. 24x7, even on holidays.",
+    description: "Transfer funds to any Indian bank account round the clock — weekends and holidays included.",
     icon: Send,
     href: "/dashboard/money-transfer",
     category: "banking"
@@ -128,7 +128,7 @@ export const services: ServiceItem[] = [
   {
     slug: "upi",
     title: "UPI Collect",
-    description: "Collect payments with a UPI request. No machine, no printed QR needed.",
+    description: "Request payments via UPI intent — no card reader, no printed code, just a mobile number.",
     icon: QrCode,
     href: "/dashboard/upi",
     category: "banking"
@@ -136,7 +136,7 @@ export const services: ServiceItem[] = [
   {
     slug: "wallet",
     title: "Wallet Pay",
-    description: "Top up once, pay for every service. Your float, your control.",
+    description: "Load once, transact all day. Your working capital earns through every service you run.",
     icon: Wallet,
     href: "/dashboard/wallet",
     category: "banking"
@@ -144,7 +144,7 @@ export const services: ServiceItem[] = [
   {
     slug: "virtual-account",
     title: "Virtual Account",
-    description: "Get your own account number. Customers transfer, your wallet fills itself.",
+    description: "Receive a dedicated account number. Every incoming transfer auto-credits your wallet balance.",
     icon: Building2,
     href: "/dashboard/virtual-account",
     category: "banking",
@@ -153,7 +153,7 @@ export const services: ServiceItem[] = [
   {
     slug: "credit-card",
     title: "Credit Card Bill",
-    description: "Clear any bank's card bill for customers. Earn on every payment.",
+    description: "Settle credit card dues for any issuer. Customer pays you, bill clears instantly.",
     icon: CreditCard,
     href: "/dashboard/bill-pay/credit-card",
     category: "bills"
@@ -161,7 +161,7 @@ export const services: ServiceItem[] = [
   {
     slug: "mobile-recharge",
     title: "Mobile Recharge",
-    description: "Recharge Jio, Airtel, Vi and BSNL in one tap. Commission on every plan.",
+    description: "Recharge Jio, Airtel, Vi or BSNL prepaid plans — confirmed in under two seconds.",
     icon: Smartphone,
     href: "/dashboard/recharge/mobile",
     category: "recharge"
@@ -169,7 +169,7 @@ export const services: ServiceItem[] = [
   {
     slug: "dth",
     title: "DTH Recharge",
-    description: "Recharge every DTH brand from one screen. Instant activation, instant commission.",
+    description: "Top up every DTH operator from a single screen. Pack activates before the customer leaves.",
     icon: Tv,
     href: "/dashboard/recharge/dth",
     category: "recharge"
@@ -177,7 +177,7 @@ export const services: ServiceItem[] = [
   {
     slug: "broadband",
     title: "Broadband / OTT",
-    description: "Renew broadband, landline and OTT plans. Customers come back every month.",
+    description: "Renew broadband, landline and OTT subscriptions. Monthly repeat = steady commissions.",
     icon: Wifi,
     href: "/dashboard/recharge/broadband",
     category: "recharge"
@@ -185,7 +185,7 @@ export const services: ServiceItem[] = [
   {
     slug: "electricity",
     title: "Electricity",
-    description: "Pay any state's electricity bill in 30 seconds. Instant receipt, zero queues.",
+    description: "Accept electricity payments for every state board. Receipt generated, queue eliminated.",
     icon: Lightbulb,
     href: "/dashboard/bill-pay/electricity",
     category: "bills"
@@ -193,7 +193,7 @@ export const services: ServiceItem[] = [
   {
     slug: "water",
     title: "Water",
-    description: "Clear municipal water bills on the spot. Confirmed before the customer leaves.",
+    description: "Process municipal water bills in seconds — confirmation shows before the customer steps out.",
     icon: Droplets,
     href: "/dashboard/bill-pay/water",
     category: "bills"
@@ -201,7 +201,7 @@ export const services: ServiceItem[] = [
   {
     slug: "gas",
     title: "Gas (Piped & LPG)",
-    description: "Book LPG cylinders or pay piped gas bills. Done in under a minute.",
+    description: "Handle LPG cylinder bookings and piped gas payments — both settled under sixty seconds.",
     icon: Flame,
     href: "/dashboard/bill-pay/gas",
     category: "bills"
@@ -209,7 +209,7 @@ export const services: ServiceItem[] = [
   {
     slug: "flight",
     title: "Flight Booking",
-    description: "Book domestic flights at agent fares. Earn on every ticket you sell.",
+    description: "Issue domestic flight tickets at wholesale agent fares. Commission on every boarding pass.",
     icon: Plane,
     href: "/dashboard/travel/flight",
     category: "travel"
@@ -217,7 +217,7 @@ export const services: ServiceItem[] = [
   {
     slug: "hotel",
     title: "Hotel Booking",
-    description: "Book 50,000+ hotels at agent rates. Your shop becomes a travel desk.",
+    description: "Access 50,000+ properties at agent-exclusive rates. Turn your shop into a travel counter.",
     icon: Hotel,
     href: "/dashboard/travel/hotel",
     category: "travel"
@@ -225,7 +225,7 @@ export const services: ServiceItem[] = [
   {
     slug: "bus",
     title: "Bus Booking",
-    description: "Sell AC and sleeper bus tickets pan-India. Earn up to 5% per seat.",
+    description: "Sell sleeper, AC and Volvo bus seats across all major routes — margins up to 5% per ticket.",
     icon: Bus,
     href: "/dashboard/travel/bus",
     category: "travel"
@@ -233,7 +233,7 @@ export const services: ServiceItem[] = [
   {
     slug: "education",
     title: "Education Fees",
-    description: "Collect school and college fees for parents. Auto reminders bring them back.",
+    description: "Collect tuition and exam fees on behalf of schools and colleges. Parents return every term.",
     icon: GraduationCap,
     href: "/dashboard/bill-pay/education",
     category: "bills"
@@ -241,7 +241,7 @@ export const services: ServiceItem[] = [
   {
     slug: "insurance",
     title: "Insurance Premium",
-    description: "Accept premium payments for every major insurer. Instant policy receipt.",
+    description: "Process premium renewals for all major insurers. Policy receipt delivered on the spot.",
     icon: ShieldCheck,
     href: "/dashboard/bill-pay/insurance",
     category: "bills"
@@ -249,7 +249,7 @@ export const services: ServiceItem[] = [
   {
     slug: "broadband-bill",
     title: "Broadband Bill",
-    description: "Pay postpaid broadband and landline bills via BBPS. Instant confirmation.",
+    description: "Clear postpaid broadband and landline dues through BBPS. Confirmation in real time.",
     icon: Wifi,
     href: "/dashboard/bill-pay/broadband",
     category: "bills"
@@ -260,36 +260,36 @@ export type FaqItem = { q: string; a: string };
 
 export const faqs: FaqItem[] = [
   {
-    q: "What is eMoney, in one line?",
-    a: "eMoney turns your shop into a bank counter. Cash withdrawal, money transfer, bills, recharges, travel — 60+ services from one login. You earn a commission on every transaction."
+    q: "What exactly does TRANSPE do?",
+    a: "TRANSPE converts any retail outlet into a full-service financial point. From cash withdrawals and fund transfers to utility bills, prepaid recharges and travel bookings — over 60 services run from a single dashboard. You pocket a commission on each one."
   },
   {
-    q: "Is my money — and my customers' money — safe?",
-    a: "Yes. Every rupee moves through RBI-licensed partner banks on NPCI rails. Your login has 2-factor authentication, every high-value transaction needs your PIN, and fingerprint data never leaves the certified device."
+    q: "How is the money protected?",
+    a: "Every transaction is routed through RBI-authorised partner banks over NPCI-certified rails. Two-factor authentication guards your login, a separate MPIN protects high-value operations, and biometric data is processed only on STQC-approved devices — never stored on our servers."
   },
   {
-    q: "Which bills can I collect at my counter?",
-    a: "Electricity, water, LPG and piped gas, broadband, DTH, postpaid mobile, credit cards, school fees, insurance premiums, FASTag and municipal taxes — 1,400+ billers through BBPS."
+    q: "What types of bills can I accept?",
+    a: "Power, water, piped gas, LPG, broadband, DTH, postpaid mobile, credit card dues, school and college fees, insurance premiums, FASTag top-ups and municipal taxes — over 1,400 billers connected via BBPS and direct integrations."
   },
   {
-    q: "How do I become an eMoney retailer?",
-    a: "Sign up with your PAN, Aadhaar and shop details. KYC takes under 5 minutes. No joining fee, nothing to post. Most shops do their first transaction the same day."
+    q: "What do I need to get started?",
+    a: "A valid PAN, Aadhaar and basic shop details. The e-KYC process wraps up in under five minutes — no paperwork to courier, no upfront fee. Many new partners complete their first live transaction the same afternoon."
   },
   {
-    q: "When do I get my commission?",
-    a: "Instantly. Commission lands in your eMoney wallet the moment a transaction succeeds. Move it to your bank account 24x7 by IMPS — no waiting for month-end."
+    q: "How fast do commissions hit my account?",
+    a: "The moment a transaction succeeds, your commission is credited to your TRANSPE wallet in real time. You can withdraw to your linked bank account via IMPS around the clock — no monthly settlement cycle."
   },
   {
-    q: "Are there hidden charges?",
-    a: "None. Every service shows the exact fee before you confirm. What you see on screen is what the customer pays. Your commission slab is visible in your dashboard any time."
+    q: "Will there be surprise fees later?",
+    a: "Absolutely not. The confirmation screen shows every charge and your exact commission before you tap 'Pay'. Commission slabs are published in your dashboard and on our Charges page — no fine print, no escalators."
   },
   {
-    q: "How much can I actually earn?",
-    a: "A shop serving 50 customers a day typically earns ₹7,000–₹9,000 a month from AePS and Send Money alone. Add bills, recharges and POS and many retailers cross ₹15,000. Use the calculator above to see your own numbers."
+    q: "What kind of monthly income is realistic?",
+    a: "A retailer handling 50 walk-ins a day typically takes home ₹8,000–₹10,000 per month from AePS and money transfers alone. Layer in bills, recharges and POS acceptance and many cross ₹18,000. Slide the calculator above to model your own footfall."
   },
   {
-    q: "What if a transaction fails?",
-    a: "If money is debited but not delivered, it auto-reverses within the RBI timeline — T+1 day for UPI and IMPS, T+5 for AePS. If it's late, the customer gets ₹100 per day of delay. Raise a dispute from your dashboard and we chase it for you."
+    q: "What happens when a transaction fails?",
+    a: "If the customer is debited but the service is not delivered, the amount auto-reverses within the RBI-mandated window — T+1 for UPI/IMPS, T+5 for AePS. A delay beyond that triggers ₹100/day compensation. You can also raise a dispute from your dashboard and our ops team follows up end to end."
   }
 ];
 
@@ -303,38 +303,38 @@ export type Testimonial = {
 // `role` is "<shop name>, <city>" — RetailerStories splits on the last comma.
 export const testimonials: Testimonial[] = [
   {
-    name: "Lakhan Yadav",
-    role: "Yadav Mobile & Recharge, Kanpur",
+    name: "Ramesh Gupta",
+    role: "Gupta Digital Point, Nagpur",
     quote:
-      "AePS alone brought ₹58,000 last month. 60–70 people a day come for cash withdrawal now — and most buy a recharge too.",
+      "Within two weeks of going live, AePS crossings touched 80 a day. That alone earns me ₹14,000 a month — before bills and recharges even count.",
     rating: 5
   },
   {
-    name: "Suresh Pillai",
-    role: "Pillai Super Store, Kochi",
+    name: "Deepa Nambiar",
+    role: "Nambiar Telecom Hub, Thrissur",
     quote:
-      "Send Money is my busiest counter. Around 40 transfers a day at ₹8 each. That's ₹9,000 a month without stocking a single item.",
+      "Money transfer is what pulls the crowd. Thirty-plus remittances a day at ₹8 commission each — steady ₹7,500 a month from one service.",
     rating: 5
   },
   {
-    name: "Fatima Shaikh",
-    role: "Shaikh Aadhaar Seva Kendra, Aurangabad",
+    name: "Irfan Patel",
+    role: "Patel Seva Centre, Ahmedabad",
     quote:
-      "Electricity and gas bills bring 80 customers a day. Small commission per bill, but it adds up to ₹11,000 a month.",
+      "Electricity and LPG bills alone bring 90 footfalls daily. Each one is small, but the month-end total hit ₹13,500 last quarter.",
     rating: 5
   },
   {
-    name: "Jatin Bhatia",
-    role: "Bhatia POS Point, Ludhiana",
+    name: "Sonia Thakur",
+    role: "Thakur Cards & Payments, Indore",
     quote:
-      "I rented a POS for ₹499. First month it processed ₹4.2 lakh and the rent paid for itself in two days.",
+      "The POS rental is ₹499, and my first month's card volume crossed ₹5.1 lakh. The device practically pays for itself on day one.",
     rating: 5
   },
   {
-    name: "Meenakshi Rao",
-    role: "Rao Travels & Payments, Vijayawada",
+    name: "Arjun Reddy",
+    role: "Reddy Travels & Services, Warangal",
     quote:
-      "Bus tickets earn me 5% a seat. Last month that was ₹22,000 — plus recharges while customers wait.",
+      "Bus bookings give me 5% a seat — last month that came to ₹19,000. Plus, people recharge their phones while waiting for the ticket.",
     rating: 5
   }
 ];
@@ -342,10 +342,10 @@ export const testimonials: Testimonial[] = [
 export type Stat = { value: string; label: string };
 
 export const heroStats: Stat[] = [
-  { value: "72K+", label: "Bharat shops live" },
-  { value: "1,400+", label: "Billers at your tap" },
-  { value: "60+", label: "Ways to earn" },
-  { value: "₹240 Cr+", label: "Processed monthly" }
+  { value: "68K+", label: "Active retail points" },
+  { value: "1,400+", label: "Billers connected" },
+  { value: "60+", label: "Revenue streams" },
+  { value: "₹210 Cr+", label: "Monthly throughput" }
 ];
 
 export type PricingPlan = {
@@ -363,46 +363,46 @@ export const pricingPlans: PricingPlan[] = [
     name: "Starter",
     price: "₹0",
     cadence: "forever free",
-    description: "Try it. Earn it. No commitment.",
+    description: "Zero risk, zero fee. Explore and earn at your own pace.",
     features: [
-      "30+ services unlocked",
-      "Standard commission slabs",
-      "UPI & wallet payments",
-      "Email support",
-      "Basic transaction reports"
+      "30+ services activated",
+      "Standard commission tiers",
+      "UPI & wallet transactions",
+      "Email-based support",
+      "Basic analytics dashboard"
     ],
-    cta: "Start free"
+    cta: "Get started free"
   },
   {
     name: "Retailer",
     price: "₹499",
     cadence: "/year",
-    description: "Unlock AePS + max commissions. Pays for itself in 2 days.",
+    description: "Full access to AePS, top commissions. Recovers cost within 48 hours.",
     features: [
-      "Everything in Starter",
-      "AePS & Send Money unlocked",
-      "Higher commission slabs",
-      "Priority WhatsApp support",
-      "Advanced reports & exports",
-      "Free RuPay card"
+      "All Starter features included",
+      "AePS & DMT fully activated",
+      "Boosted commission slabs",
+      "Priority WhatsApp helpline",
+      "Exportable reports & ledger",
+      "Complimentary RuPay card"
     ],
     highlighted: true,
-    cta: "Become a retailer"
+    cta: "Activate retailer plan"
   },
   {
     name: "Distributor",
     price: "₹2,499",
     cadence: "/year",
-    description: "Run your own retailer network. Earn on every txn below you.",
+    description: "Build and manage your own retail network. Override earnings on every transaction below you.",
     features: [
-      "Everything in Retailer",
-      "Onboard & manage your retailers",
-      "Commission overrides on every txn",
-      "Dedicated account manager",
-      "API access",
-      "Co-branded white-label app"
+      "All Retailer features included",
+      "Recruit & manage your retailers",
+      "Override commissions per transaction",
+      "Assigned account manager",
+      "Full API access",
+      "White-label branded application"
     ],
-    cta: "Talk to sales"
+    cta: "Contact sales"
   }
 ];
 
@@ -417,31 +417,31 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
-    slug: "lakhan-earned-58000-without-stock",
-    title: "How Lakhan earned ₹58,000 last month without buying any stock",
+    slug: "ramesh-crossed-15k-first-month",
+    title: "How Ramesh crossed ₹15,000 in commission during his first month",
     excerpt:
-      "A Kanpur mobile shop went from 10 recharges a day to 70 AePS withdrawals. Here's the exact counter setup, timings and the one habit that did it.",
-    date: "Sep 24, 2026",
+      "A Nagpur electronics shop added AePS and money transfer to his existing counter. Here is the setup, daily rhythm and customer flow that made it work.",
+    date: "Sep 28, 2026",
     readTime: "6 min read",
-    category: "Retailer story"
+    category: "Partner story"
   },
   {
-    slug: "seven-minute-morning-routine",
-    title: "The 7-minute morning routine every eMoney retailer should follow",
+    slug: "five-minute-opening-checklist",
+    title: "The 5-minute opening checklist top-earning TRANSPE partners swear by",
     excerpt:
-      "Check float, clear pending bills, print the day's QR, text your top 20 customers. Seven minutes before you open — more customers all day.",
-    date: "Sep 10, 2026",
+      "Verify float, clear overnight settlements, share today's QR on WhatsApp status, message your regulars. Five minutes that compound all day.",
+    date: "Sep 14, 2026",
     readTime: "4 min read",
     category: "Playbook"
   },
   {
-    slug: "aeps-vs-pos-vs-upi-which-earns-more",
-    title: "AePS vs POS vs UPI — which one earns you more? (With real data)",
+    slug: "commission-breakdown-aeps-dmt-pos",
+    title: "AePS vs DMT vs POS — a 90-day commission breakdown from 3,000 counters",
     excerpt:
-      "We pulled 90 days of commissions from 2,400 shops. Per customer, per hour, per rupee of float — one of these wins by a mile.",
-    date: "Aug 28, 2026",
+      "We analysed commission data from 3,000 active counters across 22 states. Per footfall, per rupee of float, one service outperforms the rest decisively.",
+    date: "Aug 30, 2026",
     readTime: "8 min read",
-    category: "Data"
+    category: "Insights"
   }
 ];
 
@@ -451,11 +451,10 @@ export type NavLink = {
   children?: NavLink[];
 };
 
-// Public nav — Emoney tweaks the service sub-labels to be verb-led and
-// slightly more energetic than Nextgen's standard noun list.
+// Public nav — TRANSPE service sub-labels are verb-led and action-oriented.
 export const mainNav: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "Why eMoney", href: "/about" },
+  { label: "Why TRANSPE", href: "/about" },
   {
     label: "Services",
     href: "/services",
@@ -536,31 +535,31 @@ export const indiaMissions: IndiaMission[] = [
     code: "01",
     title: "Digital India",
     body:
-      "Your shop is the last mile. Where the nearest ATM is 20 km away, your counter is the bank.",
-    stat: "1,250+",
-    statLabel: "Gram Panchayats with an eMoney shop"
+      "Where the nearest branch is a bus ride away, your counter becomes the bank. TRANSPE powers that last mile.",
+    stat: "1,100+",
+    statLabel: "Gram Panchayats served by a TRANSPE outlet"
   },
   {
     code: "02",
     title: "Jan Dhan · Aadhaar · Mobile",
     body:
-      "Serve any customer with just an Aadhaar and a thumb. No card, no passbook, no app needed.",
+      "A thumb and an Aadhaar number are enough. No card, no passbook, no smartphone required from the customer.",
     stat: "₹0",
-    statLabel: "Cost for your customer to withdraw"
+    statLabel: "Customer cost for an AePS withdrawal"
   },
   {
     code: "03",
     title: "UPI · BBPS · AePS",
     body:
-      "You run on the same NPCI rails as the big banks. Same speed, same safety, your commission.",
+      "TRANSPE runs on the same certified NPCI rails used by the largest banks — identical speed, identical security, your margin.",
     stat: "60+",
-    statLabel: "Live services at your counter"
+    statLabel: "Services live on your counter today"
   },
   {
     code: "04",
     title: "Aatmanirbhar Bharat",
     body:
-      "Built in Gurugram, hosted in India, supported in 9 languages. Made for Bharat's shops.",
+      "Engineered in Pune, hosted on Indian data centres, supported in 9 regional languages. Built for Bharat, by Bharat.",
     stat: "100%",
     statLabel: "Made in India"
   }
@@ -718,7 +717,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Privacy Policy",
     eyebrow: "Legal · Privacy",
     description:
-      "How eMoney collects, uses, stores and protects your personal data — drafted as per the Digital Personal Data Protection Act, 2023, the Information Technology Act, 2000 and the SPDI Rules, 2011.",
+      "How TRANSPE collects, uses, stores and protects your personal data — drafted as per the Digital Personal Data Protection Act, 2023, the Information Technology Act, 2000 and the SPDI Rules, 2011.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "Digital Personal Data Protection Act, 2023",
@@ -731,7 +730,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "introduction",
         heading: "1. Introduction",
         body: [
-          "This Privacy Policy (\"Policy\") governs the processing of personal data by eMoney, a company incorporated under the Companies Act, 2013 and having its registered office at First Floor, JMD Empire Square, Mehrauli - Gurgaon Road, A-Block, DLF Phase-1, Sector-24, Gurugram, Haryana – 122002 (\"eMoney\", \"Company\", \"We\", \"Us\"), through its website emoney.today, mobile applications and APIs (collectively, the \"Platform\").",
+          "This Privacy Policy (\"Policy\") governs the processing of personal data by TRANSPE, a company incorporated under the Companies Act, 2013 and having its registered office at S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN (\"TRANSPE\", \"Company\", \"We\", \"Us\"), through its website transpe.net, mobile applications and APIs (collectively, the \"Platform\").",
           "By accessing or using the Platform, you (the \"Data Principal\") consent to the practices described in this Policy. If you do not agree, please do not use the Platform."
         ]
       },
@@ -809,7 +808,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
               "Lodge a complaint with the Data Protection Board of India."
             ]
           },
-          "To exercise any of the above rights, please write to our Grievance Officer at grievance@emoney.today. We will respond within fifteen (15) working days."
+          "To exercise any of the above rights, please write to our Grievance Officer at grievance@transpe.net. We will respond within fifteen (15) working days."
         ]
       },
       {
@@ -854,7 +853,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Terms & Conditions",
     eyebrow: "Legal · Terms of Use",
     description:
-      "The contract between you and eMoney for use of the eMoney Platform, drawn up under the Indian Contract Act, 1872 and the Information Technology Act, 2000.",
+      "The contract between you and TRANSPE for use of the TRANSPE Platform, drawn up under the Indian Contract Act, 1872 and the Information Technology Act, 2000.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "Indian Contract Act, 1872",
@@ -867,7 +866,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "acceptance",
         heading: "1. Acceptance of Terms",
         body: [
-          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and eMoney (\"eMoney\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
+          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and TRANSPE (\"TRANSPE\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
         ]
       },
       {
@@ -881,7 +880,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "services",
         heading: "3. Description of services",
         body: [
-          "eMoney is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by RBI-licensed sponsor banks and NPCI rails. eMoney does not itself accept deposits or extend credit."
+          "TRANSPE is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by RBI-licensed sponsor banks and NPCI rails. TRANSPE does not itself accept deposits or extend credit."
         ]
       },
       {
@@ -891,7 +890,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
           {
             list: [
               "You shall complete KYC as required under the RBI Master Direction on KYC, 2016 prior to availing transactional services.",
-              "You are responsible for maintaining confidentiality of your login credentials, MPIN, biometric authentication and OTPs. eMoney will never ask for these over phone, SMS or e-mail.",
+              "You are responsible for maintaining confidentiality of your login credentials, MPIN, biometric authentication and OTPs. TRANSPE will never ask for these over phone, SMS or e-mail.",
               "Any transaction performed using your credentials shall be deemed to be performed by you.",
               "You shall not share, sublicense or commercially exploit your access in violation of these Terms."
             ]
@@ -925,35 +924,35 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "intellectual",
         heading: "7. Intellectual property",
         body: [
-          "All trademarks, logos, software, designs, content and brand elements on the Platform are the exclusive property of eMoney or its licensors, and are protected under the Copyright Act, 1957 and the Trade Marks Act, 1999. No part of the Platform may be reproduced without prior written consent."
+          "All trademarks, logos, software, designs, content and brand elements on the Platform are the exclusive property of TRANSPE or its licensors, and are protected under the Copyright Act, 1957 and the Trade Marks Act, 1999. No part of the Platform may be reproduced without prior written consent."
         ]
       },
       {
         id: "liability",
         heading: "8. Limitation of liability",
         body: [
-          "To the maximum extent permitted by law, the aggregate liability of eMoney arising out of or relating to the use of the Platform shall not exceed the aggregate commission earned by, or fees paid by, the User in the three (3) months preceding the event giving rise to the claim. eMoney shall not be liable for indirect, incidental, consequential, punitive or special damages."
+          "To the maximum extent permitted by law, the aggregate liability of TRANSPE arising out of or relating to the use of the Platform shall not exceed the aggregate commission earned by, or fees paid by, the User in the three (3) months preceding the event giving rise to the claim. TRANSPE shall not be liable for indirect, incidental, consequential, punitive or special damages."
         ]
       },
       {
         id: "force",
         heading: "9. Force majeure",
         body: [
-          "eMoney shall not be liable for any failure or delay arising out of events beyond its reasonable control, including acts of God, war, pandemics, regulatory action, internet outages, sponsor-bank downtime or NPCI / UIDAI service disruptions."
+          "TRANSPE shall not be liable for any failure or delay arising out of events beyond its reasonable control, including acts of God, war, pandemics, regulatory action, internet outages, sponsor-bank downtime or NPCI / UIDAI service disruptions."
         ]
       },
       {
         id: "termination",
         heading: "10. Suspension & termination",
         body: [
-          "eMoney reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any RBI / NPCI / UIDAI direction."
+          "TRANSPE reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any RBI / NPCI / UIDAI direction."
         ]
       },
       {
         id: "law",
         heading: "11. Governing law & dispute resolution",
         body: [
-          "These Terms shall be governed by and construed in accordance with the laws of India. Any dispute, controversy or claim arising out of or in connection with these Terms shall first be attempted to be resolved through good-faith negotiation, failing which through arbitration by a sole arbitrator appointed under the Arbitration & Conciliation Act, 1996. The seat and venue of arbitration shall be Gurugram, Haryana. The courts at Gurugram shall have exclusive jurisdiction subject to the arbitration clause."
+          "These Terms shall be governed by and construed in accordance with the laws of India. Any dispute, controversy or claim arising out of or in connection with these Terms shall first be attempted to be resolved through good-faith negotiation, failing which through arbitration by a sole arbitrator appointed under the Arbitration & Conciliation Act, 1996. The seat and venue of arbitration shall be Pune, Maharashtra. The courts at Pune shall have exclusive jurisdiction subject to the arbitration clause."
         ]
       },
       {
@@ -982,7 +981,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "scope",
         heading: "1. Scope",
         body: [
-          "This Refund Policy applies to all transactions initiated through the eMoney Platform — AePS, DMT, BBPS, UPI, recharges, travel bookings and any value-added services. Refunds for products / services delivered by third-party billers (electricity boards, telecom operators, airlines, IRCTC, hotel chains) are governed by the policies of the respective billers, but eMoney will assist you with end-to-end follow-up."
+          "This Refund Policy applies to all transactions initiated through the TRANSPE Platform — AePS, DMT, BBPS, UPI, recharges, travel bookings and any value-added services. Refunds for products / services delivered by third-party billers (electricity boards, telecom operators, airlines, IRCTC, hotel chains) are governed by the policies of the respective billers, but TRANSPE will assist you with end-to-end follow-up."
         ]
       },
       {
@@ -1011,8 +1010,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
         body: [
           {
             list: [
-              "Log in to your eMoney dashboard → Transactions → Raise Dispute.",
-              "Or e-mail support@emoney.today with the transaction reference number (RRN), date, amount and a short description.",
+              "Log in to your TRANSPE dashboard → Transactions → Raise Dispute.",
+              "Or e-mail support@transpe.net with the transaction reference number (RRN), date, amount and a short description.",
               "For UPI disputes you may also raise a request directly with the issuer bank, the NPCI UDIR portal or the RBI Digital Ombudsman."
             ]
           }
@@ -1045,8 +1044,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
           "If you are not satisfied with the resolution provided at L1 support within 7 days, escalate to:",
           {
             list: [
-              "L2 — Grievance Officer, grievance@emoney.today (response within 15 working days)",
-              "L3 — Principal Nodal Officer, nodal@emoney.today",
+              "L2 — Grievance Officer, grievance@transpe.net (response within 15 working days)",
+              "L3 — Principal Nodal Officer, nodal@transpe.net",
               "L4 — RBI Integrated Ombudsman Scheme, 2021 at cms.rbi.org.in or NPCI Digital Ombudsman"
             ]
           }
@@ -1059,7 +1058,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Charges & Fees",
     eyebrow: "Legal · Pricing transparency",
     description:
-      "All convenience fees, commissions and GST that may apply to transactions on the eMoney Platform — published in line with RBI's directions on display of charges.",
+      "All convenience fees, commissions and GST that may apply to transactions on the TRANSPE Platform — published in line with RBI's directions on display of charges.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "RBI Master Direction on Issuance & Operation of PPIs, 2021",
@@ -1141,9 +1140,9 @@ export const legalDocuments: Record<string, LegalDocument> = {
           {
             list: [
               "In-app — Help → Raise a Ticket",
-              "E-mail — support@emoney.today",
-              "WhatsApp / Phone — +91 9650001862 (10 AM – 6 PM IST, Mon–Sat)",
-              "Letter — Customer Care, eMoney, First Floor, JMD Empire Square, Mehrauli - Gurgaon Road, A-Block, DLF Phase-1, Sector-24, Gurugram, Haryana – 122002"
+              "E-mail — support@transpe.net",
+              "WhatsApp / Phone — +91 9004080939 (10 AM – 6 PM IST, Mon–Sat)",
+              "Letter — Customer Care, TRANSPE, S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN"
             ]
           }
         ]
@@ -1156,9 +1155,9 @@ export const legalDocuments: Record<string, LegalDocument> = {
             table: {
               headers: ["Level", "Officer", "Channel", "TAT"],
               rows: [
-                ["Level 1", "Customer Care Executive", "support@emoney.today", "7 working days"],
-                ["Level 2", "Grievance Officer", "grievance@emoney.today · +91 9650001862", "15 working days"],
-                ["Level 3", "Principal Nodal Officer", "nodal@emoney.today · +91 9650001862", "30 days"],
+                ["Level 1", "Customer Care Executive", "support@transpe.net", "7 working days"],
+                ["Level 2", "Grievance Officer", "grievance@transpe.net · +91 9004080939", "15 working days"],
+                ["Level 3", "Principal Nodal Officer", "nodal@transpe.net · +91 9004080939", "30 days"],
                 ["Level 4", "RBI Integrated Ombudsman", "cms.rbi.org.in · 14448 (toll-free)", "As per scheme"]
               ]
             }
@@ -1342,11 +1341,11 @@ export type AuditEvent = {
 };
 
 export const auditEvents: AuditEvent[] = [
-  { id: "AU-94221", actor: "admin@emoney.today", action: "Approved KYC", target: "Vivek Joshi (KYC-004)", ip: "10.18.4.21", ts: "Apr 19, 10:22 AM", severity: "info" },
-  { id: "AU-94220", actor: "neha.k@emoney.today", action: "Override commission", target: "DMT IMPS · JNPD2017", ip: "49.207.211.4", ts: "Apr 19, 09:51 AM", severity: "warn" },
-  { id: "AU-94219", actor: "admin@emoney.today", action: "Suspended retailer", target: "JNPR3217 (Patil Enterprises)", ip: "10.18.4.21", ts: "Apr 19, 09:14 AM", severity: "danger" },
+  { id: "AU-94221", actor: "admin@transpe.net", action: "Approved KYC", target: "Vivek Joshi (KYC-004)", ip: "10.18.4.21", ts: "Apr 19, 10:22 AM", severity: "info" },
+  { id: "AU-94220", actor: "neha.k@transpe.net", action: "Override commission", target: "DMT IMPS · JNPD2017", ip: "49.207.211.4", ts: "Apr 19, 09:51 AM", severity: "warn" },
+  { id: "AU-94219", actor: "admin@transpe.net", action: "Suspended retailer", target: "JNPR3217 (Patil Enterprises)", ip: "10.18.4.21", ts: "Apr 19, 09:14 AM", severity: "danger" },
   { id: "AU-94218", actor: "system", action: "Biller routing failover", target: "DTH · Tata Play → fallback", ip: "n/a", ts: "Apr 19, 08:42 AM", severity: "warn" },
-  { id: "AU-94217", actor: "rohit.v@emoney.today", action: "Approved fund request", target: "FR-9003 · ₹15,000", ip: "182.65.21.99", ts: "Apr 18, 06:30 PM", severity: "info" },
+  { id: "AU-94217", actor: "rohit.v@transpe.net", action: "Approved fund request", target: "FR-9003 · ₹15,000", ip: "182.65.21.99", ts: "Apr 18, 06:30 PM", severity: "info" },
   { id: "AU-94216", actor: "system", action: "Settlement run", target: "T+1 · ₹8.42 Cr · 12,481 txns", ip: "n/a", ts: "Apr 18, 11:05 PM", severity: "info" }
 ];
 
@@ -1583,11 +1582,11 @@ export type QrCodeItem = {
 };
 
 export const qrCodes: QrCodeItem[] = [
-  { id: "QR-5001", type: "Static", label: "Shop Counter 1", vpa: "eMoney.desai@icici", created: "May 02, 2026", payments: 1841, collected: 1284500, status: "Active" },
-  { id: "QR-5002", type: "Static", label: "Shop Counter 2", vpa: "eMoney.desai2@icici", created: "May 02, 2026", payments: 644, collected: 412800, status: "Active" },
-  { id: "QR-5014", type: "Dynamic", label: "Invoice #4421", vpa: "eMoney.desai@icici", amount: 12400, created: "Jun 12, 2026", payments: 1, collected: 12400, status: "Expired" },
-  { id: "QR-5015", type: "Dynamic", label: "Invoice #4427", vpa: "eMoney.desai@icici", amount: 8600, created: "Jun 12, 2026", payments: 0, collected: 0, status: "Active" },
-  { id: "QR-5009", type: "Static", label: "Delivery Van", vpa: "eMoney.desai3@icici", created: "May 22, 2026", payments: 102, collected: 89200, status: "Disabled" }
+  { id: "QR-5001", type: "Static", label: "Shop Counter 1", vpa: "transpe.desai@icici", created: "May 02, 2026", payments: 1841, collected: 1284500, status: "Active" },
+  { id: "QR-5002", type: "Static", label: "Shop Counter 2", vpa: "transpe.desai2@icici", created: "May 02, 2026", payments: 644, collected: 412800, status: "Active" },
+  { id: "QR-5014", type: "Dynamic", label: "Invoice #4421", vpa: "transpe.desai@icici", amount: 12400, created: "Jun 12, 2026", payments: 1, collected: 12400, status: "Expired" },
+  { id: "QR-5015", type: "Dynamic", label: "Invoice #4427", vpa: "transpe.desai@icici", amount: 8600, created: "Jun 12, 2026", payments: 0, collected: 0, status: "Active" },
+  { id: "QR-5009", type: "Static", label: "Delivery Van", vpa: "transpe.desai3@icici", created: "May 22, 2026", payments: 102, collected: 89200, status: "Disabled" }
 ];
 
 export type QrPayment = {

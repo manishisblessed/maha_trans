@@ -34,7 +34,7 @@ export default function PgPage() {
     if (!amount) return;
     const ref = generateRefId("PAY");
     setLink(
-      `https://pay.emoney.today/l/${ref.toLowerCase()}?am=${amount}`
+      `https://pay.transpe.net/l/${ref.toLowerCase()}?am=${amount}`
     );
     setCopied(false);
   }

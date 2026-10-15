@@ -1,8 +1,8 @@
 {
-  "name": "emoney-portal",
+  "name": "transpe-portal",
   "version": "0.1.0",
   "private": true,
-  "description": "eMoney — Digital banking & utility fintech portal (emoney.today)",
+  "description": "TRANSPE — Fintech distribution platform for digital payments & banking (transpe.net)",
   "scripts": {
     "dev": "next dev --turbo",
     "dev:all": "concurrently -k -n web,worker -c cyan,magenta \"npm run dev\" \"npm run worker\"",

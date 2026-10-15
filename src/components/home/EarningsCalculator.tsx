@@ -75,9 +75,9 @@ export function EarningsCalculator() {
         <div className="lg:col-span-5">
           <Reveal>
             <SectionHeading
-              eyebrow="Earnings calculator"
-              title={<span id="calc-heading">How much can your shop earn?</span>}
-              sub="Slide to your daily footfall. Tap the services you'll offer. Real averages, no fairy tales."
+              eyebrow="Revenue estimator"
+              title={<span id="calc-heading">Model your counter&apos;s earning potential.</span>}
+              sub="Drag to your daily footfall, select the services you plan to offer. Numbers based on live averages — no inflated projections."
             />
           </Reveal>
 
@@ -214,7 +214,7 @@ export function EarningsCalculator() {
 
                 <div className="mt-auto flex flex-col gap-4 pt-8 sm:flex-row sm:items-center sm:justify-between">
                   <ButtonLink href="/register" size="lg">
-                    Lock in these earnings
+                    Start earning this much
                     <ArrowRight size={16} weight="bold" aria-hidden />
                   </ButtonLink>
                   <p className="max-w-xs text-[11px] leading-relaxed text-white/40">

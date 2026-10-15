@@ -130,14 +130,14 @@ export default function WhitelabelPage() {
   const canGoLive = canSave && Boolean(profile.subdomain?.trim() || profile.customDomain?.trim());
   const previewHost =
     profile.customDomain?.trim() ||
-    (profile.subdomain?.trim() ? `${profile.subdomain.trim()}.eMoney.in` : "your-brand.eMoney.in");
+    (profile.subdomain?.trim() ? `${profile.subdomain.trim()}.TRANSPE.in` : "your-brand.TRANSPE.in");
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Platform · Brand"
         title="White-label portal"
-        description="Run eMoney under your own brand, domain and colors."
+        description="Run TRANSPE under your own brand, domain and colors."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <StatusChip
@@ -222,7 +222,7 @@ export default function WhitelabelPage() {
                   onChange={(e) => set("subdomain", e.target.value)}
                   placeholder="kapoorpay"
                 />
-                <span className="whitespace-nowrap text-sm font-medium text-ink-500">.eMoney.in</span>
+                <span className="whitespace-nowrap text-sm font-medium text-ink-500">.TRANSPE.in</span>
               </div>
               <FloatingInput
                 label="Custom domain"
@@ -256,7 +256,7 @@ export default function WhitelabelPage() {
                 <div className="grain pointer-events-none absolute inset-0 opacity-20" aria-hidden />
                 <p className="relative text-[11px] font-bold uppercase tracking-[0.18em] opacity-80">{profile.brandName || "Your brand"}</p>
                 <p className="relative mt-3 font-display text-2xl font-semibold tracking-[-0.02em]">{profile.tagline || "Your tagline here"}</p>
-                <p className="relative mt-1 text-sm text-white/85">60+ services · Pan-India · Built on eMoney</p>
+                <p className="relative mt-1 text-sm text-white/85">60+ services · Pan-India · Built on TRANSPE</p>
                 <button type="button" className="relative mt-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold" style={{ color: profile.primaryColor }}>
                   Login
                 </button>
@@ -266,7 +266,7 @@ export default function WhitelabelPage() {
 
           <SectionCard tone="accent" padding="sm">
             <p className="text-sm text-ink-800">
-              <strong className="font-semibold text-ink-900">Powered by eMoney.</strong> Footer attribution is required on all white-labels.
+              <strong className="font-semibold text-ink-900">Powered by TRANSPE.</strong> Footer attribution is required on all white-labels.
             </p>
           </SectionCard>
         </div>

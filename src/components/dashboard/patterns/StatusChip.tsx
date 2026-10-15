@@ -123,7 +123,7 @@ export function statusToVariant(status: string | null | undefined): Variant {
 }
 
 /**
- * Emoney StatusChip — maps common status strings to Badge variants, with a
+ * TRANSPE StatusChip — maps common status strings to Badge variants, with a
  * soft ping dot for in-progress states. Pass `label` to override the
  * display text while keeping the status-driven colour, or `variant`/`dot`
  * to force a specific look.

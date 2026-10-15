@@ -197,8 +197,8 @@ export function ContactForm({ className }: { className?: string }) {
               "flex w-full rounded-2xl border bg-white px-4 py-3 text-sm text-ink-900 shadow-sm placeholder:text-ink-400",
               "transition-[border-color,box-shadow] duration-200 ease-out focus:outline-none",
               errors.message
-                ? "border-coral-300 focus:border-coral-500 focus:shadow-[0_0_0_4px_rgba(244,63,94,0.15)]"
-                : "border-ink-200 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.14),0_8px_24px_-10px_rgba(244,63,94,0.25)]"
+                ? "border-coral-300 focus:border-coral-500 focus:shadow-[0_0_0_4px_rgba(23, 184, 166,0.15)]"
+                : "border-ink-200 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]"
             )}
           />
           {errors.message && (

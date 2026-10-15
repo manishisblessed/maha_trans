@@ -122,7 +122,7 @@ calls BulkPe, so the EC2 instance must egress from a **static Elastic IP**:
    restarts; only detach intentionally).
 
 Outbound payout calls run **only** from the worker process, so the whitelisted
-IP is the box (or NAT) the `eMoney-worker` PM2 app runs on.
+IP is the box (or NAT) the `TRANSPE-worker` PM2 app runs on.
 
 ## 7. Run / deploy
 
@@ -134,13 +134,13 @@ npm run worker
 npx prisma migrate deploy
 ```
 
-PM2 (EC2): `ecosystem.config.js` defines two apps — `eMoney` (web,
-cluster) and `eMoney-worker` (fork, single instance: pg-boss handles
+PM2 (EC2): `ecosystem.config.js` defines two apps — `TRANSPE` (web,
+cluster) and `TRANSPE-worker` (fork, single instance: pg-boss handles
 concurrency and a single scheduler avoids duplicate cron fan-out).
 
 ```bash
 pm2 start ecosystem.config.js
-pm2 logs eMoney-worker
+pm2 logs TRANSPE-worker
 ```
 
 ## 8. UI

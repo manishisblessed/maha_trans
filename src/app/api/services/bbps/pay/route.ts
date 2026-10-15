@@ -135,10 +135,10 @@ export async function POST(req: Request) {
     // back-calculated (total / 1.18); otherwise GST (18%) is added on top.
     const gstInclusive = rate.chargeGstInclusive;
     const gross = withGst(rate.charge, 18);
-    const feeMoney = gstInclusive ? dec(rate.charge) : gross.total;
+    const feTRANSPE = gstInclusive ? dec(rate.charge) : gross.total;
     const baseCharge = gstInclusive ? round(dec(rate.charge).div("1.18")) : dec(rate.charge);
-    const gstMoney = gstInclusive ? round(sub(feeMoney, baseCharge)) : gross.gst;
-    const fee = toNumber(feeMoney);
+    const gstMoney = gstInclusive ? round(sub(feTRANSPE, baseCharge)) : gross.gst;
+    const fee = toNumber(feTRANSPE);
 
     // Keep the display-only snapshots out of the partner payload.
     const { customerName: _cn, billerName: _bn, ...payInput } = parsed.data;

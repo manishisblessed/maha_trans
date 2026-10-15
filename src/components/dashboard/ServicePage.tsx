@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney ServicePageHeader — v2 "service hero band".
+ * TRANSPE ServicePageHeader — v2 "service hero band".
  *
  * A `rounded-4xl` panel with a soft tinted gradient + film grain, a gradient
  * icon tile, back-link pill, eyebrow, Clash Display title and an `aside` slot

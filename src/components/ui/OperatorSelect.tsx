@@ -167,8 +167,8 @@ export function OperatorSelect({
         className={cn(
           "flex h-12 w-full items-center gap-2.5 rounded-2xl border border-ink-200 bg-white py-1.5 pl-2 pr-3 text-left text-sm text-ink-900 shadow-sm",
           "transition-[border-color,box-shadow] duration-200 ease-out focus:outline-none",
-          "focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.14),0_8px_24px_-10px_rgba(244,63,94,0.25)]",
-          open && "border-brand-400 shadow-[0_0_0_4px_rgba(124,58,237,0.14),0_8px_24px_-10px_rgba(244,63,94,0.25)]",
+          "focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]",
+          open && "border-brand-400 shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]",
           (disabled || loading) && "cursor-not-allowed opacity-60"
         )}
       >

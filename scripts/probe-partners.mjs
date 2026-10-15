@@ -1,5 +1,5 @@
 /**
- * Live partner connectivity probe — run on EC2 with env-emoney loaded.
+ * Live partner connectivity probe — run on EC2 with env-TRANSPE loaded.
  * Prints pass/fail only; never prints secrets.
  */
 import crypto from "crypto";
@@ -50,7 +50,7 @@ async function samedayGet(baseUrl, apiKey, apiSecret, path) {
 }
 
 async function probe() {
-  const envFile = process.argv[2] || "/home/ubuntu/env-emoney";
+  const envFile = process.argv[2] || "/home/ubuntu/env-TRANSPE";
   loadEnv(envFile);
 
   const base = process.env.SAMEDAY_POS_BASE_URL || "https://api.samedaysolution.in";

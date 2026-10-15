@@ -4,14 +4,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "eMoney — Payment Gateway, POS & QR Payments",
-    template: "%s · eMoney"
+    default: "TRANSPE — Payments. Powered for Bharat.",
+    template: "%s · TRANSPE"
   },
   description:
-    "eMoney is a next-generation fintech distribution platform offering payment gateway, POS machines, QR collections, AePS, money transfer, recharges and bill payments for retailers and merchants across India.",
+    "TRANSPE is a fintech distribution platform powering payment gateway, POS terminals, QR collections, AePS, money transfer, recharges and bill payments for retailers and merchants across India.",
   keywords: [
-    "eMoney",
-    "emoney.today",
+    "TRANSPE",
+    "transpe.net",
     "payment gateway",
     "POS machine",
     "QR payments",
@@ -24,18 +24,18 @@ export const metadata: Metadata = {
     "fintech India",
     "agent banking"
   ],
-  metadataBase: new URL("https://emoney.today"),
+  metadataBase: new URL("https://transpe.net"),
   openGraph: {
-    title: "eMoney — Payment Gateway, POS & QR Payments",
+    title: "TRANSPE — Payments. Powered for Bharat.",
     description:
-      "Payment gateway, POS machines, QR collections and 60+ digital services for retailers, distributors and merchants.",
-    url: "https://emoney.today",
-    siteName: "eMoney",
+      "Payment gateway, POS terminals, QR collections and 60+ financial services for retailers, distributors and merchants across India.",
+    url: "https://transpe.net",
+    siteName: "TRANSPE",
     type: "website"
   },
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/eMoney_logo.png" }]
+    apple: [{ url: "/transpe-mark.jpeg" }]
   }
 };
 
@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       {/*
-        eMoney brand typography:
+        TRANSPE brand typography:
         · Clash Display → display / headlines (--font-display)
         · Satoshi       → body / UI (--font-sans)
         Loaded from Fontshare CDN (OFL, no self-hosting required).

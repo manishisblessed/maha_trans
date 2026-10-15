@@ -170,7 +170,7 @@ export function RaiseTicketModal({ payload, onClose }: Props) {
                 maxLength={2000}
                 rows={4}
                 autoFocus
-                className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 shadow-sm outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-400 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.14),0_8px_24px_-10px_rgba(244,63,94,0.25)]"
+                className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 shadow-sm outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-400 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]"
                 placeholder="Tell us what went wrong (e.g. amount debited but payment failed, no confirmation received)…"
                 value={remark}
                 onChange={(e) => setRemark(e.target.value)}

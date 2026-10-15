@@ -1344,7 +1344,7 @@ function OnboardContent() {
                 <ShieldCheck className="h-7 w-7" />
               </IconTile>
               <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink-900">
-                Welcome to eMoney
+                Welcome to TRANSPE
               </h2>
               <p className="text-sm text-ink-600">
                 You&apos;ve been invited to register as a{" "}

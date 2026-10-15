@@ -12,49 +12,49 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Team",
   description:
-    "The people behind the eMoney counter: payments, field sales, compliance and design, most of whom have run a shop themselves."
+    "The people behind the TRANSPE counter: payments, field sales, compliance and design, most of whom have run a shop themselves."
 };
 
 const team = [
   {
-    name: "Aman Sharma",
+    name: "Nikhil Deshmukh",
     role: "Co-founder & CEO",
-    bio: "Ex-payments at a leading bank. Building Bharat's most loved fintech."
+    bio: "Former payments head at a top private bank. On a mission to make every shop a financial touchpoint."
   },
   {
-    name: "Anjali Iyer",
+    name: "Kavita Rao",
     role: "Co-founder & COO",
-    bio: "10+ years in retail networks. Obsessed with retailer experience."
+    bio: "12 years scaling retail distribution networks. Relentless about retailer success."
   },
   {
-    name: "Rohan Mehta",
+    name: "Siddharth Kulkarni",
     role: "CTO",
-    bio: "Distributed systems engineer. Loves building reliable rails."
+    bio: "Distributed systems veteran. Happiest when latency drops and uptime holds."
   },
   {
-    name: "Priya Nair",
+    name: "Tanvi Patil",
     role: "VP Product",
-    bio: "Designs delightful flows for first-time internet users."
+    bio: "Crafts simple flows for first-time smartphone users across Bharat."
   },
   {
-    name: "Vikram Bose",
+    name: "Arjun Deshpande",
     role: "VP Engineering",
-    bio: "Scaled multiple fintech platforms to billions of transactions."
+    bio: "Scaled payment platforms processing billions of rupees. Loves clean architecture."
   },
   {
-    name: "Sneha Kapoor",
+    name: "Ritu Menon",
     role: "Head of Compliance",
-    bio: "Former RBI auditor. Champion of safe & sound finance."
+    bio: "Ex-RBI examiner. Ensures every transaction stays safe and compliant."
   },
   {
-    name: "Karan Joshi",
+    name: "Deepak Pawar",
     role: "Head of Sales",
-    bio: "Built distributor networks across 22 states from the ground up."
+    bio: "Built channel partner networks spanning 24 states from scratch."
   },
   {
-    name: "Meera Krishnan",
+    name: "Ananya Bhatt",
     role: "Head of Design",
-    bio: "Believes great design speaks every Indian language."
+    bio: "Designs interfaces that work in every Indian language and literacy level."
   }
 ];
 
@@ -90,7 +90,7 @@ export default function TeamPage() {
             <br className="hidden md:block" /> your counter.
           </>
         }
-        description="Payments, field sales, compliance and design. A small team from Gurugram with people in shops across 28 states."
+        description="Payments, field sales, compliance and design. A small team from Pune with people in shops across 28 states."
         stats={[
           { value: String(team.length), label: "Leadership team" },
           { value: "85+", label: "Teammates" },

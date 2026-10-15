@@ -226,7 +226,7 @@ export function RetailerOverview({ session }: { session: Session }) {
             <div className="mt-5">
               <Sparkline
                 values={Array.from({ length: 14 }, () => 0)}
-                color="#2563eb"
+                color="#1f3b8b"
                 height={80}
               />
             </div>

@@ -199,7 +199,7 @@ export function LocationGate({ children }: LocationGateProps) {
             Location isn&apos;t available here
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-ink-500">
-            Your browser doesn&apos;t support geolocation. Please open eMoney in a
+            Your browser doesn&apos;t support geolocation. Please open TRANSPE in a
             modern browser like Chrome, Edge or Safari to sign in.
           </p>
           <Button size="lg" className="mt-6 w-full" onClick={requestLocation}>

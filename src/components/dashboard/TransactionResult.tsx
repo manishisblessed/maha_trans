@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 /** Branding line shown on every payment result/receipt. */
 function payByLine(userCode?: string | null): string {
   return userCode
-    ? `Pay by emoney by RT Code - ${userCode}`
-    : "Pay by emoney";
+    ? `Pay by TRANSPE by RT Code - ${userCode}`
+    : "Pay by TRANSPE";
 }
 
 export type TxnResult = {
@@ -29,7 +29,7 @@ function buildReceiptHtml(r: NonNullable<TxnResult>, userCode?: string | null): 
   const pending = r.status === "PENDING";
   const failed = r.status === "FAILED";
   const headStyle = failed
-    ? "background:linear-gradient(135deg,#e11d48,#be123c)"
+    ? "background:linear-gradient(135deg,#0f9789,#be123c)"
     : pending
       ? "background:linear-gradient(135deg,#d97706,#b45309)"
       : "background:linear-gradient(135deg,#059669,#047857)";
@@ -57,7 +57,7 @@ function buildReceiptHtml(r: NonNullable<TxnResult>, userCode?: string | null): 
 ${r.customer ? `<tr><td style="padding:6px 0;color:#666;font-size:13px">Customer</td><td style="padding:6px 0;text-align:right;font-weight:600;font-size:13px">${r.customer}</td></tr>` : ""}
 ${metaRows}
 <tr><td style="padding:6px 0;color:#666;font-size:13px">Date</td><td style="padding:6px 0;text-align:right;font-weight:600;font-size:13px">${date}</td></tr></table></div>
-<div class="foot"><div style="font-weight:600;color:#059669;margin-bottom:4px">${payByLine(userCode)}</div>eMoney — Powered by BBPS</div></div></body></html>`;
+<div class="foot"><div style="font-weight:600;color:#059669;margin-bottom:4px">${payByLine(userCode)}</div>TRANSPE — Powered by BBPS</div></div></body></html>`;
 }
 
 /* ────────────────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ function StatusTile({ status }: { status: "SUCCESS" | "PENDING" | "FAILED" }) {
     <span className="relative grid h-20 w-20 place-items-center">
       {!reduce && <ConfettiBurst />}
       <motion.span
-        className="relative grid h-20 w-20 place-items-center rounded-[1.75rem] bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-[0_20px_50px_-12px_rgba(34,197,94,0.55)] ring-1 ring-inset ring-white/30"
+        className="relative grid h-20 w-20 place-items-center rounded-[1.75rem] bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-[0_20px_50px_-12px_rgba(23, 184, 166,0.55)] ring-1 ring-inset ring-white/30"
         initial={reduce ? false : { scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 18 }}
@@ -343,7 +343,7 @@ export function TransactionResult({
                 ))}
               <div className="py-3 text-center">
                 <p className="text-xs font-semibold text-accent-700">{payByLine(userCode)}</p>
-                <p className="mt-0.5 text-[10px] text-ink-400">eMoney — Powered by BBPS</p>
+                <p className="mt-0.5 text-[10px] text-ink-400">TRANSPE — Powered by BBPS</p>
               </div>
             </dl>
           </div>

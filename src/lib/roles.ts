@@ -69,7 +69,7 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-// Emoney nav labels — deliberately re-worded away from Nextgen's defaults
+// TRANSPE nav labels — deliberately re-worded away from Nextgen's defaults
 // (verbs over nouns, friendlier shorthand). Routes remain unchanged so
 // bookmarks and muscle memory are preserved.
 const baseServices: NavItem[] = [

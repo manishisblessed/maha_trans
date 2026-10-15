@@ -226,13 +226,13 @@ export default function FundsRequestPage() {
         description={
           isApprover
             ? "Approve incoming wallet top-up requests with bank reference. Auto-credit on approval."
-            : "Submit your bank deposit reference to top up your eMoney wallet within minutes."
+            : "Submit your bank deposit reference to top up your TRANSPE wallet within minutes."
         }
         actions={
           <>
             <ReportActions
               filename="fund-requests"
-              title="JMP eMoney · Fund Requests"
+              title="JMP TRANSPE · Fund Requests"
               subtitle={isApprover ? "Incoming approvals" : "My requests"}
               columns={[
                 { key: "id", header: "Request ID" },

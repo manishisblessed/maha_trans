@@ -70,8 +70,8 @@ export default function CommissionsPage() {
               filename="commission-slabs"
               title={
                 role === "master-distributor"
-                  ? "JMP eMoney · Commission Master"
-                  : "JMP eMoney · Commission Slabs"
+                  ? "JMP TRANSPE · Commission Master"
+                  : "JMP TRANSPE · Commission Slabs"
               }
               subtitle="Service-wise rate-card"
               columns={[

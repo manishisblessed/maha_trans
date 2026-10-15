@@ -41,7 +41,7 @@ export const razorpayUpi: UpiProvider = {
         amount: Math.round(input.amount * 100),
         currency: "INR",
         accept_partial: false,
-        description: input.note ?? "eMoney collect",
+        description: input.note ?? "TRANSPE collect",
         customer: { email: input.customerEmail, contact: input.customerPhone },
         notify: { sms: true, email: !!input.customerEmail },
         callback_url: input.callbackUrl,

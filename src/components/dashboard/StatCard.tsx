@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney StatCard — v2 "Bharat Energy".
+ * TRANSPE StatCard — v2 "Bharat Energy".
  *
  * `rounded-3xl` white card with a tone-tinted glow, IconTile glyph, Clash
  * Display value with an rAF count-up, delta chip and an optional gradient
@@ -37,13 +37,13 @@ const TONE_GLOW: Record<IconTone, string> = {
 };
 
 const TONE_STROKE: Record<IconTone, [string, string]> = {
-  brand: ["#2563eb", "#60a5fa"],
-  accent: ["#16a34a", "#4ade80"],
-  royal: ["#7c3aed", "#a78bfa"],
-  coral: ["#e11d48", "#fb7185"],
+  brand: ["#1f3b8b", "#60a5fa"],
+  accent: ["#0f9789", "#4ade80"],
+  royal: ["#172b6b", "#58d7bf"],
+  coral: ["#0f9789", "#2cc4a7"],
   amber: ["#d97706", "#fbbf24"],
   ink: ["#34445d", "#7388a6"],
-  energy: ["#7c3aed", "#f43f5e"],
+  energy: ["#172b6b", "#17b8a6"],
 };
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;

@@ -23,9 +23,9 @@ export function TrustWall() {
       <div className="container-x">
         <Reveal>
           <SectionHeading
-            eyebrow="Trust wall"
-            title={<span id="trust-heading">Regulated to the letter.</span>}
-            sub="The licences, audits and rails behind every rupee that moves through your counter. Nothing hidden, nothing borrowed."
+            eyebrow="Compliance & security"
+            title={<span id="trust-heading">Every licence. Every audit. Every rail.</span>}
+            sub="The regulatory approvals, security certifications and payment rails that underpin every rupee flowing through TRANSPE."
           />
         </Reveal>
 

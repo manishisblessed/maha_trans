@@ -272,7 +272,7 @@ export default function AdminKycPage() {
           <>
             <ReportActions
               filename="kyc-queue"
-              title="JMP eMoney · KYC Queue"
+              title="JMP TRANSPE · KYC Queue"
               subtitle={`${rows.length} applicants`}
               columns={[
                 { key: "id", header: "KYC ID" },

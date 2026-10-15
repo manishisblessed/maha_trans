@@ -69,7 +69,7 @@ async function shareInviteLink(link: string, name?: string | null) {
   if (typeof navigator !== "undefined" && "share" in navigator) {
     try {
       await navigator.share({
-        title: "eMoney Onboarding",
+        title: "TRANSPE Onboarding",
         text: name ? `Onboarding link for ${name}` : "Complete your onboarding",
         url: link,
       });
@@ -316,7 +316,7 @@ export default function NetworkPage() {
           <>
             <ReportActions
               filename={`my-${meta.plural.replace(/ /g, "-")}`}
-              title={`JMP eMoney · My ${meta.plural.replace(/\b\w/g, (c) => c.toUpperCase())}`}
+              title={`JMP TRANSPE · My ${meta.plural.replace(/\b\w/g, (c) => c.toUpperCase())}`}
               subtitle={`${users.length} record${users.length === 1 ? "" : "s"}`}
               columns={[
                 { key: "id", header: "Code" },

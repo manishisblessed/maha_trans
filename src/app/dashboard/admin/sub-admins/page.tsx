@@ -274,7 +274,7 @@ export default function AdminSubAdminsPage() {
           <>
             <ReportActions
               filename="sub-admins"
-              title="JMP eMoney · Sub-Admins"
+              title="JMP TRANSPE · Sub-Admins"
               columns={[
                 { key: "id", header: "ID" },
                 { key: "name", header: "Name" },

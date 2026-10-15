@@ -7,7 +7,7 @@ import { IconTile, type IconTone } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney EmptyState — friendly, retailer-first empty / zero-data block.
+ * TRANSPE EmptyState — friendly, retailer-first empty / zero-data block.
  * Drop it inside a SectionCard body or render standalone (`bordered`).
  */
 export function EmptyState({

@@ -14,14 +14,14 @@ import { cn } from "@/lib/utils";
 const account = {
   ifsc: "YESB0CMSNOC",
   number: "PPRSMV456789012345",
-  beneficiary: "eMoney - Aman Sharma",
+  beneficiary: "TRANSPE - Aman Sharma",
   branch: "Virtual Branch, Delhi"
 };
 
 const STEPS = [
   { icon: ShareNetwork, text: "Share the account number & IFSC with your customer." },
   { icon: Bank, text: "Customer transfers via UPI / IMPS / NEFT from any bank app." },
-  { icon: Lightning, text: "Funds auto-credit to your eMoney wallet within 30 seconds." },
+  { icon: Lightning, text: "Funds auto-credit to your TRANSPE wallet within 30 seconds." },
   { icon: QrCode, text: "You earn standard collection commission on every credit." },
 ];
 

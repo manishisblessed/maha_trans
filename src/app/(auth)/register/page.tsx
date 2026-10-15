@@ -148,7 +148,7 @@ export default function JoinPage() {
         ) : (
           <>
             <AuthCardHeader
-              eyebrow="Join eMoney"
+              eyebrow="Join TRANSPE"
               title="Start earning from your first transaction"
               description={
                 <>
@@ -267,7 +267,7 @@ export default function JoinPage() {
                   placeholder="Tell us anything that helps us onboard you faster."
                   rows={3}
                   maxLength={1000}
-                  className="flex w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 shadow-sm transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:shadow-[0_0_0_4px_rgba(124,58,237,0.14),0_8px_24px_-10px_rgba(244,63,94,0.25)]"
+                  className="flex w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 shadow-sm transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]"
                 />
               </div>
 
@@ -280,7 +280,7 @@ export default function JoinPage() {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
                   />
                   <span>
-                    I agree to be contacted by eMoney and accept the{" "}
+                    I agree to be contacted by TRANSPE and accept the{" "}
                     <Link href="/legal/terms" className="font-semibold text-brand-700 hover:underline">
                       Terms
                     </Link>{" "}

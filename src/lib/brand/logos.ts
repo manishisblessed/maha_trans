@@ -168,7 +168,7 @@ const BRANDS: BrandDef[] = [
 
 /** Stable palette for brands not in the curated table. */
 const FALLBACK_PALETTE: Array<{ bg: string; fg: string }> = [
-  { bg: "#1e3a8a", fg: "#ffffff" },
+  { bg: "#0b1740", fg: "#ffffff" },
   { bg: "#047857", fg: "#ffffff" },
   { bg: "#6d28d9", fg: "#ffffff" },
   { bg: "#b45309", fg: "#ffffff" },

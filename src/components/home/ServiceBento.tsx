@@ -47,9 +47,9 @@ export function ServiceBento() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <Reveal>
             <SectionHeading
-              eyebrow="Everything at your counter"
-              title={<span id="bento-heading">One login. Sixty ways to earn.</span>}
-              sub="Banking, top-ups, bills and travel — every service pays you a commission the moment it succeeds."
+              eyebrow="Your service catalogue"
+              title={<span id="bento-heading">Single dashboard. Sixty revenue lines.</span>}
+              sub="Banking, top-ups, bills and travel — every transaction credits commission to your wallet the instant it completes."
             />
           </Reveal>
 

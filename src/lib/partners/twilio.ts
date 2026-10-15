@@ -270,15 +270,15 @@ function contentSidFor(slug: string): string | undefined {
  */
 const SMS_BODIES: Record<string, ((v: Record<string, string>) => string) | undefined> = {
   onboard_invite: (v) =>
-    `eMoney: You're invited as ${v.role}. Complete registration: ${v.link}`,
+    `TRANSPE: You're invited as ${v.role}. Complete registration: ${v.link}`,
   onboard_success: (v) =>
-    `eMoney: Welcome! Your ${v.role} account is active. Login: ${v.link}`,
+    `TRANSPE: Welcome! Your ${v.role} account is active. Login: ${v.link}`,
   declaration_approval: (v) =>
-    `eMoney: Approve the declaration for your downline member: ${v.link}`,
+    `TRANSPE: Approve the declaration for your downline member: ${v.link}`,
   declaration_approved: (v) =>
-    `eMoney: Your declaration has been approved. Login to continue.`,
+    `TRANSPE: Your declaration has been approved. Login to continue.`,
   declaration_rejected: (v) =>
-    `eMoney: Your declaration was rejected. Reason: ${v.reason ?? "See dashboard."}`,
+    `TRANSPE: Your declaration was rejected. Reason: ${v.reason ?? "See dashboard."}`,
 };
 
 /** Send an SMS via Twilio Content API (pre-approved template + variables). */
@@ -336,7 +336,7 @@ export const twilioSms: SmsProvider = {
       return r as PartnerResult<{ messageId: string }>;
     }
     // Fallback: deliver OTP via Programmable Messaging
-    const body = `Your eMoney verification code is ${otp}. Valid for 5 minutes. Do not share.`;
+    const body = `Your TRANSPE verification code is ${otp}. Valid for 5 minutes. Do not share.`;
     const r = await sendSms({ to: toE164India(phone), body });
     return r;
   },
@@ -351,7 +351,7 @@ export const twilioSms: SmsProvider = {
     const builder = SMS_BODIES[templateId];
     const body = builder
       ? builder(variables)
-      : `eMoney notification. Visit your dashboard for details.`;
+      : `TRANSPE notification. Visit your dashboard for details.`;
     return sendSms({ to: toE164India(phone), body });
   },
 };

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Cash withdrawal, money transfer, UPI, recharges, 1,200+ billers and travel. Every service your customers walk in for, from one eMoney counter."
+    "Cash withdrawal, money transfer, UPI, recharges, 1,200+ billers and travel. Every service your customers walk in for, from one TRANSPE counter."
 };
 
 type Category = ServiceItem["category"];

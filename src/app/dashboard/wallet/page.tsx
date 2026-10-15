@@ -378,7 +378,7 @@ export default function WalletPage() {
     <div className="mx-auto max-w-6xl">
       <ServicePageHeader
         icon={Wallet}
-        title="eMoney Wallet"
+        title="TRANSPE Wallet"
         description="Add money in seconds via UPI or cards, and keep an eye on every rupee in and out."
       />
 

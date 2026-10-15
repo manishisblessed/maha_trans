@@ -64,7 +64,7 @@ const nextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org: "emoney",
+  org: "TRANSPE",
   project: "javascript-nextjs",
 
   // Build-time secret used to upload source maps so production stack traces are

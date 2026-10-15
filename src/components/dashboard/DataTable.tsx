@@ -16,7 +16,7 @@ export type Column<T> = {
 };
 
 /**
- * Emoney DataTable — v2 "Bharat Energy".
+ * TRANSPE DataTable — v2 "Bharat Energy".
  *
  * `rounded-3xl` surface, Clash Display title, uppercase micro header row on a
  * soft ink wash, rows that light up with a gradient left accent on hover, a

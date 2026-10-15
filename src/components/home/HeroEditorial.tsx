@@ -61,18 +61,18 @@ export function HeroEditorial() {
                 <span className="brand-dot absolute inset-0 animate-ping-soft" />
                 <span className="brand-dot relative" />
               </span>
-              Bharat&apos;s Shop OS · Live now
+              India&apos;s Retail Payments Engine · Live
             </motion.span>
 
             <h1 className="mt-7 font-display text-5xl font-bold leading-[0.98] tracking-[-0.02em] md:text-6xl lg:text-7xl">
               <motion.span {...line(1)} className="block">
-                Your dukaan.
+                One counter.
               </motion.span>
               <motion.span {...line(2)} className="gradient-text block pb-1">
-                Your bank.
+                Sixty services.
               </motion.span>
               <motion.span {...line(3)} className="block">
-                Your rules.
+                Every rupee earned.
               </motion.span>
             </h1>
 
@@ -80,13 +80,14 @@ export function HeroEditorial() {
               {...line(4)}
               className="mt-7 max-w-xl text-base leading-relaxed text-white/65 md:text-lg"
             >
-              Cash out, send money, pay bills, sell tickets — from the counter you
-              already own. You earn a commission on every single transaction.
+              Dispense cash, transfer funds, collect bills, book tickets — all
+              from the shop you already run. Commission hits your wallet the
+              moment a transaction succeeds.
             </motion.p>
 
             <motion.div {...line(5)} className="mt-9 flex flex-wrap items-center gap-3">
               <ButtonLink href="/register" size="xl">
-                Start earning today
+                Activate your counter
                 <ArrowRight size={18} weight="bold" aria-hidden />
               </ButtonLink>
               <ButtonLink
@@ -95,7 +96,7 @@ export function HeroEditorial() {
                 size="xl"
                 className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
               >
-                See how it works
+                How it works
               </ButtonLink>
             </motion.div>
 
@@ -222,7 +223,7 @@ function PhoneMock() {
           <div className="flex items-center justify-between text-[11px] text-white/50">
             <span>9:41</span>
             <span className="font-display font-semibold tracking-tight text-white/80">
-              eMoney
+              TRANSPE
             </span>
           </div>
 
@@ -230,7 +231,7 @@ function PhoneMock() {
           <div className="mt-4 overflow-hidden rounded-3xl bg-energy-gradient p-4 text-white shadow-energy-sm">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80">
-                Aaj ka earning
+                Today&apos;s earnings
               </p>
               <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">
                 <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping-soft" aria-hidden />
@@ -261,7 +262,7 @@ function PhoneMock() {
           {/* Feed */}
           <div className="mt-4 flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
-              Live at your counter
+              Recent transactions
             </p>
             <span className="text-[10px] text-white/35">auto-refresh</span>
           </div>

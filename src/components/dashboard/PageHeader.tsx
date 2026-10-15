@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney PageHeader — v2 "Bharat Energy".
+ * TRANSPE PageHeader — v2 "Bharat Energy".
  *
  * Server-safe (no hooks) so server-component pages can keep passing a Lucide
  * `icon`. Entrance uses the CSS `animate-fade-up` keyframe, which the global

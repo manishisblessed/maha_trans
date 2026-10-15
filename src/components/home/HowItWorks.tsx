@@ -27,29 +27,29 @@ type Step = {
 const STEPS: Step[] = [
   {
     n: "01",
-    title: "Sign up in 5 minutes",
-    copy: "Your mobile number, PAN and shop name. Nothing to print, nothing to courier.",
+    title: "Register in under 5 minutes",
+    copy: "Enter your mobile, PAN and shop name. No documents to post, no office to visit.",
     icon: UserPlus,
     grad: "from-royal-500 to-brand-600"
   },
   {
     n: "02",
-    title: "Finish KYC",
-    copy: "Aadhaar OTP plus a selfie. Verified the same day — usually within the hour.",
+    title: "Complete e-KYC",
+    copy: "Aadhaar OTP and a quick selfie. Approval typically arrives within the hour.",
     icon: IdentificationCard,
     grad: "from-brand-500 to-accent-500"
   },
   {
     n: "03",
-    title: "Add funds",
-    copy: "Top up your wallet by UPI or IMPS. Start with ₹2,000 — your float, your pace.",
+    title: "Load your wallet",
+    copy: "Fund your account via UPI or IMPS. Even ₹2,000 is enough to begin — scale as you grow.",
     icon: Wallet,
     grad: "from-accent-500 to-brand-500"
   },
   {
     n: "04",
-    title: "Start earning",
-    copy: "First AePS withdrawal, first commission. Paisa lands in your wallet instantly.",
+    title: "Earn from transaction one",
+    copy: "Process your first AePS withdrawal or bill payment. Commission credits to your wallet in real time.",
     icon: Coins,
     grad: "from-coral-500 to-royal-600"
   }
@@ -78,8 +78,8 @@ export function HowItWorks() {
             <Reveal>
               <SectionHeading
                 eyebrow="How it works"
-                title={<span id="hiw-heading">Signup to first commission. Same day.</span>}
-                sub="Four steps. No office visit. No file of photocopies. Most shops take their first payment before closing time."
+                title={<span id="hiw-heading">Register to first commission — same afternoon.</span>}
+                sub="Four steps, fully online. No paperwork, no branch visit. Most partners process their first transaction before the shutters go down."
               />
             </Reveal>
 
@@ -92,7 +92,7 @@ export function HowItWorks() {
                   <p className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink-950">
                     4h 12m
                   </p>
-                  <p className="text-sm text-ink-500">average time from signup to first transaction</p>
+                  <p className="text-sm text-ink-500">average time from registration to first live transaction</p>
                 </div>
               </div>
             </Reveal>
@@ -100,7 +100,7 @@ export function HowItWorks() {
             <Reveal delay={0.15}>
               <div className="mt-6">
                 <ButtonLink href="/register" size="lg">
-                  Open your counter
+                  Get started now
                   <ArrowRight size={16} weight="bold" aria-hidden />
                 </ButtonLink>
               </div>

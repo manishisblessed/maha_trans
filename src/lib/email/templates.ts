@@ -1,28 +1,28 @@
-/**
+﻿/**
  * Transactional email templates.
  *
  * Design constraints (email is not the web):
- * - Table-based layout — Gmail/Outlook still don't reliably render flexbox.
- * - All styles inline — most clients strip <style> blocks.
- * - System font stack — no external @font-face (blocked by many clients).
- * - Max width 600px, single column — the mobile-safe standard.
- * - Preheader text — the muted line inbox previews show next to the subject.
+ * - Table-based layout â€” Gmail/Outlook still don't reliably render flexbox.
+ * - All styles inline â€” most clients strip <style> blocks.
+ * - System font stack â€” no external @font-face (blocked by many clients).
+ * - Max width 600px, single column â€” the mobile-safe standard.
+ * - Preheader text â€” the muted line inbox previews show next to the subject.
  * - No JS, no external images beyond the sender's discretion.
  *
  * Palette matches tailwind.config.ts (brand.* / accent.*) so marketing emails
  * feel continuous with the dashboard.
  */
 
-// eMoney email palette — mirrors tailwind.config.ts brand (blue) & accent (green).
+// TRANSPE email palette â€” mirrors tailwind.config.ts brand (navy) & accent (teal).
 const BRAND = {
-  primary: "#2563eb", // brand-600
-  primaryDark: "#1e3a8a", // brand-900
-  primarySoft: "#eff6ff", // brand-50
-  accent: "#22c55e", // accent-500 (growth green)
+  primary: "#172b6b", // brand-700 (navy)
+  primaryDark: "#0b1740", // brand-900 (deep navy)
+  primarySoft: "#eef2fb", // brand-50
+  accent: "#17b8a6", // accent-500 (teal)
   ink: "#0e1626", // ink-900
   inkMuted: "#516a8c", // ink-500
   inkLight: "#a4b3c8", // ink-300
-  border: "#dbeafe", // brand-100
+  border: "#d6def4", // brand-100
   bg: "#f5f7fa", // ink-50
 } as const;
 
@@ -52,7 +52,7 @@ function fmtExpiry(expiresAt: Date | string) {
 /**
  * Wraps the email body in a mobile-safe, inbox-safe outer shell with the
  * brand header, footer and a hidden preheader. Callers supply the inner
- * HTML — everything around it (fonts, layout table, footer) is standard.
+ * HTML â€” everything around it (fonts, layout table, footer) is standard.
  */
 function shell({
   preheader,
@@ -68,7 +68,7 @@ function shell({
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
-    <title>eMoney</title>
+    <title>TRANSPE</title>
     <!--[if mso]><style>* { font-family: Arial, sans-serif !important; }</style><![endif]-->
   </head>
   <body style="margin:0;padding:0;background:${BRAND.bg};color:${BRAND.ink};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
@@ -86,7 +86,7 @@ function shell({
                   <tr>
                     <td>
                       <div style="display:inline-block;background:rgba(255,255,255,0.14);padding:8px 14px;border-radius:10px;">
-                        <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:0.3px;">eMoney</span>
+                        <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:0.3px;">TRANSPE</span>
                       </div>
                       <div style="color:rgba(255,255,255,0.72);font-size:11px;font-weight:600;letter-spacing:2px;margin-top:10px;text-transform:uppercase;">PG &middot; POS &middot; QR Payments</div>
                     </td>
@@ -102,15 +102,15 @@ function shell({
             <tr>
               <td style="padding:24px 40px 32px 40px;">
                 <div style="border-top:1px solid ${BRAND.border};padding-top:20px;font-size:12px;line-height:18px;color:${BRAND.inkMuted};">
-                  <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">eMoney</div>
-                  <div>Gurugram, Haryana, India &middot; <a href="https://emoney.today" style="color:${BRAND.primary};text-decoration:none;">emoney.today</a></div>
-                  <div style="margin-top:12px;color:${BRAND.inkLight};">You are receiving this email because someone from your organisation invited you to eMoney. If this wasn't you, you can safely ignore this message.</div>
+                  <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">TRANSPE</div>
+                  <div>Pune, Maharashtra, India &middot; <a href="https://transpe.net" style="color:${BRAND.primary};text-decoration:none;">transpe.net</a></div>
+                  <div style="margin-top:12px;color:${BRAND.inkLight};">You are receiving this email because someone from your organisation invited you to TRANSPE. If this wasn't you, you can safely ignore this message.</div>
                 </div>
               </td>
             </tr>
           </table>
           <div style="max-width:600px;margin:16px auto 0;font-size:11px;color:${BRAND.inkLight};text-align:center;">
-            &copy; ${new Date().getFullYear()} eMoney. All rights reserved.
+            &copy; ${new Date().getFullYear()} TRANSPE. All rights reserved.
           </div>
         </td>
       </tr>
@@ -120,7 +120,7 @@ function shell({
 }
 
 /**
- * Onboarding invite email — sent on invite creation and on manual resend.
+ * Onboarding invite email â€” sent on invite creation and on manual resend.
  * Same visual language for both; `isReminder=true` just re-frames copy so
  * the recipient understands this is a nudge rather than the first contact.
  */
@@ -137,19 +137,19 @@ export function renderInviteEmail(opts: {
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
 
   const preheader = opts.isReminder
-    ? `Reminder — finish setting up your ${roleLabel} account on eMoney. Link expires ${expiry}.`
-    : `You've been invited to join eMoney as a ${roleLabel}. Complete your onboarding in under 5 minutes.`;
+    ? `Reminder â€” finish setting up your ${roleLabel} account on TRANSPE. Link expires ${expiry}.`
+    : `You've been invited to join TRANSPE as a ${roleLabel}. Complete your onboarding in under 5 minutes.`;
 
   const subject = opts.isReminder
-    ? `Reminder: complete your eMoney ${roleLabel} onboarding`
-    : `You're invited to eMoney — start earning as a ${roleLabel}`;
+    ? `Reminder: complete your TRANSPE ${roleLabel} onboarding`
+    : `You're invited to TRANSPE â€” start earning as a ${roleLabel}`;
 
   const headline = opts.isReminder
-    ? "Your eMoney invite is still waiting"
-    : "Welcome to eMoney";
+    ? "Your TRANSPE invite is still waiting"
+    : "Welcome to TRANSPE";
 
   const subhead = opts.isReminder
-    ? `Just a friendly nudge — your onboarding link expires on <strong>${expiry}</strong>. It only takes a few minutes to finish.`
+    ? `Just a friendly nudge â€” your onboarding link expires on <strong>${expiry}</strong>. It only takes a few minutes to finish.`
     : `You've been invited to join our merchant network. Complete a quick onboarding and start using the platform today.`;
 
   const featureRow = (icon: string, title: string, copy: string) => `
@@ -219,7 +219,7 @@ export function renderInviteEmail(opts: {
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team eMoney</strong>
+      <strong>Team TRANSPE</strong>
     </p>
   `;
 
@@ -228,7 +228,7 @@ export function renderInviteEmail(opts: {
 
 /**
  * Sent when an admin flags specific uploaded documents for re-upload. The
- * applicant keeps everything else they've already verified — they only need to
+ * applicant keeps everything else they've already verified â€” they only need to
  * re-submit the listed documents via the fresh, targeted link.
  */
 export function renderDocResubmissionEmail(opts: {
@@ -243,8 +243,8 @@ export function renderDocResubmissionEmail(opts: {
   const firstName = opts.name?.split(" ")[0]?.trim();
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
 
-  const subject = "Action needed: re-upload a few documents for eMoney";
-  const preheader = `A few of your documents need to be re-uploaded. It only takes a minute — link expires ${expiry}.`;
+  const subject = "Action needed: re-upload a few documents for TRANSPE";
+  const preheader = `A few of your documents need to be re-uploaded. It only takes a minute â€” link expires ${expiry}.`;
 
   const docRows = opts.documents
     .map(
@@ -268,7 +268,7 @@ export function renderDocResubmissionEmail(opts: {
     </h1>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 8px 0;">${greeting}</p>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 20px 0;">
-      Thanks for completing your <strong style="color:${BRAND.ink};">${roleLabel}</strong> onboarding. Our team reviewed your submission and a few documents need to be re-uploaded. <strong>You don't need to redo anything else</strong> — just replace the documents listed below.
+      Thanks for completing your <strong style="color:${BRAND.ink};">${roleLabel}</strong> onboarding. Our team reviewed your submission and a few documents need to be re-uploaded. <strong>You don't need to redo anything else</strong> â€” just replace the documents listed below.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px 0;">
@@ -299,7 +299,7 @@ export function renderDocResubmissionEmail(opts: {
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team eMoney</strong>
+      <strong>Team TRANSPE</strong>
     </p>
   `;
 
@@ -317,7 +317,7 @@ function escapeHtml(s: string): string {
 
 /**
  * Internal alert sent to the support/ops inbox when a prospect submits the
- * public Join Form. There is NO account yet — this is a lead the team must
+ * public Join Form. There is NO account yet â€” this is a lead the team must
  * reach out to and convert into an onboarding invite.
  */
 export function renderJoinRequestEmail(opts: {
@@ -332,8 +332,8 @@ export function renderJoinRequestEmail(opts: {
   reviewLink: string;
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
-  const subject = `New join request — ${opts.name} (${roleLabel})`;
-  const preheader = `${opts.name} wants to join eMoney as a ${roleLabel}. Reach out and start onboarding.`;
+  const subject = `New join request â€” ${opts.name} (${roleLabel})`;
+  const preheader = `${opts.name} wants to join TRANSPE as a ${roleLabel}. Reach out and start onboarding.`;
 
   const row = (label: string, value?: string | null) =>
     value
@@ -385,7 +385,7 @@ export function renderJoinRequestEmail(opts: {
     </table>
 
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
-      &mdash; eMoney Platform
+      &mdash; TRANSPE Platform
     </p>
   `;
 
@@ -407,8 +407,8 @@ export function renderAccountApprovedEmail(opts: {
   const fullName = opts.name?.trim() || firstName || "there";
   const greeting = firstName ? `Dear ${fullName},` : "Dear user,";
 
-  const subject = `Your eMoney ${roleLabel} account is approved`;
-  const preheader = `Good news — your ${roleLabel} account is live. Sign in and start using eMoney.`;
+  const subject = `Your TRANSPE ${roleLabel} account is approved`;
+  const preheader = `Good news â€” your ${roleLabel} account is live. Sign in and start using TRANSPE.`;
 
   const body = `
     <div style="display:inline-block;background:#ecfdf5;color:#059669;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:6px 12px;border-radius:999px;">
@@ -419,7 +419,7 @@ export function renderAccountApprovedEmail(opts: {
     </h1>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 8px 0;">${greeting}</p>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 20px 0;">
-      Great news &mdash; your <strong style="color:${BRAND.ink};">${roleLabel}</strong> account on eMoney has been approved by our team. You can now sign in and access your dashboard.
+      Great news &mdash; your <strong style="color:${BRAND.ink};">${roleLabel}</strong> account on TRANSPE has been approved by our team. You can now sign in and access your dashboard.
     </p>
 
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 22px 0;width:100%;">
@@ -471,11 +471,11 @@ export function renderAccountApprovedEmail(opts: {
       On first login you may be asked to set up two-factor authentication &mdash; this keeps your account secure.
     </p>
     <p style="font-size:13px;color:${BRAND.inkMuted};line-height:20px;margin:16px 0 0 0;">
-      Need help? Reply to this email or write to <a href="mailto:support@emoney.today" style="color:${BRAND.primary};text-decoration:none;font-weight:600;">support@emoney.today</a>.
+      Need help? Reply to this email or write to <a href="mailto:support@TRANSPE.today" style="color:${BRAND.primary};text-decoration:none;font-weight:600;">support@TRANSPE.today</a>.
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team eMoney</strong>
+      <strong>Team TRANSPE</strong>
     </p>
   `;
 

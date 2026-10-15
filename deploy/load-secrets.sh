@@ -13,30 +13,30 @@ set -euo pipefail
 #
 #   1) ssm  — SSM Parameter Store (SecureString) under a path prefix.
 #             Each app env var is a parameter, e.g.
-#               /emoney/prod/NEXTAUTH_SECRET      (SecureString)
-#               /emoney/prod/APP_ENCRYPTION_KEY   (SecureString)
-#               /emoney/prod/DATABASE_URL         (SecureString)
+#               /TRANSPE/prod/NEXTAUTH_SECRET      (SecureString)
+#               /TRANSPE/prod/APP_ENCRYPTION_KEY   (SecureString)
+#               /TRANSPE/prod/DATABASE_URL         (SecureString)
 #             Put them there once with:
-#               aws ssm put-parameter --name /emoney/prod/NEXTAUTH_SECRET \
+#               aws ssm put-parameter --name /TRANSPE/prod/NEXTAUTH_SECRET \
 #                 --type SecureString --value "$(openssl rand -base64 32)"
 #
 #   2) secretsmanager — a single JSON secret holding all key/value pairs, e.g.
-#               aws secretsmanager create-secret --name emoney/prod \
+#               aws secretsmanager create-secret --name TRANSPE/prod \
 #                 --secret-string '{"NEXTAUTH_SECRET":"...","APP_ENCRYPTION_KEY":"..."}'
 #
 #  The EC2 instance role must allow ssm:GetParametersByPath + kms:Decrypt
 #  (or secretsmanager:GetSecretValue). No long-lived AWS keys on the box.
 #
 #  Usage:
-#    SECRETS_BACKEND=ssm SSM_PREFIX=/emoney/prod AWS_REGION=ap-south-1 \
+#    SECRETS_BACKEND=ssm SSM_PREFIX=/TRANSPE/prod AWS_REGION=ap-south-1 \
 #      bash deploy/load-secrets.sh
 # =====================================================================
 
 SECRETS_BACKEND="${SECRETS_BACKEND:-ssm}"
-SSM_PREFIX="${SSM_PREFIX:-/emoney/prod}"
-SECRET_NAME="${SECRET_NAME:-emoney/prod}"
+SSM_PREFIX="${SSM_PREFIX:-/TRANSPE/prod}"
+SECRET_NAME="${SECRET_NAME:-TRANSPE/prod}"
 AWS_REGION="${AWS_REGION:-ap-south-1}"
-ENV_OUT="${ENV_OUT:-/home/ubuntu/emoney/.env.production}"
+ENV_OUT="${ENV_OUT:-/home/ubuntu/TRANSPE/.env.production}"
 
 command -v aws >/dev/null 2>&1 || { echo "ERROR: aws CLI not installed"; exit 1; }
 

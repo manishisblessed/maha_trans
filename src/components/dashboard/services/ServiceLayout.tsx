@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * ServiceLayout — the Emoney v2 two-column shell for every transactional
+ * ServiceLayout — the TRANSPE v2 two-column shell for every transactional
  * service page (recharge, bill pay, DMT, AePS, payout, …).
  *
  *  · LEFT  = the form area (children). Pages wrap their existing form in

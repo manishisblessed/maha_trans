@@ -1,14 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# ── eMoney — Production Deploy ────────────────────────────────────
+# ── TRANSPE — Production Deploy ────────────────────────────────────
 # Usage:  ./deploy.sh
-# Stores production .env at ~/env-emoney (outside the repo) so
+# Stores production .env at ~/env-TRANSPE (outside the repo) so
 # git pull never clobbers secrets. Every deploy copies it in fresh.
 # ──────────────────────────────────────────────────────────────────────
 
-APP_DIR="/home/ubuntu/emoney"
-ENV_SOURCE="/home/ubuntu/env-emoney"
+APP_DIR="/home/ubuntu/TRANSPE"
+ENV_SOURCE="/home/ubuntu/env-TRANSPE"
 # Use the REPO's ecosystem file (always current with the code) — it defines
 # BOTH the web app and the background worker, so a deploy restarts both.
 ECOSYSTEM="$APP_DIR/ecosystem.config.js"
@@ -31,7 +31,7 @@ START=$(date +%s)
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════${NC}"
-echo -e "${CYAN}  eMoney — Production Deploy${NC}"
+echo -e "${CYAN}  TRANSPE — Production Deploy${NC}"
 echo -e "${CYAN}  $(date '+%Y-%m-%d %H:%M:%S %Z')${NC}"
 echo -e "${CYAN}══════════════════════════════════════════${NC}"
 
@@ -169,8 +169,8 @@ log "Restarting PM2 processes..."
 # NEVER restart only the web app.
 pm2 startOrRestart "$ECOSYSTEM" --update-env
 # Belt-and-braces: fail loudly if the worker somehow didn't come back fresh.
-pm2 restart emoney-worker --update-env >/dev/null 2>&1 \
-  || warn "emoney-worker restart failed — check 'pm2 status' manually!"
+pm2 restart TRANSPE-worker --update-env >/dev/null 2>&1 \
+  || warn "TRANSPE-worker restart failed — check 'pm2 status' manually!"
 pm2 save
 
 echo ""

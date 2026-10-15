@@ -290,9 +290,9 @@ export const viableUpi: UpiProvider = {
   async collect(input: UpiCollectInput): Promise<PartnerResult<UpiCollectOutput>> {
     const body = {
       amount: input.amount, // rupees (verified: Viable amounts are in ₹)
-      name: input.customerName || "eMoney Customer",
+      name: input.customerName || "TRANSPE Customer",
       mobile: input.customerPhone,
-      email: input.customerEmail || "noreply@emoney.today",
+      email: input.customerEmail || "noreply@transpe.net",
       redirectUri: input.callbackUrl,
     };
     const requested = resolveChannelRoute(input.channel);
@@ -429,8 +429,8 @@ async function probeRoute(route: string): Promise<{ healthy: boolean; detail: st
       amount: PROBE_AMOUNT,
       name: "Health Probe",
       mobile: "9999999999",
-      email: "noreply@emoney.today",
-      redirectUri: "https://emoney.today/api/healthz",
+      email: "noreply@transpe.net",
+      redirectUri: "https://transpe.net/api/healthz",
     },
     { retries: 0 }
   );

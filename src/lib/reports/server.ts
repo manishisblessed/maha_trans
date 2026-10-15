@@ -314,7 +314,7 @@ async function reportFund(user: SessionUser, params: ReportParams): Promise<Repo
   const { from, to } = effectiveRange(params);
   const trend = trendToSeries(
     await dailyTrend({ table: "FundRequest", dateCol: "createdAt", valueExpr: `"amount"`, userCol: "requesterId", ids, from, to }),
-    "Daily fund requests", "#7c3aed"
+    "Daily fund requests", "#172b6b"
   );
 
   return {
@@ -595,7 +595,7 @@ async function reportPushPull(user: SessionUser, params: ReportParams): Promise<
   const trend = trendToSeries(
     trendRows.map((r) => ({ value: Number(r.total) })),
     "Daily push/pull volume",
-    "#7c3aed"
+    "#172b6b"
   );
 
   return {
@@ -1071,7 +1071,7 @@ async function reportCreditCard(user: SessionUser, params: ReportParams): Promis
       table: "Transaction", dateCol: "createdAt", valueExpr: `"amount"`, userCol: "userId",
       ids, from, to, extra: Prisma.sql`AND "service" = 'BILL_CREDIT_CARD'`,
     }),
-    "Daily card payments", "#7c3aed"
+    "Daily card payments", "#172b6b"
   );
 
   return {

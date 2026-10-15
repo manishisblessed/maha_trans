@@ -234,7 +234,7 @@ function LoginForm({ location }: { location: LocationData }) {
           title="Sign in to your shop"
           description={
             <>
-              New to eMoney?{" "}
+              New to TRANSPE?{" "}
               <Link href="/register" className="font-semibold text-brand-700 hover:underline">
                 Request to join
               </Link>{" "}

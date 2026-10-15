@@ -22,7 +22,7 @@ import { company, grievanceOfficer, nodalOfficer } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Call, WhatsApp or write to eMoney. Support, partnerships, grievance and nodal officer contacts, plus our Gurugram office."
+    "Call, WhatsApp or write to TRANSPE. Support, partnerships, grievance and nodal officer contacts, plus our Pune office."
 };
 
 type Channel = {
@@ -211,11 +211,11 @@ export default function ContactPage() {
                         Visit us
                       </p>
                       <p className="mt-0.5 text-sm font-medium text-ink-900">
-                        JMD Empire Square, DLF Phase-1, Gurugram
+                        Shivtej Nagar, Indira Nagar, Pune
                       </p>
                     </div>
                     <a
-                      href="https://www.google.com/maps?q=JMD+Empire+Square+Mehrauli+Gurgaon+Road+DLF+Phase+1+Sector+24+Gurugram+Haryana+122002"
+                      href="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037"
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-sm font-semibold text-royal-700 hover:text-royal-900 focus-energy"
@@ -225,8 +225,8 @@ export default function ContactPage() {
                   </div>
                   <div className="aspect-[16/7] w-full bg-ink-100">
                     <iframe
-                      title="eMoney HQ — JMD Empire Square, DLF Phase-1, Gurugram"
-                      src="https://www.google.com/maps?q=JMD+Empire+Square+Mehrauli+Gurgaon+Road+DLF+Phase+1+Sector+24+Gurugram+Haryana+122002&output=embed"
+                      title="TRANSPE HQ — Shivtej Nagar, Indira Nagar, Pune"
+                      src="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037&output=embed"
                       className="h-full w-full"
                       loading="lazy"
                     />

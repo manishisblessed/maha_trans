@@ -16,9 +16,9 @@ export function InsightsPreview() {
       <div className="container-x">
         <Reveal>
           <SectionHeading
-            eyebrow="Insights"
-            title={<span id="insights-heading">What the best counters do differently.</span>}
-            sub="Short reads from shops that earn more — with the numbers to prove it."
+            eyebrow="From the field"
+            title={<span id="insights-heading">Tactics top-earning partners actually use.</span>}
+            sub="Quick reads backed by real data — strategies and habits that separate high performers from the rest."
           />
         </Reveal>
 

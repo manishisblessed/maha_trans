@@ -59,10 +59,10 @@ const ACCENT_DOT: Record<Accent, string> = {
   violet: "from-royal-500 to-royal-700",
 };
 const ACCENT_HEX: Record<Accent, string> = {
-  brand: "#2563eb",
-  accent: "#16a34a",
-  emerald: "#16a34a",
-  violet: "#7c3aed",
+  brand: "#1f3b8b",
+  accent: "#0f9789",
+  emerald: "#0f9789",
+  violet: "#172b6b",
 };
 
 /** Column colour → Tailwind text classes for header and body cells. */
@@ -481,7 +481,7 @@ export function ReportView({ type }: { type: ReportType }) {
           <>
             <ReportActions
               filename={`${type}-report`}
-              title={`JMP eMoney · ${config.title}`}
+              title={`JMP TRANSPE · ${config.title}`}
               subtitle={
                 f.dateRange && from && to ? `${toDateStr(from)} – ${toDateStr(to)}` : "All records"
               }

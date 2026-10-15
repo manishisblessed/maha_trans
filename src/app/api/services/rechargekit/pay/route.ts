@@ -90,10 +90,10 @@ export async function POST(req: Request) {
     // pass-through (mirrors bbps/pay). GST-inclusive slabs back-calculate base.
     const gstInclusive = rate.chargeGstInclusive;
     const gross = withGst(rate.charge, 18);
-    const feeMoney = gstInclusive ? dec(rate.charge) : gross.total;
+    const feTRANSPE = gstInclusive ? dec(rate.charge) : gross.total;
     const baseCharge = gstInclusive ? round(dec(rate.charge).div("1.18")) : dec(rate.charge);
-    const gstMoney = gstInclusive ? round(sub(feeMoney, baseCharge)) : gross.gst;
-    const fee = toNumber(feeMoney);
+    const gstMoney = gstInclusive ? round(sub(feTRANSPE, baseCharge)) : gross.gst;
+    const fee = toNumber(feTRANSPE);
 
     const result = await runTransaction({
       userId: user.id,

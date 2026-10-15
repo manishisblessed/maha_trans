@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Emoney brand typography — Clash Display headlines + Satoshi body.
+  /* Transpe brand typography — Clash Display headlines + Satoshi body.
      Loaded via Fontshare in src/app/layout.tsx. */
   --font-sans: "Satoshi", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: "Clash Display", "Satoshi", "Inter", system-ui, sans-serif;
@@ -20,7 +20,7 @@
   --border: 226 232 240;
   --input: 226 232 240;
 
-  --ring: 47 123 255;
+  --ring: 23 43 107;
 
   /* Global motion design tokens */
   --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
@@ -63,9 +63,9 @@ button {
     opacity var(--dur-fast) var(--ease-out-quart);
 }
 
-/* Subtle, branded selection — eMoney premium purple */
+/* Subtle, branded selection — Transpe navy */
 ::selection {
-  background: rgb(124 58 237 / 0.18);
+  background: rgb(23 43 107 / 0.18);
   color: rgb(14 22 38);
 }
 
@@ -85,9 +85,9 @@ button {
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    rgba(124, 58, 237, 0.5),
-    rgba(37, 99, 235, 0.5),
-    rgba(34, 197, 94, 0.5)
+    rgba(23, 43, 107, 0.5),
+    rgba(31, 59, 139, 0.5),
+    rgba(23, 184, 166, 0.5)
   );
   border-radius: 999px;
   border: 2px solid transparent;
@@ -96,9 +96,9 @@ button {
 *::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    rgba(124, 58, 237, 0.8),
-    rgba(37, 99, 235, 0.8),
-    rgba(34, 197, 94, 0.8)
+    rgba(23, 43, 107, 0.8),
+    rgba(31, 59, 139, 0.8),
+    rgba(23, 184, 166, 0.8)
   );
   background-clip: padding-box;
   border: 2px solid transparent;
@@ -129,9 +129,8 @@ button {
     @apply inline-flex items-center gap-2 rounded-full border border-royal-200 bg-royal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-royal-700;
   }
 
-  /* Emoney headlines — Clash Display is already compressed/condensed-ish, so we
-     tighten tracking further and lift sizes for extra editorial impact. This is
-     the single most "Emoney vs Nextgen" change on every page. */
+  /* Transpe headlines — Clash Display is already compressed/condensed-ish, so we
+     tighten tracking further and lift sizes for extra editorial impact. */
   .heading-xl {
     @apply font-display text-4xl font-semibold leading-[1.04] tracking-[-0.025em] text-ink-900 md:text-5xl lg:text-[3.75rem];
   }
@@ -148,20 +147,19 @@ button {
     @apply text-base text-ink-600 md:text-lg md:leading-[1.6];
   }
 
-  /* Default card surface — Emoney uses rounded-3xl + inner highlight stroke
-     instead of Nextgen's probable 2xl + plain gray border. */
+  /* Default card surface — Transpe uses rounded-3xl + inner highlight stroke. */
   .card-base {
     @apply rounded-3xl border border-ink-100 bg-white p-6 shadow-sm transition hover:shadow-energy-sm hover:-translate-y-0.5;
   }
 
-  /* Signature Emoney gradient text — purple → coral energy, animated sweep.
+  /* Signature Transpe gradient text — navy → royal → teal, animated sweep.
      Used on hero headlines, logo tagline and section eyebrows. */
   .gradient-text {
     background-image: linear-gradient(
       110deg,
-      #7c3aed 0%,
-      #2563eb 38%,
-      #f43f5e 100%
+      #172b6b 0%,
+      #1f3b8b 45%,
+      #17b8a6 100%
     );
     background-size: 220% auto;
     -webkit-background-clip: text;
@@ -244,8 +242,8 @@ button {
 
   .text-glow {
     text-shadow:
-      0 0 24px rgba(124, 58, 237, 0.35),
-      0 0 60px rgba(37, 99, 235, 0.18);
+      0 0 24px rgba(23, 43, 107, 0.35),
+      0 0 60px rgba(23, 184, 166, 0.18);
   }
 
   .glass {
@@ -267,14 +265,14 @@ button {
   }
 
   .conic-glow {
-    /* eMoney premium conic: purple → blue → green → coral loop */
+    /* Transpe premium conic: navy → royal → teal loop */
     background: conic-gradient(
       from 140deg at 50% 50%,
-      #7c3aed 0deg,
-      #2563eb 95deg,
-      #22c55e 205deg,
-      #fb7185 300deg,
-      #7c3aed 360deg
+      #172b6b 0deg,
+      #1f3b8b 95deg,
+      #17b8a6 205deg,
+      #58d7bf 300deg,
+      #172b6b 360deg
     );
     filter: blur(56px);
     opacity: 0.42;
@@ -284,11 +282,11 @@ button {
   .aurora-glow {
     background: conic-gradient(
       from 140deg at 50% 50%,
-      #7c3aed 0deg,
-      #2563eb 95deg,
-      #22c55e 205deg,
-      #fb7185 300deg,
-      #7c3aed 360deg
+      #172b6b 0deg,
+      #1f3b8b 95deg,
+      #17b8a6 205deg,
+      #58d7bf 300deg,
+      #172b6b 360deg
     );
     filter: blur(64px);
     opacity: 0.4;
@@ -324,7 +322,7 @@ button {
     bottom: 6px;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(90deg, #7c3aed, #2563eb, #22c55e);
+    background: linear-gradient(90deg, #172b6b, #1f3b8b, #17b8a6);
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform 320ms var(--ease-out-quart);
@@ -371,11 +369,11 @@ button {
   }
 
   /* ──────────────────────────────────────────────────────────────────
-     Emoney Phase-1 signature utilities
+     Transpe signature utilities
      ────────────────────────────────────────────────────────────────── */
 
   /* Fine film-grain overlay — pair with any gradient surface to give it a
-     premium, non-digital feel. Nextgen almost certainly uses flat gradients. */
+     premium, non-digital feel. */
   .grain {
     position: relative;
     isolation: isolate;
@@ -392,7 +390,7 @@ button {
   }
 
   /* Gradient border — wrap an element with `.gradient-ring` to get a 1px
-     purple→coral border via masked background. Works on any radius. */
+     navy→teal border via masked background. Works on any radius. */
   .gradient-ring {
     position: relative;
     isolation: isolate;
@@ -403,7 +401,7 @@ button {
     inset: 0;
     padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #f43f5e 100%);
+    background: linear-gradient(135deg, #172b6b 0%, #1f3b8b 50%, #17b8a6 100%);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -421,21 +419,21 @@ button {
   }
 
   /* Energy focus ring — replaces default brand ring on primary interactive
-     elements. Soft purple-coral glow instead of hard blue outline. */
+     elements. Soft navy-teal glow instead of hard outline. */
   .focus-energy:focus-visible {
     outline: none;
     box-shadow:
       0 0 0 2px rgb(255 255 255),
-      0 0 0 4px rgba(124, 58, 237, 0.55),
-      0 10px 30px -8px rgba(244, 63, 94, 0.35);
+      0 0 0 4px rgba(23, 43, 107, 0.55),
+      0 10px 30px -8px rgba(23, 184, 166, 0.35);
   }
 
   /* Sidebar / tab active indicator — a thick pill with the signature gradient.
      Pair with framer-motion `layoutId` for the liquid-move feel. */
   .pill-active {
-    background-image: linear-gradient(135deg, rgba(124, 58, 237, 0.14), rgba(244, 63, 94, 0.12));
-    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.18);
-    color: #4c1d95;
+    background-image: linear-gradient(135deg, rgba(23, 43, 107, 0.14), rgba(23, 184, 166, 0.12));
+    box-shadow: inset 0 0 0 1px rgba(23, 43, 107, 0.18);
+    color: #172b6b;
   }
 
   /* Soft brand dot — paired with .animate-ping-soft for the live indicator on
@@ -445,7 +443,7 @@ button {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, #7c3aed, #f43f5e);
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    background: linear-gradient(135deg, #172b6b, #17b8a6);
+    box-shadow: 0 0 0 3px rgba(23, 43, 107, 0.15);
   }
 }

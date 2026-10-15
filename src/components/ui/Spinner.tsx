@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Emoney Spinner — v2 "energy ring".
+ * TRANSPE Spinner — v2 "energy ring".
  *
  * A conic purple→blue→coral gradient ring (masked to a stroke) that spins,
  * replacing the generic Lucide `Loader2` glyph. Same API as before:
@@ -17,7 +17,7 @@ const sizeMap = {
 
 const ringStyle: CSSProperties = {
   background:
-    "conic-gradient(from 0deg, rgba(124,58,237,0) 0deg, rgba(124,58,237,0.15) 90deg, #7c3aed 200deg, #2563eb 290deg, #f43f5e 360deg)",
+    "conic-gradient(from 0deg, rgba(23, 43, 107,0) 0deg, rgba(23, 43, 107,0.15) 90deg, #172b6b 200deg, #1f3b8b 290deg, #17b8a6 360deg)",
   WebkitMask:
     "radial-gradient(farthest-side, transparent calc(100% - var(--ring)), #000 calc(100% - var(--ring) + 0.5px))",
   mask: "radial-gradient(farthest-side, transparent calc(100% - var(--ring)), #000 calc(100% - var(--ring) + 0.5px))",

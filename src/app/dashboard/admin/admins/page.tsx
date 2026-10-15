@@ -622,7 +622,7 @@ function NewAdminForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@emoney.today"
+            placeholder="admin@transpe.net"
           />
         </div>
         <div>
@@ -794,7 +794,7 @@ function NewMasterAdminForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="masteradmin@emoney.today"
+            placeholder="masteradmin@transpe.net"
           />
         </div>
         <div>

@@ -68,7 +68,7 @@ export const mockUpi: UpiProvider = {
     const orderId = ref("ORDR");
     return ok({
       orderId,
-      upiIntent: `upi://pay?pa=emoney@axisbank&pn=eMoney&am=${input.amount}&tn=${encodeURIComponent(input.note ?? "eMoney")}`,
+      upiIntent: `upi://pay?pa=TRANSPE@axisbank&pn=TRANSPE&am=${input.amount}&tn=${encodeURIComponent(input.note ?? "TRANSPE")}`,
       paymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${orderId}`
     });
   },

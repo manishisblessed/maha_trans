@@ -18,61 +18,65 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand = eMoney primary blue (matches logo "e" mark)
+        // Brand = TRANSPE deep navy (matches the "trans" wordmark)
         brand: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
-          950: "#0b1f52"
+          50: "#eef2fb",
+          100: "#d6def4",
+          200: "#adbce9",
+          300: "#7f94d8",
+          400: "#526fc5",
+          500: "#2f4daa",
+          600: "#1f3b8b",
+          700: "#172b6b",
+          800: "#112052",
+          900: "#0b1740",
+          950: "#060e2a"
         },
-        // Accent = eMoney growth green (matches rising arrow)
+        // Accent = TRANSPE teal (matches the "pe" wordmark and app-icon bg)
         accent: {
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          200: "#a7f3d0",
-          300: "#6ee7b7",
-          400: "#34d399",
-          500: "#22c55e",
-          600: "#16a34a",
-          700: "#15803d",
-          800: "#166534",
-          900: "#14532d",
-          950: "#052e16"
+          50: "#e6fbf7",
+          100: "#c3f3e9",
+          200: "#93e8d7",
+          300: "#58d7bf",
+          400: "#2cc4a7",
+          500: "#17b8a6",
+          600: "#0f9789",
+          700: "#0e786d",
+          800: "#0e5f58",
+          900: "#0d4e49",
+          950: "#04302e"
         },
-        // Royal = premium purple (innovation / white-label personas)
+        // Royal = a lifted navy/sky lane used for secondary highlights, pills,
+        // nav links, filter chips. Kept as a separate scale so existing
+        // `text-royal-700` / `bg-royal-50` className references stay valid —
+        // just rendered in-brand on the navy/teal palette.
         royal: {
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
-          800: "#5b21b6",
-          900: "#4c1d95",
-          950: "#2e1065"
+          50: "#eef4fe",
+          100: "#dae7fd",
+          200: "#b9d1fb",
+          300: "#8bb3f6",
+          400: "#5e8ff0",
+          500: "#3b6fe3",
+          600: "#2855cc",
+          700: "#1f3b8b",
+          800: "#1a2f6e",
+          900: "#172b6b",
+          950: "#0b1740"
         },
-        // Coral = warm light-red (energy / highlights / alerts)
+        // Coral = re-tinted to a warm teal/aqua so existing hover-highlight
+        // / alert chips using `coral-400` keep working but land in-brand.
         coral: {
-          50: "#fff1f2",
-          100: "#ffe4e6",
-          200: "#fecdd3",
-          300: "#fda4af",
-          400: "#fb7185",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
-          800: "#9f1239",
-          900: "#881337",
-          950: "#4c0519"
+          50: "#eafbf7",
+          100: "#cdf4ea",
+          200: "#9ce9d7",
+          300: "#5fd8be",
+          400: "#2fc4a7",
+          500: "#17b8a6",
+          600: "#0f9789",
+          700: "#0e786d",
+          800: "#0d5f58",
+          900: "#0b4e49",
+          950: "#04302e"
         },
         ink: {
           50: "#f5f7fa",
@@ -89,7 +93,7 @@ const config: Config = {
         }
       },
       fontFamily: {
-        // Satoshi is the Emoney body/UI face — distinct from Nextgen's probable Inter.
+        // Satoshi is the Transpe body/UI face.
         sans: [
           '"Satoshi"',
           "ui-sans-serif",
@@ -99,7 +103,7 @@ const config: Config = {
           "Roboto",
           "sans-serif"
         ],
-        // Clash Display is the Emoney headline face — editorial, confident, bold.
+        // Clash Display is the Transpe headline face — editorial, confident, bold.
         display: [
           '"Clash Display"',
           '"Satoshi"',
@@ -108,44 +112,42 @@ const config: Config = {
           "sans-serif"
         ]
       },
-      // Extended radius scale — Emoney leans on larger, squircle-style corners.
+      // Extended radius scale — Transpe leans on larger, squircle-style corners.
       borderRadius: {
         "4xl": "2rem",
         "5xl": "2.5rem"
       },
       backgroundImage: {
-        // eMoney premium mesh: purple → blue → green → coral
+        // Transpe premium mesh: navy → royal → teal (quiet, bank-grade)
         "hero-radial":
-          "radial-gradient(42% 55% at 18% 12%, rgba(124,58,237,0.20) 0%, rgba(124,58,237,0) 60%), radial-gradient(40% 50% at 82% 20%, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0) 60%), radial-gradient(45% 55% at 25% 100%, rgba(34,197,94,0.16) 0%, rgba(34,197,94,0) 60%), radial-gradient(40% 50% at 90% 95%, rgba(251,113,133,0.14) 0%, rgba(251,113,133,0) 60%)",
+          "radial-gradient(42% 55% at 18% 12%, rgba(23,43,107,0.22) 0%, rgba(23,43,107,0) 60%), radial-gradient(40% 50% at 82% 20%, rgba(31,59,139,0.18) 0%, rgba(31,59,139,0) 60%), radial-gradient(45% 55% at 25% 100%, rgba(23,184,166,0.16) 0%, rgba(23,184,166,0) 60%), radial-gradient(40% 50% at 90% 95%, rgba(44,196,167,0.14) 0%, rgba(44,196,167,0) 60%)",
         "grid-pattern":
           "linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px)",
-        // Primary premium gradient: purple → blue → green → coral
+        // Primary premium gradient: navy → royal → teal
         "brand-gradient":
-          "linear-gradient(120deg, #7c3aed 0%, #2563eb 38%, #22c55e 72%, #fb7185 100%)",
-        // Signature Emoney "energy" gradient — purple → coral, used on primary
-        // CTAs, active states and focus rings. The single thing that makes a
-        // page feel immediately "Emoney".
+          "linear-gradient(120deg, #172b6b 0%, #1f3b8b 45%, #17b8a6 100%)",
+        // Signature TRANSPE "energy" gradient — navy → royal → teal, used on
+        // primary CTAs, active states and focus rings. The single thing that
+        // makes a page feel immediately "Transpe".
         "energy-gradient":
-          "linear-gradient(135deg, #7c3aed 0%, #2563eb 45%, #f43f5e 100%)",
+          "linear-gradient(135deg, #172b6b 0%, #1f3b8b 45%, #17b8a6 100%)",
         "energy-gradient-x":
-          "linear-gradient(90deg, #7c3aed 0%, #2563eb 50%, #f43f5e 100%)",
+          "linear-gradient(90deg, #172b6b 0%, #1f3b8b 50%, #17b8a6 100%)",
         "aurora-gradient":
-          "conic-gradient(from 140deg at 50% 50%, #7c3aed 0deg, #2563eb 95deg, #22c55e 205deg, #fb7185 300deg, #7c3aed 360deg)",
-        // Fine SVG noise for premium grain overlays (base64 inline keeps it
-        // zero-request).
+          "conic-gradient(from 140deg at 50% 50%, #172b6b 0deg, #1f3b8b 95deg, #17b8a6 205deg, #58d7bf 300deg, #172b6b 360deg)",
+        // Fine SVG noise for premium grain overlays
         "grain":
           "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/></svg>\")"
       },
       boxShadow: {
         soft: "0 10px 30px -12px rgba(15,23,42,0.18)",
-        glow: "0 20px 50px -12px rgba(124,58,237,0.40)",
-        "glow-brand": "0 20px 50px -12px rgba(37,99,235,0.45)",
-        "glow-coral": "0 20px 50px -12px rgba(244,63,94,0.40)",
-        // Signature Emoney colored shadow — purple→coral spread, used on hover
-        // of primary surfaces (cards, CTAs). This is the main "shape-language"
-        // differentiator from Nextgen's probably flat gray shadows.
-        "energy": "0 24px 60px -18px rgba(124,58,237,0.45), 0 10px 24px -12px rgba(244,63,94,0.25)",
-        "energy-sm": "0 12px 28px -14px rgba(124,58,237,0.40), 0 4px 12px -6px rgba(244,63,94,0.20)",
+        glow: "0 20px 50px -12px rgba(23,43,107,0.45)",
+        "glow-brand": "0 20px 50px -12px rgba(31,59,139,0.45)",
+        "glow-coral": "0 20px 50px -12px rgba(23,184,166,0.40)",
+        // Signature Transpe colored shadow — navy→teal spread, used on hover
+        // of primary surfaces (cards, CTAs).
+        "energy": "0 24px 60px -18px rgba(23,43,107,0.45), 0 10px 24px -12px rgba(23,184,166,0.28)",
+        "energy-sm": "0 12px 28px -14px rgba(23,43,107,0.40), 0 4px 12px -6px rgba(23,184,166,0.22)",
         "inner-ring": "inset 0 0 0 1px rgba(255,255,255,0.6)"
       },
       keyframes: {
@@ -185,7 +187,7 @@ const config: Config = {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(-50%)" }
         },
-        // Signature Emoney gradient sweep used on logo + headlines.
+        // Signature Transpe gradient sweep used on logo + headlines.
         "gradient-sweep": {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" }
