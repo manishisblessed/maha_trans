@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none" role="img" aria-label="TRANSPE">
-  <rect width="180" height="180" rx="40" fill="#17B8A6"/>
-  <polygon points="56,38 78,38 67,19" fill="#172B6B"/>
-  <path d="M45 55 H94 M67 42 V134 Q67 145 78 145 H90" stroke="#172B6B" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <circle cx="123" cy="98" r="26" stroke="#FFFFFF" stroke-width="16" fill="none"/>
-  <line x1="105" y1="90" x2="105" y2="158" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round"/>
-</svg>

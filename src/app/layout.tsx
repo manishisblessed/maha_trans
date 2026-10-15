@@ -32,11 +32,10 @@ export const metadata: Metadata = {
     url: "https://transpe.net",
     siteName: "TRANSPE",
     type: "website"
-  },
-  icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/transpe-mark.jpeg" }]
   }
+  // Favicon + apple-touch icon are provided by the file-based conventions
+  // `src/app/icon.png` and `src/app/apple-icon.png` (the official "tp" mark),
+  // so no manual `icons` metadata is needed here.
 };
 
 export default function RootLayout({

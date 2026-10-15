@@ -3,10 +3,9 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE brand mark — rounded teal squircle with a navy "t" + white "p",
- * matching the official Transpe app-icon. Used only for icon-only contexts
- * (e.g. collapsed sidebar). Everywhere else we render the full official logo
- * artwork via <Logo />.
+ * TRANSPE brand mark — the official rounded teal "tp" app-icon, served from
+ * /transpe-mark.png. Used only for icon-only contexts (e.g. collapsed sidebar);
+ * everywhere else we render the full official wordmark via <Logo />.
  */
 export function LogoMark({
   className,
@@ -16,32 +15,21 @@ export function LogoMark({
   size?: number;
 }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 48 48"
-      width={size}
-      height={size}
-      fill="none"
+    <Image
+      src="/transpe-mark.png"
+      alt="TRANSPE"
+      // Intrinsic size of the source art (512×488); rendered height is driven by
+      // `size` with width:auto so the near-square mark never distorts.
+      width={512}
+      height={488}
+      priority
+      unoptimized
+      style={{ height: size, width: "auto" }}
       className={cn(
-        "shrink-0 transition-transform group-hover:scale-105",
+        "shrink-0 object-contain transition-transform group-hover:scale-105",
         className
       )}
-      role="img"
-      aria-label="TRANSPE logo"
-    >
-      <rect x="0" y="0" width="48" height="48" rx="12" fill="#17B8A6" />
-      <polygon points="15,10 21,10 18,5" fill="#172B6B" />
-      <path
-        d="M12 15 H25 M18 11 V36 Q18 39 21 39 H24"
-        stroke="#172B6B"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <circle cx="33" cy="26" r="7" stroke="#FFFFFF" strokeWidth="4.5" fill="none" />
-      <line x1="28" y1="24" x2="28" y2="42" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" />
-    </svg>
+    />
   );
 }
 
@@ -55,12 +43,12 @@ const sizeMap = {
 } as const;
 
 /**
- * Full TRANSPE logo lockup — renders the "trans" (navy) + "pe" (teal) wordmark
- * from /logo.svg.
+ * Full TRANSPE logo lockup — renders the official "transpe" wordmark from
+ * /transpe-logo.png.
  *
  * - On light surfaces (navbar, auth, sidebar) the full-colour logo is used.
- * - On dark surfaces pass `variant="light"` to render a crisp white
- *   monochrome version of the same artwork.
+ * - On dark surfaces pass `variant="light"`: a `brightness-0 invert` filter
+ *   turns the same artwork into a crisp white monochrome version.
  * - Pass `iconOnly` to render just the squircle "tp" mark (collapsed sidebar).
  * - Pass `tagline` to show the theme-gradient tagline beside the mark.
  * - Use `size` to scale the lockup ("sm" | "md" | "lg").
@@ -98,8 +86,6 @@ export function Logo({
     );
   }
 
-  const logoSrc = variant === "light" ? "/logo-light.svg" : "/logo.svg";
-
   return (
     <Link
       href="/"
@@ -108,15 +94,19 @@ export function Logo({
     >
       <span className="relative inline-flex">
         <Image
-          src={logoSrc}
+          src="/transpe-logo.png"
           alt="TRANSPE"
-          width={320}
-          height={72}
+          // Intrinsic size of the source art (723×345); height is set by the
+          // `sizeMap` class with w-auto so the lockup keeps its aspect ratio.
+          width={723}
+          height={345}
           priority
           unoptimized
           className={cn(
             "w-auto transition-transform duration-300 group-hover:scale-[1.03]",
-            sizeMap[size]
+            sizeMap[size],
+            // The wordmark is navy+teal; on dark surfaces flatten it to pure white.
+            variant === "light" && "brightness-0 invert"
           )}
         />
         {/* Live brand-dot — tucked at the top-right of the wordmark. */}
