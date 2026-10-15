@@ -74,6 +74,12 @@ export default withSentryConfig(nextConfig, {
   // Upload a wider set of client files for better client-side stack traces.
   widenClientFileUpload: true,
 
+  // Delete the generated .map files once Sentry has uploaded them so they don't
+  // ship inside .next. Together with the `find … -delete` step in amplify.yml,
+  // this keeps the deploy artifact under Amplify's 220 MB limit (source maps are
+  // only needed at build/upload time, never to serve or run the app).
+  sourcemaps: { deleteSourcemapsAfterUpload: true },
+
   // Route browser events through our own origin (/monitoring) so they aren't
   // blocked by ad-blockers or the strict `connect-src` CSP set in middleware.
   // NOTE: /monitoring is excluded from the middleware matcher.

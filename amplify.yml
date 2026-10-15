@@ -37,6 +37,14 @@ applications:
             # beyond Amplify's 220 MB limit. The cache is for faster rebuilds
             # (already saved separately below) and traces are dev diagnostics.
             - rm -rf .next/cache
+            # Strip source maps from the deploy artifact. Sentry already consumed
+            # (and, when SENTRY_AUTH_TOKEN is set, uploaded) them during
+            # `next build` above, so they are dead weight at this point — .map
+            # files are never needed to execute the app and only serve browser
+            # debugging. On this build they pushed .next to ~230 MB, just over
+            # Amplify's 230686720-byte deploy cap. Dropping them reclaims tens of
+            # MB and restores headroom.
+            - find .next -name '*.map' -type f -delete
       artifacts:
         baseDirectory: .next
         files:
