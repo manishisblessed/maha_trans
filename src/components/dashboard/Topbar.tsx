@@ -277,7 +277,7 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
           <button
             type="button"
             onClick={onOpenSidebar}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-ink-200 bg-white text-ink-700 transition hover:border-ink-300 hover:text-ink-900 focus-energy lg:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-ink-300 hover:text-ink-900 focus-energy lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -306,7 +306,7 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
                   )}
                   aria-current={crumbs.length === 0 ? "page" : undefined}
                 >
-                  {crumbs.length === 0 ? "Overview" : "Home"}
+                  {crumbs.length === 0 ? "Overview" : "Console"}
                 </Link>
               </li>
               {crumbs.map((c, i) => {
@@ -344,13 +344,13 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="group hidden h-10 w-full max-w-sm items-center gap-2.5 rounded-2xl border border-ink-200/80 bg-white/80 px-3.5 text-left text-sm text-ink-500 shadow-sm transition hover:border-ink-300 hover:bg-white hover:text-ink-700 focus-energy md:flex"
+          className="group hidden h-10 w-full max-w-sm items-center gap-2.5 rounded-full border border-ink-200/80 bg-ink-50/60 px-4 text-left text-sm text-ink-500 transition hover:border-accent-300 hover:bg-white hover:text-ink-700 focus-energy md:flex"
           aria-label="Search pages (Ctrl K)"
           aria-keyshortcuts="Control+K Meta+K"
         >
-          <Search className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-brand-600" />
-          <span className="flex-1 truncate">Search pages, services…</span>
-          <kbd className="hidden shrink-0 items-center gap-0.5 rounded-lg border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-ink-500 lg:inline-flex">
+          <Search className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-accent-600" />
+          <span className="flex-1 truncate">Search the console…</span>
+          <kbd className="hidden shrink-0 items-center gap-0.5 rounded-full border border-ink-200 bg-white px-2 py-0.5 font-sans text-[10px] font-semibold text-ink-500 lg:inline-flex">
             ⌘K
           </kbd>
         </button>
@@ -360,7 +360,7 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-ink-200 bg-white text-ink-700 transition hover:border-ink-300 focus-energy md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-ink-300 focus-energy md:hidden"
             aria-label="Search"
           >
             <Search className="h-4 w-4" />
@@ -406,18 +406,18 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
             </Link>
           ) : isAdminStaff ? null : (
             <div
-              className="hidden items-center gap-2.5 rounded-2xl bg-ink-950 py-1.5 pl-3 pr-3.5 text-white shadow-[0_10px_30px_-12px_rgba(7,11,20,0.6)] md:flex"
+              className="gradient-ring hidden items-center gap-2.5 rounded-full bg-white py-1.5 pl-3.5 pr-4 shadow-sm md:flex"
               title="Wallet balance"
             >
               <span className="relative flex h-2 w-2" aria-hidden>
                 <span className="absolute inline-flex h-full w-full rounded-full bg-energy-gradient opacity-70 animate-ping-soft" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-energy-gradient" />
               </span>
-              <span className="flex flex-col leading-tight">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+              <span className="flex items-baseline gap-1.5 leading-tight">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">
                   Wallet
                 </span>
-                <span className="font-display text-sm font-semibold tabular-nums tracking-[-0.01em]">
+                <span className="font-display text-sm font-semibold tabular-nums tracking-[-0.01em] text-ink-950">
                   {formatINR(liveBalance ?? user?.walletBalance ?? 0)}
                 </span>
               </span>
@@ -433,8 +433,8 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
               aria-haspopup="dialog"
               onClick={() => { setNotifOpen((o) => !o); if (!notifOpen) fetchNotifs(); }}
               className={cn(
-                "relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border bg-white text-ink-700 transition focus-energy",
-                notifOpen ? "border-royal-300 text-royal-700" : "border-ink-200 hover:border-ink-300 hover:text-ink-900"
+                "relative inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white text-ink-700 transition focus-energy",
+                notifOpen ? "border-accent-300 text-accent-700" : "border-ink-200 hover:border-ink-300 hover:text-ink-900"
               )}
             >
               <Bell className="h-4 w-4" />
@@ -520,11 +520,11 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
               aria-expanded={open}
               aria-haspopup="menu"
               className={cn(
-                "flex h-10 items-center gap-2.5 rounded-2xl border bg-white pl-1 pr-1.5 transition focus-energy md:pr-3",
-                open ? "border-royal-300" : "border-ink-200 hover:border-ink-300"
+                "flex h-10 items-center gap-2.5 rounded-full border bg-white pl-1 pr-1.5 transition focus-energy md:pr-3",
+                open ? "border-accent-300" : "border-ink-200 hover:border-ink-300"
               )}
             >
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-energy-gradient font-display text-[11px] font-semibold text-white shadow-energy-sm">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-energy-gradient font-display text-[11px] font-semibold text-white shadow-energy-sm">
                 {initials}
               </span>
               <span className="hidden flex-col text-left leading-tight md:flex">
@@ -545,22 +545,23 @@ export function Topbar({ onOpenSidebar, collapsed, onToggleCollapse }: { onOpenS
                   className="absolute right-0 top-full z-50 mt-2 w-64 origin-top-right overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-energy"
                   role="menu"
                 >
-                  <div className="grain relative bg-ink-950 p-4 text-white">
-                    <div className="relative z-10 flex items-center gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-energy-gradient font-display text-xs font-semibold text-white">
+                  <div className="relative border-b border-ink-100 bg-ink-50/60 p-4">
+                    <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-energy-gradient-x" />
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-energy-gradient font-display text-xs font-semibold text-white shadow-energy-sm">
                         {initials}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{user?.name}</p>
-                        <p className="truncate text-xs text-ink-400">{user?.email}</p>
+                        <p className="truncate text-sm font-semibold text-ink-950">{user?.name}</p>
+                        <p className="truncate text-xs text-ink-500">{user?.email}</p>
                       </div>
                     </div>
-                    <div className="relative z-10 mt-3 flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-md bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-200">
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                      <span className="rounded-full bg-royal-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-royal-700 ring-1 ring-inset ring-royal-100">
                         {displayRole}
                       </span>
                       {userCode && (
-                        <span className="rounded-md bg-white/[0.08] px-1.5 py-0.5 font-mono text-[10px] text-ink-200">
+                        <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink-600 ring-1 ring-inset ring-ink-200">
                           {userCode}
                         </span>
                       )}

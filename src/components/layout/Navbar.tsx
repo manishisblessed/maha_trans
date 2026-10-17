@@ -10,10 +10,13 @@ import {
   ArrowUpRight,
   CaretDown,
   Fingerprint,
+  Headset,
   List,
   PaperPlaneTilt,
+  Phone,
   QrCode,
   Receipt,
+  SealCheck,
   SquaresFour,
   X,
   type Icon as PhosphorIcon
@@ -21,14 +24,13 @@ import {
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/Button";
 import { IconTile, type IconTone } from "@/components/ui/Icon";
-import { mainNav, type NavLink } from "@/lib/data";
+import { company, mainNav, type NavLink } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
-/** Routes whose first section is dark & full-bleed (the home hero is owned by
- *  another builder, so we list it here as a fallback; every PageHero with
- *  `variant="dark"` also emits `data-nav-theme="dark"`). */
+/** Routes whose first section is dark & full-bleed. Pages can also opt in by
+ *  emitting `data-nav-theme="dark"` on their first section. */
 const DARK_ROUTES = new Set(["/"]);
 
 /** Mega-menu metadata for the "Services" children (keyed by href). */
@@ -66,11 +68,22 @@ const serviceMeta: Record<
 function useIsActive(pathname: string) {
   return React.useCallback(
     (href: string) =>
-      pathname === href || (href !== "/" && pathname.startsWith(href)),
+      pathname === href || (href !== "/" && !href.startsWith("/#") && pathname.startsWith(href)),
     [pathname]
   );
 }
 
+/**
+ * TRANSPE public navigation — an anchored, full-width two-deck header:
+ *
+ *  · Deck 1: utility strip (support line + compliance note). Collapses away
+ *    the moment you scroll.
+ *  · Deck 2: main bar — logo left, tabs centre, CTAs right. Transparent over
+ *    dark heroes, frosted white once scrolled. Active tab is marked by a
+ *    gradient underline that glides between links.
+ *  · "Services" opens a full-width mega panel, not a floating card.
+ *  · Mobile: right-hand slide-in drawer.
+ */
 export function Navbar() {
   const pathname = usePathname();
   const reduce = useReducedMotion();
@@ -87,15 +100,14 @@ export function Navbar() {
 
   /* Scroll state */
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Detect whether the page under the (transparent) island is dark.
-     PageTransition mounts the new page after its exit animation, so we probe
-     a few times after a route change. */
+  /* Detect whether the page under the (transparent) bar is dark. The page
+     transition mounts the new page late, so probe a few times. */
   React.useEffect(() => {
     let cancelled = false;
     const probe = () => {
@@ -118,7 +130,7 @@ export function Navbar() {
     setHovered(null);
   }, [pathname]);
 
-  /* Escape closes overlays; lock body scroll while the mobile sheet is open */
+  /* Escape closes overlays; lock body scroll while the drawer is open */
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -164,8 +176,6 @@ export function Navbar() {
     closeTimer.current = setTimeout(() => setMegaOpen(false), 140);
   };
 
-  /* The island turns solid when scrolled OR while the mega-menu is open, so
-     the panel never floats under a transparent, unreadable pill. */
   const solid = scrolled || megaOpen;
   const onDark = darkHero && !solid;
   const servicesItem = mainNav.find((i) => i.children);
@@ -174,46 +184,74 @@ export function Navbar() {
     <>
       <header
         ref={headerRef}
-        className="fixed inset-x-0 top-3 z-50 px-3 sm:px-4"
+        className="fixed inset-x-0 top-0 z-50"
         onMouseLeave={() => {
           setHovered(null);
           scheduleCloseMega();
         }}
       >
-        <div className="relative mx-auto max-w-6xl">
-          <motion.div
-            initial={false}
-            animate={{
-              backgroundColor: solid
-                ? "rgba(255,255,255,0.72)"
-                : "rgba(255,255,255,0)",
-              boxShadow: solid
-                ? "0 10px 30px -12px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.06)"
-                : "0 0 0 0 rgba(15,23,42,0), 0 0 0 1px rgba(15,23,42,0)",
-              backdropFilter: solid
-                ? "saturate(180%) blur(18px)"
-                : "saturate(100%) blur(0px)"
-            }}
-            transition={{ duration: reduce ? 0 : 0.35, ease: easeOut }}
-            style={{
-              WebkitBackdropFilter: solid
-                ? "saturate(180%) blur(18px)"
-                : undefined
-            }}
-            className="flex h-16 items-center justify-between gap-4 rounded-full pl-4 pr-2.5 sm:pl-5"
-          >
-            <Logo
-              size="md"
-              variant={onDark ? "light" : "dark"}
-              className="shrink-0"
-            />
+        {/* ── Deck 1 · utility strip ── */}
+        <AnimatePresence initial={false}>
+          {!scrolled && (
+            <motion.div
+              initial={reduce ? false : { height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={reduce ? undefined : { height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: easeOut }}
+              className={cn(
+                "hidden overflow-hidden text-[11px] font-medium lg:block",
+                onDark
+                  ? "border-b border-white/[0.08] text-white/55"
+                  : "border-b border-ink-100 bg-ink-950 text-white/60"
+              )}
+            >
+              <div className="container-x flex h-8 items-center justify-between">
+                <p className="inline-flex items-center gap-1.5">
+                  <SealCheck size={12} weight="duotone" className="text-accent-400" aria-hidden />
+                  Regulated partner rails · T+1 settlement · 99.98% uptime
+                </p>
+                <div className="flex items-center gap-5">
+                  <a
+                    href={`tel:+91${company.phone}`}
+                    className="inline-flex items-center gap-1.5 transition hover:text-white"
+                  >
+                    <Phone size={12} weight="duotone" aria-hidden />
+                    +91 {company.phone}
+                  </a>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Headset size={12} weight="duotone" aria-hidden />
+                    Mon–Sat · 10 AM–6 PM IST
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* Center links (lg+) */}
+        {/* ── Deck 2 · main bar ── */}
+        <motion.div
+          initial={false}
+          animate={{
+            backgroundColor: solid ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0)",
+            boxShadow: solid
+              ? "0 1px 0 0 rgba(15,23,42,0.07), 0 12px 32px -20px rgba(15,23,42,0.25)"
+              : "0 0 0 0 rgba(15,23,42,0)",
+            backdropFilter: solid ? "saturate(180%) blur(16px)" : "blur(0px)"
+          }}
+          transition={{ duration: reduce ? 0 : 0.3, ease: easeOut }}
+          style={{
+            WebkitBackdropFilter: solid ? "saturate(180%) blur(16px)" : undefined
+          }}
+        >
+          <div className="container-x flex h-[70px] items-center justify-between gap-6">
+            <Logo size="md" variant={onDark ? "light" : "dark"} className="shrink-0" />
+
+            {/* Centre tabs (lg+) */}
             <nav aria-label="Primary" className="hidden lg:block">
-              <ul className="flex items-center gap-0.5">
+              <ul className="flex items-center gap-1">
                 {mainNav.map((item) => {
                   const active = isActive(item.href);
-                  const pill = hovered ? hovered === item.label : active;
+                  const marked = hovered ? hovered === item.label : active;
                   const hasChildren = Boolean(item.children);
                   return (
                     <li
@@ -225,30 +263,12 @@ export function Navbar() {
                         else scheduleCloseMega();
                       }}
                     >
-                      {pill && (
-                        <motion.span
-                          layoutId="nav-pill"
-                          aria-hidden
-                          className={cn(
-                            "absolute inset-0 rounded-full",
-                            onDark ? "bg-white/15" : "pill-active"
-                          )}
-                          transition={{
-                            type: "spring",
-                            stiffness: 420,
-                            damping: 34,
-                            mass: 0.6
-                          }}
-                        />
-                      )}
                       <Link
                         href={item.href}
                         aria-current={active ? "page" : undefined}
                         aria-haspopup={hasChildren ? "menu" : undefined}
                         aria-expanded={hasChildren ? megaOpen : undefined}
-                        aria-controls={
-                          hasChildren ? "services-mega-menu" : undefined
-                        }
+                        aria-controls={hasChildren ? "services-mega-menu" : undefined}
                         onFocus={() => {
                           setHovered(item.label);
                           if (hasChildren) openMega();
@@ -259,32 +279,43 @@ export function Navbar() {
                             openMega();
                             requestAnimationFrame(() => {
                               document
-                                .querySelector<HTMLAnchorElement>(
-                                  "#services-mega-menu a"
-                                )
+                                .querySelector<HTMLAnchorElement>("#services-mega-menu a")
                                 ?.focus();
                             });
                           }
                         }}
                         className={cn(
-                          "relative z-10 inline-flex h-9 items-center gap-1 whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors focus-energy",
+                          "relative inline-flex h-[70px] items-center gap-1 whitespace-nowrap px-3.5 text-sm font-semibold transition-colors focus-energy",
                           onDark
-                            ? "text-white/80 hover:text-white"
-                            : active
-                              ? "text-royal-900"
-                              : "text-ink-700 hover:text-ink-950"
+                            ? marked
+                              ? "text-white"
+                              : "text-white/70 hover:text-white"
+                            : marked
+                              ? "text-ink-950"
+                              : "text-ink-600 hover:text-ink-950"
                         )}
                       >
                         {item.label}
                         {hasChildren && (
                           <CaretDown
-                            size={12}
+                            size={11}
                             weight="bold"
                             aria-hidden
                             className={cn(
                               "transition-transform duration-300",
                               megaOpen && "rotate-180"
                             )}
+                          />
+                        )}
+                        {marked && (
+                          <motion.span
+                            layoutId="nav-underline"
+                            aria-hidden
+                            className={cn(
+                              "absolute inset-x-3 bottom-0 h-[3px] rounded-t-full",
+                              onDark ? "bg-accent-400" : "bg-energy-gradient-x"
+                            )}
+                            transition={{ type: "spring", stiffness: 480, damping: 40 }}
                           />
                         )}
                       </Link>
@@ -295,7 +326,7 @@ export function Navbar() {
             </nav>
 
             {/* Right CTAs (lg+) */}
-            <div className="hidden items-center gap-1.5 lg:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               <Link href="/login" className="rounded-2xl focus-energy">
                 <Button
                   variant="ghost"
@@ -305,12 +336,12 @@ export function Navbar() {
                     onDark && "text-white/85 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  Login
+                  Partner login
                 </Button>
               </Link>
               <Link href="/register" className="rounded-2xl focus-energy">
-                <Button size="sm" tabIndex={-1} className="rounded-full px-5">
-                  Start earning
+                <Button size="sm" tabIndex={-1} className="px-5">
+                  Open your counter
                   <ArrowRight size={14} weight="bold" aria-hidden />
                 </Button>
               </Link>
@@ -324,35 +355,34 @@ export function Navbar() {
               aria-controls="mobile-menu"
               onClick={() => setMobileOpen(true)}
               className={cn(
-                "inline-flex h-11 w-11 items-center justify-center rounded-full transition focus-energy active:scale-95 lg:hidden",
+                "inline-flex h-11 w-11 items-center justify-center rounded-2xl transition focus-energy active:scale-95 lg:hidden",
                 onDark
                   ? "bg-white/10 text-white hover:bg-white/20"
-                  : "bg-ink-900 text-white hover:bg-ink-800"
+                  : "bg-ink-950 text-white hover:bg-ink-800"
               )}
             >
               <List size={20} weight="bold" aria-hidden />
             </button>
-          </motion.div>
+          </div>
+        </motion.div>
 
-          {/* Mega menu */}
-          <AnimatePresence>
-            {megaOpen && servicesItem?.children && (
-              <MegaMenu
-                item={servicesItem}
-                reduce={Boolean(reduce)}
-                onEnter={openMega}
-                onLeave={scheduleCloseMega}
-                isActive={isActive}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+        {/* ── Mega panel (full-width) ── */}
+        <AnimatePresence>
+          {megaOpen && servicesItem?.children && (
+            <MegaPanel
+              item={servicesItem}
+              reduce={Boolean(reduce)}
+              onEnter={openMega}
+              onLeave={scheduleCloseMega}
+            />
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Mobile overlay */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
-          <MobileMenu
+          <MobileDrawer
             reduce={Boolean(reduce)}
             onClose={() => setMobileOpen(false)}
             isActive={isActive}
@@ -364,116 +394,105 @@ export function Navbar() {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Mega menu
+   Full-width mega panel
    ────────────────────────────────────────────────────────────────────────── */
-function MegaMenu({
+function MegaPanel({
   item,
   reduce,
   onEnter,
-  onLeave,
-  isActive
+  onLeave
 }: {
   item: NavLink;
   reduce: boolean;
   onEnter: () => void;
   onLeave: () => void;
-  isActive: (href: string) => boolean;
 }) {
   return (
     <motion.div
       id="services-mega-menu"
       role="menu"
       aria-label="Services"
-      initial={{ opacity: 0, y: reduce ? 0 : -8, scale: reduce ? 1 : 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: reduce ? 0 : -6, scale: reduce ? 1 : 0.985 }}
+      initial={{ opacity: 0, y: reduce ? 0 : -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: reduce ? 0 : -8 }}
       transition={{ duration: reduce ? 0 : 0.22, ease: easeOut }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      className="absolute left-1/2 top-full mt-3 hidden w-[min(760px,calc(100vw-2rem))] -translate-x-1/2 origin-top lg:block"
+      className="hidden border-b border-ink-100 bg-white/95 shadow-soft backdrop-blur-xl lg:block"
     >
-      <div className="glass overflow-hidden rounded-3xl p-2 shadow-soft ring-1 ring-ink-900/[0.06]">
-        <div className="grid gap-2 lg:grid-cols-[1fr_240px]">
-          <div className="grid gap-1 sm:grid-cols-2">
-            {item.children!.map((child) => {
-              const meta = serviceMeta[child.href];
-              return (
-                <Link
-                  key={child.href}
-                  href={child.href}
-                  role="menuitem"
-                  className="group flex items-start gap-3 rounded-2xl p-3 transition hover:bg-white/80 focus-energy"
-                >
-                  <IconTile
-                    icon={meta?.icon ?? SquaresFour}
-                    tone={meta?.tone ?? "brand"}
-                    size="md"
-                  />
-                  <span className="min-w-0">
-                    <span className="flex items-center gap-1.5 font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-950">
-                      {child.label}
-                      <ArrowUpRight
-                        size={12}
-                        weight="bold"
-                        aria-hidden
-                        className="-translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-60"
-                      />
-                    </span>
-                    <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
-                      {meta?.desc ?? "Open this service."}
-                    </span>
+      <div className="container-x grid gap-6 py-8 lg:grid-cols-[1fr_280px]">
+        <div className="grid grid-cols-2 gap-1 xl:grid-cols-3">
+          {item.children!.map((child) => {
+            const meta = serviceMeta[child.href];
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                role="menuitem"
+                className="group flex items-start gap-3.5 rounded-2xl p-4 transition hover:bg-ink-50 focus-energy"
+              >
+                <IconTile icon={meta?.icon ?? SquaresFour} tone={meta?.tone ?? "brand"} size="md" />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-950">
+                    {child.label}
+                    <ArrowUpRight
+                      size={12}
+                      weight="bold"
+                      aria-hidden
+                      className="-translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-60"
+                    />
                   </span>
-                </Link>
-              );
-            })}
-            <Link
-              href={item.href}
-              role="menuitem"
-              className={cn(
-                "col-span-full mt-1 inline-flex items-center justify-between rounded-2xl border border-dashed border-ink-200 px-4 py-2.5 text-xs font-semibold text-ink-600 transition hover:border-royal-300 hover:text-royal-800 focus-energy",
-                isActive(item.href) && "text-royal-800"
-              )}
-            >
-              See all 60+ services
-              <ArrowRight size={14} weight="bold" aria-hidden />
-            </Link>
-          </div>
-
-          {/* CTA card */}
+                  <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
+                    {meta?.desc ?? "Open this service."}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
           <Link
-            href="/dashboard"
+            href={item.href}
             role="menuitem"
-            className="grain group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-ink-950 p-5 text-white transition hover:shadow-energy focus-energy"
+            className="group flex items-center gap-3.5 rounded-2xl border border-dashed border-ink-200 p-4 text-sm font-semibold text-ink-600 transition hover:border-royal-300 hover:text-royal-800 focus-energy"
           >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-energy-gradient opacity-60 blur-2xl transition group-hover:opacity-90"
-            />
-            <div className="relative z-10">
-              <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
-                <span className="brand-dot" aria-hidden /> Already a partner?
-              </span>
-              <p className="mt-3 font-display text-xl font-semibold leading-tight tracking-[-0.02em]">
-                Open the dashboard
-              </p>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/60">
-                Wallet, settlements and every service in one place.
-              </p>
-            </div>
-            <span className="relative z-10 mt-6 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-950 transition group-hover:bg-accent-400">
-              <ArrowUpRight size={16} weight="bold" aria-hidden />
-            </span>
+            See all 60+ services
+            <ArrowRight size={14} weight="bold" aria-hidden className="transition group-hover:translate-x-0.5" />
           </Link>
         </div>
+
+        {/* Dashboard CTA rail */}
+        <Link
+          href="/dashboard"
+          role="menuitem"
+          className="grain group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-ink-950 p-6 text-white transition hover:shadow-energy focus-energy"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-energy-gradient opacity-60 blur-2xl transition group-hover:opacity-90"
+          />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+              <span className="brand-dot" aria-hidden /> Already a partner?
+            </span>
+            <p className="mt-3 font-display text-xl font-semibold leading-tight tracking-[-0.02em]">
+              Open the dashboard
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-white/60">
+              Wallet, settlements and every service in one place.
+            </p>
+          </div>
+          <span className="relative z-10 mt-6 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-950 transition group-hover:bg-accent-400">
+            <ArrowUpRight size={16} weight="bold" aria-hidden />
+          </span>
+        </Link>
       </div>
     </motion.div>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Mobile full-screen overlay
+   Mobile right-hand drawer
    ────────────────────────────────────────────────────────────────────────── */
-function MobileMenu({
+function MobileDrawer({
   reduce,
   onClose,
   isActive
@@ -487,123 +506,110 @@ function MobileMenu({
     closeRef.current?.focus();
   }, []);
 
-  const listVariants = {
-    hidden: {},
-    show: { transition: { staggerChildren: reduce ? 0 : 0.06, delayChildren: reduce ? 0 : 0.08 } }
-  };
-  const itemVariants = {
-    hidden: { opacity: 0, y: reduce ? 0 : 18 },
-    show: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : 0.45, ease: easeOut } }
-  };
-
   return (
-    <motion.div
-      id="mobile-menu"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Site menu"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: reduce ? 0 : 0.25, ease: easeOut }}
-      className="grain fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-ink-950 text-white lg:hidden"
-    >
-      <div
-        aria-hidden
-        className="aurora-glow pointer-events-none absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full"
+    <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu" className="fixed inset-0 z-[60] lg:hidden">
+      {/* Backdrop */}
+      <motion.button
+        type="button"
+        aria-label="Close menu"
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: reduce ? 0 : 0.2 }}
+        className="absolute inset-0 bg-ink-950/50 backdrop-blur-sm"
       />
 
-      <div className="relative z-10 flex h-16 items-center justify-between px-5 pt-3">
-        <Logo size="md" variant="light" />
-        <button
-          ref={closeRef}
-          type="button"
-          aria-label="Close menu"
-          onClick={onClose}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-energy active:scale-95"
-        >
-          <X size={20} weight="bold" aria-hidden />
-        </button>
-      </div>
-
-      <motion.nav
-        aria-label="Primary"
-        variants={listVariants}
-        initial="hidden"
-        animate="show"
-        className="relative z-10 flex flex-1 flex-col justify-center px-5 py-10"
-      >
-        <ul className="space-y-1">
-          {mainNav.map((item, i) => {
-            const active = isActive(item.href);
-            return (
-              <motion.li key={item.label} variants={itemVariants}>
-                <Link
-                  href={item.href}
-                  onClick={onClose}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "group flex items-baseline gap-4 rounded-2xl py-2 font-display text-4xl font-semibold tracking-[-0.02em] transition focus-energy sm:text-5xl",
-                    active ? "text-white" : "text-white/75 hover:text-white"
-                  )}
-                >
-                  <span className="font-sans text-xs font-semibold tabular-nums text-white/35">
-                    0{i + 1}
-                  </span>
-                  <span className="flex items-center gap-3">
-                    {item.label}
-                    {active && <span className="brand-dot" aria-hidden />}
-                  </span>
-                </Link>
-                {item.children && (
-                  <ul className="mb-3 ml-9 mt-2 flex flex-wrap gap-2">
-                    {item.children.map((c) => (
-                      <li key={c.href}>
-                        <Link
-                          href={c.href}
-                          onClick={onClose}
-                          className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:border-white/40 hover:text-white focus-energy"
-                        >
-                          {c.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.li>
-            );
-          })}
-        </ul>
-      </motion.nav>
-
+      {/* Panel */}
       <motion.div
-        initial={{ opacity: 0, y: reduce ? 0 : 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: reduce ? 0 : 0.35, duration: reduce ? 0 : 0.4, ease: easeOut }}
-        className="relative z-10 border-t border-white/10 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5"
+        initial={reduce ? false : { x: "100%" }}
+        animate={{ x: 0 }}
+        exit={reduce ? undefined : { x: "100%" }}
+        transition={{ duration: reduce ? 0 : 0.35, ease: easeOut }}
+        className="absolute inset-y-0 right-0 flex w-[88%] max-w-sm flex-col overflow-y-auto rounded-l-[2rem] bg-white shadow-glow"
       >
-        <div className="grid grid-cols-2 gap-2">
-          <Link href="/login" onClick={onClose} className="rounded-2xl focus-energy">
-            <Button
-              variant="outline"
-              size="lg"
-              tabIndex={-1}
-              className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-            >
-              Login
-            </Button>
-          </Link>
-          <Link href="/register" onClick={onClose} className="rounded-2xl focus-energy">
-            <Button size="lg" tabIndex={-1} className="w-full">
-              Start earning
-              <ArrowRight size={16} weight="bold" aria-hidden />
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between px-6 pt-5">
+          <Logo size="sm" />
+          <button
+            ref={closeRef}
+            type="button"
+            aria-label="Close menu"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-ink-100 text-ink-700 transition hover:bg-ink-200 focus-energy active:scale-95"
+          >
+            <X size={18} weight="bold" aria-hidden />
+          </button>
         </div>
-        <p className="mt-4 text-center text-[11px] text-white/40">
-          Free to join · KYC in under five minutes
-        </p>
+
+        <nav aria-label="Primary" className="flex-1 px-4 py-6">
+          <ul className="space-y-0.5">
+            {mainNav.map((item, i) => {
+              const active = isActive(item.href);
+              return (
+                <motion.li
+                  key={item.label}
+                  initial={reduce ? false : { opacity: 0, x: 24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{
+                    duration: reduce ? 0 : 0.35,
+                    delay: reduce ? 0 : 0.08 + i * 0.05,
+                    ease: easeOut
+                  }}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex items-center justify-between rounded-2xl px-4 py-3.5 font-display text-xl font-semibold tracking-[-0.01em] transition focus-energy",
+                      active
+                        ? "pill-active text-royal-900"
+                        : "text-ink-800 hover:bg-ink-50"
+                    )}
+                  >
+                    {item.label}
+                    <ArrowRight size={16} weight="bold" aria-hidden className="text-ink-300" />
+                  </Link>
+                  {item.children && (
+                    <ul className="mb-2 mt-1 flex flex-wrap gap-1.5 px-4">
+                      {item.children.map((c) => (
+                        <li key={c.href}>
+                          <Link
+                            href={c.href}
+                            onClick={onClose}
+                            className="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 text-xs font-medium text-ink-700 transition hover:border-ink-300 hover:text-ink-950 focus-energy"
+                          >
+                            {c.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </motion.li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="border-t border-ink-100 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+          <div className="grid gap-2">
+            <Link href="/register" onClick={onClose} className="rounded-2xl focus-energy">
+              <Button size="lg" tabIndex={-1} className="w-full">
+                Open your counter
+                <ArrowRight size={16} weight="bold" aria-hidden />
+              </Button>
+            </Link>
+            <Link href="/login" onClick={onClose} className="rounded-2xl focus-energy">
+              <Button variant="outline" size="lg" tabIndex={-1} className="w-full">
+                Partner login
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-4 text-center text-[11px] text-ink-400">
+            Free to join · KYC in under five minutes · +91 {company.phone}
+          </p>
+        </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }

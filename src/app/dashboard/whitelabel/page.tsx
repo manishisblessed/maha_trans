@@ -176,7 +176,7 @@ export default function WhitelabelPage() {
           >
             <div className="grid gap-5 md:grid-cols-2">
               <FloatingInput label="Brand name *" value={profile.brandName} onChange={(e) => set("brandName", e.target.value)} placeholder="KapoorPay" />
-              <FloatingInput label="Tagline" value={profile.tagline ?? ""} onChange={(e) => set("tagline", e.target.value)} placeholder="Bharat ka apna fintech" />
+              <FloatingInput label="Tagline" value={profile.tagline ?? ""} onChange={(e) => set("tagline", e.target.value)} placeholder="Your own payments brand" />
               <div>
                 <Label htmlFor="wl-primary">Primary color</Label>
                 <div className="flex items-center gap-2">

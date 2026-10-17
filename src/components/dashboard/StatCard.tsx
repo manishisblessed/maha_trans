@@ -5,17 +5,18 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { IconTile, type IconTone } from "@/components/ui/Icon";
+import { type IconTone } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE StatCard — v2 "Bharat Energy".
+ * TRANSPE StatCard — v3 "Commission ticket".
  *
- * `rounded-3xl` white card with a tone-tinted glow, IconTile glyph, Clash
- * Display value with an rAF count-up, delta chip and an optional gradient
- * sparkline. Backward-compatible with the v1 props (`accent` still accepts
- * brand | accent | emerald | violet and is mapped to the v2 tone scale).
+ * A ticket-shaped card: tone-coloured 3px top edge, uppercase label with a
+ * small inline icon chip, Clash Display value with an rAF count-up, a baseline
+ * delta/hint row and an optional gradient sparkline. Backward-compatible with
+ * the v1 props (`accent` still accepts brand | accent | emerald | violet and
+ * is mapped to the tone scale).
  */
 export type StatCardAccent = "brand" | "accent" | "emerald" | "violet";
 
@@ -26,14 +27,24 @@ const ACCENT_TO_TONE: Record<StatCardAccent, IconTone> = {
   violet: "royal",
 };
 
-const TONE_GLOW: Record<IconTone, string> = {
-  brand: "bg-brand-400",
-  accent: "bg-accent-400",
-  royal: "bg-royal-400",
-  coral: "bg-coral-400",
-  amber: "bg-amber-400",
+const TONE_EDGE: Record<IconTone, string> = {
+  brand: "bg-brand-500",
+  accent: "bg-accent-500",
+  royal: "bg-royal-600",
+  coral: "bg-coral-500",
+  amber: "bg-amber-500",
   ink: "bg-ink-400",
-  energy: "bg-energy-gradient",
+  energy: "bg-energy-gradient-x",
+};
+
+const TONE_CHIP: Record<IconTone, string> = {
+  brand: "bg-brand-50 text-brand-600 ring-brand-100",
+  accent: "bg-accent-50 text-accent-700 ring-accent-100",
+  royal: "bg-royal-50 text-royal-600 ring-royal-100",
+  coral: "bg-coral-50 text-coral-600 ring-coral-100",
+  amber: "bg-amber-50 text-amber-600 ring-amber-100",
+  ink: "bg-ink-50 text-ink-600 ring-ink-100",
+  energy: "bg-energy-gradient text-white ring-transparent",
 };
 
 const TONE_STROKE: Record<IconTone, [string, string]> = {
@@ -220,65 +231,64 @@ export function StatCard({
   const card = (
     <div
       className={cn(
-        "group relative h-full overflow-hidden rounded-3xl border border-ink-100 bg-white p-5 shadow-sm shadow-inner-ring",
+        "group relative h-full overflow-hidden rounded-2xl border border-ink-100 bg-white p-5",
         "transition-[transform,box-shadow,border-color] duration-300 ease-out",
-        href && "cursor-pointer hover:-translate-y-1 hover:border-brand-200 hover:shadow-energy-sm"
+        href && "cursor-pointer hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-energy-sm"
       )}
     >
-      {/* Tone glow — the "inner highlight" */}
+      {/* Tone edge — the ticket keyline */}
       <span
         aria-hidden
-        className={cn(
-          "pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full opacity-[0.10] blur-2xl transition-opacity duration-300",
-          href && "group-hover:opacity-20",
-          TONE_GLOW[t]
-        )}
+        className={cn("absolute inset-x-0 top-0 h-[3px]", TONE_EDGE[t])}
       />
 
-      <div className="relative flex items-start justify-between gap-3">
-        <IconTile tone={t} size="md">
-          <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-        </IconTile>
-
+      <div className="relative flex items-center justify-between gap-3">
         {loading ? (
-          <Skeleton className="h-6 w-14 rounded-full" />
+          <Skeleton className="h-3 w-24" />
         ) : (
-          delta && (
-            <span
-              className={cn(
-                "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset",
-                up
-                  ? "bg-accent-50 text-accent-700 ring-accent-200"
-                  : "bg-coral-50 text-coral-700 ring-coral-200"
-              )}
-            >
-              {up ? (
-                <ArrowUpRight className="h-3 w-3" aria-hidden />
-              ) : (
-                <ArrowDownRight className="h-3 w-3" aria-hidden />
-              )}
-              {delta}
-            </span>
-          )
+          <p className="truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">
+            {label}
+          </p>
         )}
+        <span
+          className={cn(
+            "grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1 ring-inset",
+            TONE_CHIP[t]
+          )}
+          aria-hidden
+        >
+          <Icon className="h-4 w-4" strokeWidth={1.75} />
+        </span>
       </div>
 
-      <div className="relative mt-4">
+      <div className="relative mt-3">
         {loading ? (
-          <>
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="mt-2 h-8 w-32" />
-          </>
+          <Skeleton className="h-8 w-32" />
         ) : (
-          <>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500">
-              {label}
-            </p>
-            <p className="mt-1 font-display text-2xl font-semibold leading-none tracking-[-0.02em] text-ink-950 tabular-nums md:text-3xl">
-              <CountUp value={value} />
-            </p>
-            {hint && <p className="mt-1.5 text-xs text-ink-500">{hint}</p>}
-          </>
+          <p className="font-display text-2xl font-semibold leading-none tracking-[-0.02em] text-ink-950 tabular-nums md:text-3xl">
+            <CountUp value={value} />
+          </p>
+        )}
+
+        {!loading && (delta || hint) && (
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            {delta && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-0.5 text-xs font-bold tabular-nums",
+                  up ? "text-accent-700" : "text-coral-700"
+                )}
+              >
+                {up ? (
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                ) : (
+                  <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
+                )}
+                {delta}
+              </span>
+            )}
+            {hint && <span className="text-xs text-ink-500">{hint}</span>}
+          </p>
         )}
       </div>
 
@@ -289,7 +299,7 @@ export function StatCard({
       {href && (
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-4 right-4 grid h-7 w-7 translate-y-1 place-items-center rounded-full bg-ink-950 text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+          className="pointer-events-none absolute bottom-4 right-4 grid h-7 w-7 translate-x-1 place-items-center rounded-full bg-ink-950 text-white opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
         >
           <ArrowUpRight className="h-3.5 w-3.5" />
         </span>
@@ -299,7 +309,7 @@ export function StatCard({
 
   if (href) {
     return (
-      <Link href={href} className="block h-full rounded-3xl focus-energy">
+      <Link href={href} className="block h-full rounded-2xl focus-energy">
         {card}
       </Link>
     );

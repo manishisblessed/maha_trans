@@ -15,7 +15,6 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Logo } from "./Logo";
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
 import { NewsletterForm } from "@/components/marketing/NewsletterForm";
 import {
   footerLinks,
@@ -40,62 +39,60 @@ const socials: { label: string; href: string; icon: PhosphorIcon }[] = [
   { label: "Facebook", href: "#", icon: FacebookLogo }
 ];
 
+/**
+ * TRANSPE footer — four decks:
+ *  1 · newsletter band (briefing signup)
+ *  2 · brand + link columns
+ *  3 · statutory offices (registered / grievance / nodal) + compliance chips
+ *  4 · bottom bar (legal line + socials)
+ * Opens with the signature gradient keyline instead of a CTA hero — the page
+ * above always ends in its own closing CTA.
+ */
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="relative isolate overflow-hidden bg-ink-950 text-ink-300">
-      {/* Giant outlined wordmark */}
+      {/* Signature keyline */}
+      <div aria-hidden className="h-1 w-full bg-energy-gradient-x" />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 select-none overflow-hidden"
-      >
-        <span className="block translate-y-[18%] text-center font-display text-[22vw] font-bold leading-none text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.08)]">
-          TRANSPE
-        </span>
-      </div>
+        className="pointer-events-none absolute -right-40 top-10 z-0 h-[380px] w-[380px] rounded-full bg-accent-500/10 blur-3xl"
+      />
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-32 top-0 z-0 h-[420px] w-[420px] rounded-full bg-royal-600/20 blur-3xl"
+        className="pointer-events-none absolute -left-40 bottom-10 z-0 h-[380px] w-[380px] rounded-full bg-royal-600/15 blur-3xl"
       />
 
-      {/* 1 · CTA strip */}
+      {/* 1 · Newsletter band */}
       <div className="relative z-10 border-b border-white/10">
-        <Container className="flex flex-col gap-6 py-12 md:flex-row md:items-center md:justify-between md:py-14">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
-              <span className="brand-dot" aria-hidden /> Free to join
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] text-white md:text-5xl">
-              Your counter is ready. Start earning from it today.
-            </h2>
-            <p className="mt-3 text-sm text-white/55 md:text-base">
-              PAN, Aadhaar, shop details. KYC done in under five minutes.
+        <Container className="flex flex-col gap-5 py-10 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
+              <span className="brand-dot" aria-hidden /> The monthly retailer briefing
+            </p>
+            <p className="mt-2 font-display text-xl font-semibold tracking-[-0.01em] text-white md:text-2xl">
+              Commission changes, new services, playbooks — one mail a month.
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <Link href="/register" className="rounded-2xl focus-energy">
-              <Button size="lg" tabIndex={-1}>
-                Start earning
-                <ArrowRight size={16} weight="bold" aria-hidden />
-              </Button>
-            </Link>
-            <Link href="/contact" className="rounded-2xl focus-energy">
-              <Button
-                size="lg"
-                variant="outline"
-                tabIndex={-1}
-                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          <div className="w-full md:max-w-md">
+            <NewsletterForm />
+            <p className="mt-2 text-[11px] text-white/35">
+              Unsubscribe anytime.{" "}
+              <Link
+                href="/legal/privacy"
+                className="underline-offset-2 hover:text-white/70 hover:underline"
               >
-                Talk to us
-              </Button>
-            </Link>
+                Privacy
+              </Link>
+              .
+            </p>
           </div>
         </Container>
       </div>
 
-      {/* 3 · Brand + link columns */}
-      <Container className="relative z-10 pt-14 md:pt-16">
+      {/* 2 · Brand + link columns */}
+      <Container className="relative z-10 pt-14">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-4">
             <Logo variant="light" size="md" />
@@ -104,28 +101,44 @@ export function Footer() {
               dispense cash, settle bills and book travel — every service
               earns you a commission, every customer walks out served.
             </p>
-            <div className="mt-8">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                The monthly retailer briefing
-              </p>
-              <NewsletterForm className="mt-3 max-w-md" />
-              <p className="mt-2 text-[11px] text-white/35">
-                One message a month. Unsubscribe anytime.{" "}
-                <Link
-                  href="/legal/privacy"
-                  className="underline-offset-2 hover:text-white/70 hover:underline"
-                >
-                  Privacy
-                </Link>
-                .
-              </p>
+            <div className="mt-6 space-y-2 text-sm text-white/60">
+              <a
+                href={`tel:+91${company.phone}`}
+                className="flex w-fit items-center gap-2 transition hover:text-white"
+              >
+                <Phone size={14} weight="duotone" className="text-accent-400" aria-hidden />
+                +91 {company.phone}
+              </a>
+              <a
+                href={`mailto:${company.email}`}
+                className="flex w-fit items-center gap-2 transition hover:text-white"
+              >
+                <Envelope size={14} weight="duotone" className="text-accent-400" aria-hidden />
+                {company.email}
+              </a>
             </div>
+            <ul className="mt-6 flex items-center gap-2" aria-label="Social">
+              {socials.map((s) => {
+                const Icon = s.icon;
+                return (
+                  <li key={s.label}>
+                    <a
+                      href={s.href}
+                      aria-label={s.label}
+                      className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-energy"
+                    >
+                      <Icon size={16} weight="duotone" aria-hidden />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8 lg:pl-8">
             {columns.map((col) => (
               <div key={col.title}>
-                <h3 className="font-display text-sm font-semibold tracking-[-0.01em] text-white">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
                   {col.title}
                 </h3>
                 <ul className="mt-4 space-y-2.5 text-sm">
@@ -133,7 +146,7 @@ export function Footer() {
                     <li key={`${col.title}-${l.label}`}>
                       <Link
                         href={l.href}
-                        className="group inline-flex items-center gap-1 text-white/55 transition hover:text-white"
+                        className="group inline-flex items-center gap-1 text-white/60 transition hover:text-white"
                       >
                         {l.label}
                         <ArrowUpRight
@@ -151,42 +164,21 @@ export function Footer() {
           </div>
         </div>
 
-        {/* 4 · Compliance chips */}
-        <ul className="mt-14 flex flex-wrap gap-2" aria-label="Compliance">
-          {footerCertifications.map((c) => (
-            <li
-              key={c}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/60"
-            >
-              <SealCheck
-                size={13}
-                weight="duotone"
-                aria-hidden
-                className="text-accent-400"
-              />
-              {c}
-            </li>
-          ))}
-        </ul>
-
-        {/* 5 · Registered office · Grievance · Nodal (RBI / IT Rules mandated) */}
-        <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-3">
-          <OfficeCell
-            label="Registered office"
-            title={company.legalName}
-          >
+        {/* 3 · Statutory offices (mandated by IT Rules & banking regulations) */}
+        <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-3">
+          <OfficeCell label="Registered office" title={company.legalName}>
             <p className="flex items-start gap-2">
-              <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-brand-300" />
+              <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-accent-400" />
               <span>{company.address}</span>
             </p>
             <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               <a href={`tel:+91${company.phone}`} className="hover:text-white">
                 +91 {company.phone}
               </a>
             </p>
             <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               <a href={`mailto:${company.email}`} className="break-all hover:text-white">
                 {company.email}
               </a>
@@ -199,19 +191,19 @@ export function Footer() {
             subtitle={grievanceOfficer.designation}
           >
             <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               <a href={`mailto:${grievanceOfficer.email}`} className="break-all hover:text-white">
                 {grievanceOfficer.email}
               </a>
             </p>
             <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               {grievanceOfficer.phone}
             </p>
             <p className="text-white/45">{grievanceOfficer.hours}</p>
             <p className="text-white/45">{grievanceOfficer.responseSla}</p>
             <p className="flex items-start gap-2 text-white/45">
-              <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-brand-300" />
+              <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-accent-400" />
               <span>{grievanceOfficer.address}</span>
             </p>
             <Link
@@ -223,18 +215,18 @@ export function Footer() {
           </OfficeCell>
 
           <OfficeCell
-            label="Escalation · RBI Ombudsman Scheme"
+            label="Escalation · Banking Ombudsman Scheme"
             title={nodalOfficer.name}
             subtitle={nodalOfficer.designation}
           >
             <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               <a href={`mailto:${nodalOfficer.email}`} className="break-all hover:text-white">
                 {nodalOfficer.email}
               </a>
             </p>
             <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-brand-300" />
+              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
               {nodalOfficer.phone}
             </p>
             <p className="text-white/45">
@@ -244,8 +236,21 @@ export function Footer() {
           </OfficeCell>
         </div>
 
-        {/* 6 · Bottom bar */}
-        <div className="mt-10 flex flex-col gap-6 border-t border-white/10 py-8 md:flex-row md:items-center md:justify-between">
+        {/* Compliance chips */}
+        <ul className="mt-8 flex flex-wrap gap-2" aria-label="Compliance">
+          {footerCertifications.map((c) => (
+            <li
+              key={c}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/60"
+            >
+              <SealCheck size={13} weight="duotone" aria-hidden className="text-accent-400" />
+              {c}
+            </li>
+          ))}
+        </ul>
+
+        {/* 4 · Bottom bar */}
+        <div className="mt-10 flex flex-col gap-4 border-t border-white/10 py-8 md:flex-row md:items-center md:justify-between">
           <div className="text-xs leading-relaxed text-white/40">
             <p>
               © {year} {company.legalName}. All rights reserved.
@@ -255,22 +260,9 @@ export function Footer() {
               {company.incorporated}, {company.jurisdiction}.
             </p>
           </div>
-          <ul className="flex items-center gap-2" aria-label="Social">
-            {socials.map((s) => {
-              const Icon = s.icon;
-              return (
-                <li key={s.label}>
-                  <a
-                    href={s.href}
-                    aria-label={s.label}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-energy"
-                  >
-                    <Icon size={16} weight="duotone" aria-hidden />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+          <p className="text-xs text-white/40">
+            Built in {company.shortAddress.split(",").pop()?.trim() ?? "India"} · Made for India
+          </p>
         </div>
       </Container>
     </footer>
@@ -293,13 +285,9 @@ function OfficeCell({
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
         {label}
       </p>
-      <p className="mt-2 font-display text-base font-semibold text-white">
-        {title}
-      </p>
+      <p className="mt-2 font-display text-base font-semibold text-white">{title}</p>
       {subtitle && <p className="text-xs text-white/50">{subtitle}</p>}
-      <div className="mt-3 space-y-2 text-xs leading-relaxed text-white/65">
-        {children}
-      </div>
+      <div className="mt-3 space-y-2 text-xs leading-relaxed text-white/65">{children}</div>
     </div>
   );
 }

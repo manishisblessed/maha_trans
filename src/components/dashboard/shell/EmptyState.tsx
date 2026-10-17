@@ -34,7 +34,9 @@ export function EmptyState({
         className
       )}
     >
-      <IconTile icon={icon} tone={tone} size={compact ? "md" : "lg"} />
+      <span className="rounded-full border border-dashed border-ink-200 p-2.5">
+        <IconTile icon={icon} tone={tone} size={compact ? "md" : "lg"} />
+      </span>
       <p className="mt-4 font-display text-base font-semibold tracking-[-0.02em] text-ink-900">
         {title}
       </p>

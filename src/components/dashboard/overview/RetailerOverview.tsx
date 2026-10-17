@@ -112,7 +112,7 @@ export function RetailerOverview({ session }: { session: Session }) {
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        subtitle="Here's a snapshot of your shop today."
+        subtitle="Your counter, at a glance."
         heroLabel="Wallet balance"
         heroValue={session.walletBalance}
         heroHint={

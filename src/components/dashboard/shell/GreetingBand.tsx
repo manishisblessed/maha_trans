@@ -5,11 +5,12 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn, formatINR } from "@/lib/utils";
 
 /**
- * GreetingBand — the dark hero at the top of every role overview.
+ * GreetingBand — the console band at the top of every role overview.
  *
- * Time-aware greeting with a "Namaste" eyebrow, the date, and a single hero
- * number (wallet / today's earnings / company payin) rendered big in Clash
- * Display with an rAF count-up. Secondary context rides in 2–3 chips.
+ * TRANSPE treatment: a navy slab with a gradient keyline on top; greeting and
+ * date on the left, and the hero number inside an inset frosted "console tile"
+ * on the right with the secondary chips rendered as dotted ledger rows —
+ * echoing the commission-receipt motif used across the marketing site.
  *
  * Purely presentational: every value is passed in by the overview that
  * already owns the data.
@@ -20,13 +21,13 @@ export type GreetingChip = {
   tone?: "neutral" | "brand" | "accent" | "coral" | "royal" | "amber";
 };
 
-const chipTone: Record<NonNullable<GreetingChip["tone"]>, string> = {
-  neutral: "bg-white/[0.06] text-ink-100 ring-white/10",
-  brand: "bg-brand-500/15 text-brand-100 ring-brand-400/25",
-  accent: "bg-accent-500/15 text-accent-100 ring-accent-400/25",
-  coral: "bg-coral-500/15 text-coral-100 ring-coral-400/25",
-  royal: "bg-royal-500/15 text-royal-100 ring-royal-400/25",
-  amber: "bg-amber-500/15 text-amber-100 ring-amber-400/25",
+const chipValueTone: Record<NonNullable<GreetingChip["tone"]>, string> = {
+  neutral: "text-white",
+  brand: "text-brand-200",
+  accent: "text-accent-300",
+  coral: "text-coral-300",
+  royal: "text-royal-200",
+  amber: "text-amber-300",
 };
 
 function timeGreeting(d = new Date()) {
@@ -75,7 +76,7 @@ function useCountUp(target: number, duration = 900, enabled = true) {
 
 export function GreetingBand({
   name,
-  eyebrow = "Namaste 🙏",
+  eyebrow = "Counter console · live",
   subtitle,
   heroLabel,
   heroValue,
@@ -118,69 +119,74 @@ export function GreetingBand({
       transition={{ duration: reduce ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "grain relative overflow-hidden rounded-4xl bg-ink-950 text-white shadow-[0_30px_80px_-30px_rgba(7,11,20,0.7)]",
+        "before:absolute before:inset-x-0 before:top-0 before:z-20 before:h-1 before:bg-energy-gradient-x before:content-['']",
         className
       )}
       aria-label="Overview summary"
     >
-      {/* aurora + glow décor */}
+      {/* décor: single rotated energy beam + corner radial */}
       <div
         aria-hidden
-        className="aurora-glow pointer-events-none absolute -right-32 -top-40 h-[26rem] w-[26rem] rounded-full"
+        className="pointer-events-none absolute -right-24 top-1/2 h-[30rem] w-44 -translate-y-1/2 rotate-[24deg] bg-energy-gradient opacity-[0.16] blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_100%_100%,rgba(255,255,255,0.05),transparent)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_80%_at_0%_0%,rgba(255,255,255,0.06),transparent)]"
       />
 
-      <div className="relative z-10 flex flex-col gap-6 p-6 md:flex-row md:items-end md:justify-between md:p-8">
+      <div className="relative z-10 grid gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center lg:gap-10">
         {/* Greeting */}
         <div className="min-w-0">
           <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300">
             <span className="brand-dot" aria-hidden />
             {eyebrow}
           </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-4xl">
+          <h1 className="mt-3 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-4xl">
             {timeGreeting()}, {firstName}
           </h1>
-          <p className="mt-2 text-sm text-ink-300">
-            {dateLabel}
-            {subtitle && <span className="text-ink-500"> · </span>}
-            {subtitle}
+          <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-300">
+            <span className="inline-flex items-center rounded-full bg-white/[0.06] px-2.5 py-0.5 text-xs font-medium text-ink-200 ring-1 ring-inset ring-white/10">
+              {dateLabel}
+            </span>
+            {subtitle && <span>{subtitle}</span>}
           </p>
-          {actions && <div className="mt-5 flex flex-wrap gap-2">{actions}</div>}
+          {actions && <div className="mt-6 flex flex-wrap gap-2">{actions}</div>}
         </div>
 
-        {/* Hero number + chips */}
-        <div className="md:text-right">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400">
-            {heroLabel}
-          </p>
+        {/* Hero number inside an inset console tile */}
+        <div className="relative rounded-3xl bg-white/[0.05] p-5 ring-1 ring-inset ring-white/10 md:p-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400">
+              {heroLabel}
+            </p>
+            {heroHint && <p className="text-[11px] text-ink-500">{heroHint}</p>}
+          </div>
           <p
             className={cn(
-              "mt-1 font-display text-4xl font-semibold tabular-nums tracking-[-0.03em] md:text-5xl",
+              "mt-2 font-display text-4xl font-semibold tabular-nums tracking-[-0.03em] md:text-[2.75rem] md:leading-none",
               loading && "animate-pulse text-white/30"
             )}
             aria-live="polite"
           >
             {loading ? "₹ ——" : heroFormat(animated)}
           </p>
-          {heroHint && <p className="mt-1 text-xs text-ink-400">{heroHint}</p>}
           {chips.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-2 md:justify-end" aria-label="Highlights">
+            <ul className="mt-5 space-y-2 border-t border-white/10 pt-4" aria-label="Highlights">
               {chips.slice(0, 3).map((c) => (
-                <li
-                  key={c.label}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ring-1 ring-inset",
-                    chipTone[c.tone ?? "neutral"]
-                  )}
-                >
-                  <span className="text-ink-300/90">{c.label}</span>
-                  <span className="font-display font-semibold tabular-nums">{c.value}</span>
+                <li key={c.label} className="flex items-baseline gap-2 text-xs">
+                  <span className="shrink-0 text-ink-300">{c.label}</span>
+                  <span
+                    aria-hidden
+                    className="min-w-4 flex-1 border-b border-dotted border-white/20"
+                  />
+                  <span
+                    className={cn(
+                      "shrink-0 font-display font-semibold tabular-nums",
+                      chipValueTone[c.tone ?? "neutral"]
+                    )}
+                  >
+                    {c.value}
+                  </span>
                 </li>
               ))}
             </ul>

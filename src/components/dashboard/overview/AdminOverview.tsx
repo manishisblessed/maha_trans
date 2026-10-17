@@ -138,7 +138,7 @@ export function AdminOverview({ session }: { session: Session }) {
     <div className="space-y-6">
       <GreetingBand
         name={session.name}
-        eyebrow="Namaste 🙏 · Control Tower"
+        eyebrow="Control room · live"
         subtitle={<span className="truncate">Platform admin · {session.email}</span>}
         heroLabel="Settled today"
         heroValue={stats?.settledToday ?? 0}

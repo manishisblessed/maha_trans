@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "TRANSPE — Payments. Powered for Bharat.",
+    default: "TRANSPE — Payments. Powered for India.",
     template: "%s · TRANSPE"
   },
   description:
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://transpe.net"),
   openGraph: {
-    title: "TRANSPE — Payments. Powered for Bharat.",
+    title: "TRANSPE — Payments. Powered for India.",
     description:
       "Payment gateway, POS terminals, QR collections and 60+ financial services for retailers, distributors and merchants across India.",
     url: "https://transpe.net",

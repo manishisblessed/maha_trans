@@ -5,30 +5,24 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE PageHeader — v2 "Bharat Energy".
+ * TRANSPE PageHeader — v3 "Ruled ledger".
  *
- * Server-safe (no hooks) so server-component pages can keep passing a Lucide
- * `icon`. Entrance uses the CSS `animate-fade-up` keyframe, which the global
- * reduced-motion rule neutralises automatically.
+ * Server-safe (no hooks). The header sits on a ruled bottom border that
+ * carries a short gradient segment — the same keyline signature used across
+ * the marketing site and auth cards. The eyebrow renders as a tinted chip and
+ * the optional icon as a dark navy tile.
  *
- * Backward-compatible: `eyebrow`, `title`, `description`, `actions` keep their
- * meaning. New optional props: `breadcrumbs`, `icon`, `tone`, `meta`.
+ * Backward-compatible: `eyebrow`, `title`, `description`, `actions`,
+ * `breadcrumbs`, `icon`, `tone`, `meta` all keep their meaning.
  */
 export type PageHeaderTone = "brand" | "accent" | "royal" | "coral";
 export type PageHeaderBreadcrumb = { label: string; href?: string };
 
-const TONE_TILE: Record<PageHeaderTone, string> = {
-  brand: "bg-brand-50 text-brand-600 ring-brand-100",
-  accent: "bg-accent-50 text-accent-700 ring-accent-100",
-  royal: "bg-royal-50 text-royal-600 ring-royal-100",
-  coral: "bg-coral-50 text-coral-600 ring-coral-100",
-};
-
 const TONE_EYEBROW: Record<PageHeaderTone, string> = {
-  brand: "text-brand-700",
-  accent: "text-accent-700",
-  royal: "text-royal-700",
-  coral: "text-coral-700",
+  brand: "bg-brand-50 text-brand-700 ring-brand-100",
+  accent: "bg-accent-50 text-accent-700 ring-accent-100",
+  royal: "bg-royal-50 text-royal-700 ring-royal-100",
+  coral: "bg-coral-50 text-coral-700 ring-coral-100",
 };
 
 export function PageHeader({
@@ -55,7 +49,12 @@ export function PageHeader({
   meta?: ReactNode;
 }) {
   return (
-    <header className="mb-8 animate-fade-up motion-reduce:animate-none">
+    <header className="relative mb-8 animate-fade-up border-b border-ink-100 pb-6 motion-reduce:animate-none">
+      {/* Gradient segment riding the bottom rule */}
+      <span
+        aria-hidden
+        className="absolute -bottom-px left-0 h-[3px] w-24 rounded-full bg-energy-gradient-x"
+      />
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="mb-3">
           <ol className="flex flex-wrap items-center gap-1 text-xs text-ink-500">
@@ -90,20 +89,18 @@ export function PageHeader({
         <div className="flex min-w-0 flex-1 items-start gap-4">
           {Icon && (
             <span
-              className={cn(
-                "hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset sm:inline-flex",
-                TONE_TILE[tone]
-              )}
+              className="grain relative hidden h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-ink-950 text-white shadow-energy-sm sm:inline-flex"
               aria-hidden
             >
-              <Icon className="h-6 w-6" strokeWidth={1.75} />
+              <span className="absolute -right-3 -top-4 h-10 w-10 rounded-full bg-energy-gradient opacity-60 blur-xl" />
+              <Icon className="relative h-6 w-6" strokeWidth={1.75} />
             </span>
           )}
           <div className="min-w-0">
             {eyebrow && (
               <p
                 className={cn(
-                  "flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]",
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ring-1 ring-inset",
                   TONE_EYEBROW[tone]
                 )}
               >
@@ -114,17 +111,13 @@ export function PageHeader({
             <h1
               className={cn(
                 "font-display text-2xl font-semibold leading-[1.1] tracking-[-0.02em] text-ink-950 md:text-[2rem]",
-                eyebrow && "mt-1.5"
+                eyebrow && "mt-2.5"
               )}
             >
               {title}
             </h1>
-            <span
-              aria-hidden
-              className="mt-3 block h-1 w-12 rounded-full bg-energy-gradient-x"
-            />
             {description && (
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">{description}</p>
+              <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-ink-600">{description}</p>
             )}
             {meta && <div className="mt-3 flex flex-wrap items-center gap-2">{meta}</div>}
           </div>

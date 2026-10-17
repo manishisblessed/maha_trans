@@ -148,8 +148,8 @@ export default function JoinPage() {
         ) : (
           <>
             <AuthCardHeader
-              eyebrow="Join TRANSPE"
-              title="Start earning from your first transaction"
+              eyebrow="Open your counter"
+              title="Your first commission is one KYC away"
               description={
                 <>
                   Share a few details and our team will reach out to finish your onboarding.

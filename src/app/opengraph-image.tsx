@@ -1,7 +1,7 @@
-import { ImageResponse } from "next/og";
+﻿import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "TRANSPE — Payments. Powered for Bharat.";
+export const alt = "TRANSPE — Payments. Powered for India.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -63,7 +63,7 @@ export default async function OpengraphImage() {
                 color: "transparent"
               }}
             >
-              Digital Bharat
+              Digital India
             </span>
           </div>
           <div

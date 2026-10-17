@@ -129,7 +129,7 @@ export default async function LegalPage(
                   <SectionRenderer key={section.id} section={section} index={i} />
                 ))}
 
-                {/* Always-on grievance officer card — RBI / IT Rules mandated */}
+                {/* Always-on grievance officer card — mandated by IT Rules & banking regulations */}
                 <div
                   id="grievance-officer"
                   className="grain relative scroll-mt-32 overflow-hidden rounded-3xl bg-ink-950 p-7 text-white md:p-8"

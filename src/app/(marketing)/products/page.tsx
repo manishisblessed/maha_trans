@@ -11,7 +11,7 @@ import { Reveal } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Products",
+  title: "Platform",
   description:
     "Payment Gateway, POS terminals, QR Collect and Virtual Accounts. Accept every payment your customer wants to make, settled to your bank."
 };
@@ -113,15 +113,15 @@ export default function ProductsPage() {
     <>
       <PageHero
         variant="dark"
-        eyebrow="Products"
-        breadcrumbs={[{ label: "Products", href: "/products" }]}
+        eyebrow="Platform"
+        breadcrumbs={[{ label: "Platform", href: "/products" }]}
         title={
           <>
-            Accept every payment
-            <br className="hidden md:block" /> your customer wants to make.
+            Every way to get paid.
+            <br className="hidden md:block" /> One wallet to collect it.
           </>
         }
-        description="Four ways to get paid, one wallet to collect it in. Pick what fits your counter; add the rest when you grow."
+        description="Four acceptance products, one TRANSPE wallet. Pick what fits your counter today; switch the rest on from the dashboard when you grow."
         stats={[
           { value: "4", label: "Ways to get paid" },
           { value: "0%", label: "MDR on UPI" },
@@ -150,80 +150,140 @@ export default function ProductsPage() {
         }
       />
 
-      {/* Alternating feature sections */}
-      <div className="bg-white">
-        {products.map((p, i) => {
-          const flip = i % 2 === 1;
-          return (
-            <Section
+      {/* Quick-jump rail */}
+      <div className="sticky top-[70px] z-30 border-b border-ink-100 bg-white/85 backdrop-blur-lg">
+        <Container className="scrollbar-none flex items-center gap-1 overflow-x-auto py-2.5">
+          {products.map((p) => (
+            <a
               key={p.id}
-              id={p.id}
-              className={cn("scroll-mt-28", i % 2 === 1 && "bg-ink-50/60")}
+              href={`#${p.id}`}
+              className="whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-semibold text-ink-600 transition hover:bg-ink-50 hover:text-ink-950 focus-energy"
             >
-              <Container>
-                <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
-                  <Reveal
-                    direction={flip ? "left" : "right"}
-                    className={cn("lg:col-span-5", flip && "lg:order-2")}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-display text-sm font-semibold tabular-nums text-ink-400">
-                        {p.index}
-                      </span>
-                      <span className="h-px w-8 bg-ink-200" aria-hidden />
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-royal-700">
-                        {p.name}
-                      </span>
-                      {p.badge && (
-                        <Badge variant="energy" size="sm" dot>
-                          {p.badge}
-                        </Badge>
-                      )}
-                    </div>
-                    <h2 className="mt-5 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] text-ink-950 md:text-5xl">
-                      {p.headline}
-                    </h2>
-                    <p className="mt-5 text-base leading-relaxed text-ink-600 md:text-lg">
-                      {p.text}
-                    </p>
-                    <ul className="mt-7 space-y-3">
-                      {p.specs.map((s) => (
-                        <li key={s} className="flex items-start gap-3 text-sm text-ink-800">
-                          <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-50 text-accent-700 ring-1 ring-inset ring-accent-100">
-                            <Check size={12} weight="bold" aria-hidden />
-                          </span>
-                          {s}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-8 flex flex-wrap gap-3">
-                      <Link href={p.href} className="rounded-2xl focus-energy">
-                        <Button tabIndex={-1}>
-                          {p.cta}
-                          <ArrowUpRight size={16} weight="bold" aria-hidden />
-                        </Button>
-                      </Link>
-                      <Link href="/contact" className="rounded-2xl focus-energy">
-                        <Button variant="ghost" tabIndex={-1}>
-                          Talk to sales
-                        </Button>
-                      </Link>
-                    </div>
-                  </Reveal>
-
-                  <Reveal
-                    direction={flip ? "right" : "left"}
-                    delay={0.1}
-                    className={cn("lg:col-span-7", flip && "lg:order-1")}
-                  >
-                    <ProductMock variant={p.id} />
-                  </Reveal>
-                </div>
-              </Container>
-            </Section>
-          );
-        })}
+              <span className="mr-1.5 text-ink-300">{p.index}</span>
+              {p.name}
+            </a>
+          ))}
+          <a
+            href="#compare"
+            className="ml-auto hidden whitespace-nowrap rounded-full bg-ink-950 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-ink-800 focus-energy sm:block"
+          >
+            Compare all
+          </a>
+        </Container>
       </div>
+
+      {/* Product slabs */}
+      <Section className="bg-ink-50/60">
+        <Container className="space-y-10">
+          {products.map((p, i) => {
+            const dark = i % 2 === 1;
+            return (
+              <Reveal key={p.id} amount={0.15}>
+                <article
+                  id={p.id}
+                  className={cn(
+                    "relative scroll-mt-36 overflow-hidden rounded-5xl p-8 md:p-12",
+                    dark
+                      ? "grain bg-ink-950 text-white"
+                      : "border border-ink-100 bg-white shadow-soft"
+                  )}
+                >
+                  {/* Watermark numeral */}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "pointer-events-none absolute -top-10 right-4 select-none font-display text-[12rem] font-bold leading-none tracking-tighter md:text-[16rem]",
+                      dark ? "text-white/[0.04]" : "text-ink-950/[0.04]"
+                    )}
+                  >
+                    {p.index}
+                  </span>
+
+                  <div className="relative z-10 grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+                    <div className="lg:col-span-5">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "text-xs font-semibold uppercase tracking-[0.18em]",
+                            dark ? "text-accent-300" : "text-royal-700"
+                          )}
+                        >
+                          {p.name}
+                        </span>
+                        {p.badge && (
+                          <Badge variant="energy" size="sm" dot>
+                            {p.badge}
+                          </Badge>
+                        )}
+                      </div>
+                      <h2
+                        className={cn(
+                          "mt-4 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-4xl",
+                          dark ? "text-white" : "text-ink-950"
+                        )}
+                      >
+                        {p.headline}
+                      </h2>
+                      <p
+                        className={cn(
+                          "mt-4 text-base leading-relaxed",
+                          dark ? "text-white/65" : "text-ink-600"
+                        )}
+                      >
+                        {p.text}
+                      </p>
+                      <ul className="mt-6 space-y-2.5">
+                        {p.specs.map((s) => (
+                          <li
+                            key={s}
+                            className={cn(
+                              "flex items-start gap-3 text-sm",
+                              dark ? "text-white/80" : "text-ink-800"
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full",
+                                dark
+                                  ? "bg-accent-400/15 text-accent-300"
+                                  : "bg-accent-50 text-accent-700 ring-1 ring-inset ring-accent-100"
+                              )}
+                            >
+                              <Check size={12} weight="bold" aria-hidden />
+                            </span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-8 flex flex-wrap gap-3">
+                        <Link href={p.href} className="rounded-2xl focus-energy">
+                          <Button tabIndex={-1}>
+                            {p.cta}
+                            <ArrowUpRight size={16} weight="bold" aria-hidden />
+                          </Button>
+                        </Link>
+                        <Link href="/contact" className="rounded-2xl focus-energy">
+                          <Button
+                            variant="ghost"
+                            tabIndex={-1}
+                            className={cn(dark && "text-white/80 hover:bg-white/10 hover:text-white")}
+                          >
+                            Talk to sales
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+
+                    <div className="lg:col-span-7">
+                      <ProductMock variant={p.id} />
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            );
+          })}
+        </Container>
+      </Section>
 
       {/* Comparison */}
       <Section id="compare" className="scroll-mt-28 bg-white">
@@ -237,20 +297,22 @@ export default function ProductsPage() {
             <div className="overflow-hidden rounded-3xl border border-ink-100 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-                  <caption className="sr-only">
-                    Comparison of TRANSPE payment products
-                  </caption>
+                  <caption className="sr-only">Comparison of TRANSPE payment products</caption>
                   <thead>
-                    <tr className="bg-ink-950 text-white">
-                      <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
+                    <tr className="border-b-2 border-ink-950">
+                      <th
+                        scope="col"
+                        className="bg-white px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400"
+                      >
                         &nbsp;
                       </th>
                       {products.map((p) => (
                         <th
                           key={p.id}
                           scope="col"
-                          className="px-5 py-4 font-display text-base font-semibold tracking-[-0.01em]"
+                          className="bg-white px-5 py-4 font-display text-base font-semibold tracking-[-0.01em] text-ink-950"
                         >
+                          <span className="mr-2 text-xs font-bold text-royal-400">{p.index}</span>
                           {p.name}
                         </th>
                       ))}
@@ -258,7 +320,7 @@ export default function ProductsPage() {
                   </thead>
                   <tbody className="divide-y divide-ink-100">
                     {comparison.map((row) => (
-                      <tr key={row.label} className="odd:bg-white even:bg-ink-50/50">
+                      <tr key={row.label} className="transition hover:bg-ink-50/60">
                         <th
                           scope="row"
                           className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500"
@@ -272,7 +334,7 @@ export default function ProductsPage() {
                         ))}
                       </tr>
                     ))}
-                    <tr className="bg-white">
+                    <tr>
                       <td className="px-5 py-4" />
                       {products.map((p) => (
                         <td key={`cta-${p.id}`} className="px-5 py-4">

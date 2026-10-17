@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { IconTile, type IconTone } from "@/components/ui/Icon";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
-import { ServicesRail, type RailCategory } from "@/components/marketing/ServicesRail";
 import { services, type ServiceItem } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -78,17 +77,10 @@ export default function ServicesPage() {
     items: services.filter((s) => s.category === c.id)
   }));
 
-  const railCategories: RailCategory[] = grouped.map((c) => ({
-    id: c.id,
-    label: c.label,
-    count: c.items.length,
-    hint: c.hint
-  }));
-
   return (
     <>
       <PageHero
-        variant="light"
+        variant="dark"
         eyebrow="Services"
         breadcrumbs={[{ label: "Services", href: "/services" }]}
         title={
@@ -108,7 +100,12 @@ export default function ServicesPage() {
               </Button>
             </Link>
             <Link href="/legal/charges" className="rounded-2xl focus-energy">
-              <Button size="lg" variant="outline" tabIndex={-1}>
+              <Button
+                size="lg"
+                variant="outline"
+                tabIndex={-1}
+                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+              >
                 See all charges
               </Button>
             </Link>
@@ -116,83 +113,98 @@ export default function ServicesPage() {
         }
       />
 
-      <Section className="bg-white pt-4 md:pt-8">
-        <Container>
-          <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:gap-14">
-            <ServicesRail categories={railCategories} />
+      {/* Category jump strip */}
+      <div className="sticky top-[70px] z-30 border-b border-ink-100 bg-white/85 backdrop-blur-lg">
+        <Container className="scrollbar-none flex items-center gap-1 overflow-x-auto py-2.5">
+          {grouped.map((c, i) => (
+            <a
+              key={c.id}
+              href={`#${c.id}`}
+              className="whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-semibold text-ink-600 transition hover:bg-ink-50 hover:text-ink-950 focus-energy"
+            >
+              <span className="mr-1.5 text-ink-300">0{i + 1}</span>
+              {c.label}
+              <span className="ml-1.5 text-ink-400">({c.items.length})</span>
+            </a>
+          ))}
+        </Container>
+      </div>
 
-            <div className="space-y-20 md:space-y-28">
-              {grouped.map((cat, idx) => (
-                <section
-                  key={cat.id}
-                  id={cat.id}
-                  aria-labelledby={`${cat.id}-heading`}
-                  className="scroll-mt-32"
-                >
-                  <Reveal>
-                    <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                      <div className="max-w-2xl">
-                        <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-royal-700">
-                          <span className="brand-dot" aria-hidden />
-                          0{idx + 1} · {cat.items.length} services
-                        </span>
-                        <h2
-                          id={`${cat.id}-heading`}
-                          className="mt-4 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] text-ink-950 md:text-5xl"
-                        >
-                          {cat.label}
-                        </h2>
-                        <p className="mt-4 text-base leading-relaxed text-ink-600 md:text-lg">
-                          {cat.blurb}
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "inline-flex shrink-0 items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium",
-                          toneSurface[cat.tone]
-                        )}
-                      >
-                        <Coins size={18} weight="duotone" aria-hidden className="mt-0.5 shrink-0" />
-                        <span>{cat.commission}</span>
-                      </div>
-                    </div>
-                  </Reveal>
+      {/* Category ledgers */}
+      <Section className="bg-white">
+        <Container className="space-y-20 md:space-y-28">
+          {grouped.map((cat, idx) => (
+            <section
+              key={cat.id}
+              id={cat.id}
+              aria-labelledby={`${cat.id}-heading`}
+              className="scroll-mt-40"
+            >
+              <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+                {/* Sticky summary panel */}
+                <Reveal className="lg:col-span-4">
+                  <div
+                    className={cn(
+                      "rounded-4xl p-8 lg:sticky lg:top-36",
+                      toneSurface[cat.tone]
+                    )}
+                  >
+                    <span className="font-display text-xs font-bold tracking-[0.22em] opacity-60">
+                      0{idx + 1} · {cat.items.length} SERVICES
+                    </span>
+                    <h2
+                      id={`${cat.id}-heading`}
+                      className="mt-4 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-4xl"
+                    >
+                      {cat.label}
+                    </h2>
+                    <p className="mt-1 text-sm font-medium opacity-70">{cat.hint}</p>
+                    <p className="mt-5 text-sm leading-relaxed opacity-80">{cat.blurb}</p>
+                    <p className="mt-6 flex items-start gap-2 rounded-2xl bg-white/60 px-4 py-3 text-sm font-semibold">
+                      <Coins size={17} weight="duotone" aria-hidden className="mt-0.5 shrink-0" />
+                      {cat.commission}
+                    </p>
+                  </div>
+                </Reveal>
 
-                  <Stagger className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {cat.items.map((s) => (
-                      <StaggerItem key={s.slug} id={s.slug} className="scroll-mt-32">
-                        <ServiceCard service={s} tone={cat.tone} commission={cat.commission} />
-                      </StaggerItem>
-                    ))}
-                  </Stagger>
-                </section>
-              ))}
-            </div>
-          </div>
+                {/* Service rows */}
+                <Stagger className="divide-y divide-ink-100 overflow-hidden rounded-3xl border border-ink-100 lg:col-span-8">
+                  {cat.items.map((s) => (
+                    <StaggerItem key={s.slug} id={s.slug} className="scroll-mt-40">
+                      <ServiceRow service={s} tone={cat.tone} commission={cat.commission} />
+                    </StaggerItem>
+                  ))}
+                </Stagger>
+              </div>
+            </section>
+          ))}
         </Container>
       </Section>
 
       {/* Closing band */}
-      <Section className="bg-ink-50/60 pt-0">
+      <Section className="bg-ink-50/60">
         <Container>
           <Reveal>
-            <div className="grain relative overflow-hidden rounded-4xl bg-ink-950 p-8 text-white md:p-12">
+            <div className="grain relative overflow-hidden rounded-5xl bg-energy-gradient p-8 text-white md:p-12">
               <div
                 aria-hidden
-                className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-energy-gradient opacity-50 blur-3xl"
+                className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(60%_80%_at_50%_0%,rgba(255,255,255,0.5),transparent_70%)]"
               />
               <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
                 <div className="max-w-2xl">
                   <p className="font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-5xl">
                     Every service. One wallet. Commission on each.
                   </p>
-                  <p className="mt-3 text-sm text-white/60 md:text-base">
-                    Open your counter today. No joining fee, KYC in under five
-                    minutes.
+                  <p className="mt-3 text-sm text-white/75 md:text-base">
+                    Open your counter today. No joining fee, KYC in under five minutes.
                   </p>
                 </div>
                 <Link href="/register" className="shrink-0 rounded-2xl focus-energy">
-                  <Button size="xl" tabIndex={-1}>
+                  <Button
+                    size="xl"
+                    tabIndex={-1}
+                    className="bg-white from-white to-white text-ink-950 hover:shadow-glow"
+                  >
                     Start earning
                     <ArrowRight size={18} weight="bold" aria-hidden />
                   </Button>
@@ -206,7 +218,7 @@ export default function ServicesPage() {
   );
 }
 
-/** Per-service commission hints shown on cards. Falls back to the first
+/** Per-service commission hints shown on rows. Falls back to the first
  *  clause of the category commission line for services not listed here. */
 const serviceHints: Record<string, string> = {
   "payment-gateway": "0% MDR on UPI · T+1 settlement",
@@ -233,16 +245,16 @@ const serviceHints: Record<string, string> = {
 };
 
 const toneSurface: Record<IconTone, string> = {
-  brand: "bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100",
-  accent: "bg-accent-50 text-accent-800 ring-1 ring-inset ring-accent-100",
-  royal: "bg-royal-50 text-royal-800 ring-1 ring-inset ring-royal-100",
-  coral: "bg-coral-50 text-coral-800 ring-1 ring-inset ring-coral-100",
-  amber: "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-100",
-  ink: "bg-ink-100 text-ink-800 ring-1 ring-inset ring-ink-200",
+  brand: "bg-brand-50 text-brand-900 ring-1 ring-inset ring-brand-100",
+  accent: "bg-accent-50 text-accent-900 ring-1 ring-inset ring-accent-100",
+  royal: "bg-royal-50 text-royal-900 ring-1 ring-inset ring-royal-100",
+  coral: "bg-coral-50 text-coral-900 ring-1 ring-inset ring-coral-100",
+  amber: "bg-amber-50 text-amber-900 ring-1 ring-inset ring-amber-100",
+  ink: "bg-ink-100 text-ink-900 ring-1 ring-inset ring-ink-200",
   energy: "bg-energy-gradient text-white"
 };
 
-function ServiceCard({
+function ServiceRow({
   service,
   tone,
   commission
@@ -252,43 +264,38 @@ function ServiceCard({
   commission: string;
 }) {
   const Icon = service.icon;
-  // Prefer the per-service hint; fall back to the category's first clause.
   const hint = serviceHints[service.slug] ?? commission.split("·")[0].trim();
 
   return (
-    <article className="gradient-ring group relative flex h-full flex-col rounded-3xl border border-ink-100 bg-white p-6 transition hover:-translate-y-1 hover:shadow-energy-sm">
-      <div className="flex items-start justify-between gap-3">
-        <IconTile tone={tone} size="lg">
-          <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-        </IconTile>
-        {service.badge && (
-          <Badge variant="energy" size="sm" dot>
-            {service.badge}
-          </Badge>
-        )}
+    <Link
+      href={service.href}
+      className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 bg-white px-5 py-5 transition hover:bg-ink-50/60 focus-energy md:px-7"
+    >
+      <IconTile tone={tone} size="lg">
+        <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+      </IconTile>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-ink-950 md:text-lg">
+            {service.title}
+          </h3>
+          {service.badge && (
+            <Badge variant="energy" size="sm" dot>
+              {service.badge}
+            </Badge>
+          )}
+        </div>
+        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ink-500">
+          {service.description}
+        </p>
+        <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-accent-700">
+          <Coins size={13} weight="duotone" aria-hidden />
+          {hint}
+        </p>
       </div>
-      <h3 className="mt-5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
-        {service.title}
-      </h3>
-      <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
-        {service.description}
-      </p>
-      <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-accent-700">
-        <Coins size={14} weight="duotone" aria-hidden />
-        {hint}
-      </p>
-      <Link
-        href={service.href}
-        className="mt-4 inline-flex items-center gap-1.5 border-t border-ink-100 pt-4 text-sm font-semibold text-ink-900 transition group-hover:text-royal-700 focus-energy"
-      >
-        Open in dashboard
-        <ArrowUpRight
-          size={14}
-          weight="bold"
-          aria-hidden
-          className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-        />
-      </Link>
-    </article>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-ink-200 text-ink-400 transition group-hover:border-transparent group-hover:bg-energy-gradient group-hover:text-white">
+        <ArrowUpRight size={16} weight="bold" aria-hidden />
+      </span>
+    </Link>
   );
 }

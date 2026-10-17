@@ -230,8 +230,8 @@ function LoginForm({ location }: { location: LocationData }) {
     content = (
       <>
         <AuthCardHeader
-          eyebrow="Welcome back"
-          title="Sign in to your shop"
+          eyebrow="Partner login"
+          title="Open your counter console"
           description={
             <>
               New to TRANSPE?{" "}

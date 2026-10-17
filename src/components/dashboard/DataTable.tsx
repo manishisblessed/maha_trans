@@ -16,14 +16,13 @@ export type Column<T> = {
 };
 
 /**
- * TRANSPE DataTable — v2 "Bharat Energy".
+ * TRANSPE DataTable — v3 "Ledger sheet".
  *
- * `rounded-3xl` surface, Clash Display title, uppercase micro header row on a
- * soft ink wash, rows that light up with a gradient left accent on hover, a
- * friendly IconTile empty state and shimmer loading rows. Semantic `<table>`
- * markup and horizontal scrolling are preserved.
+ * `rounded-2xl` surface with a ruled double-weight header on white, zebra row
+ * striping like a printed ledger, a friendly empty state and shimmer loading
+ * rows. Semantic `<table>` markup and horizontal scrolling are preserved.
  *
- * New optional props: `emptyIcon`, `emptyAction`, `dense`, `stickyHeader`
+ * Optional props: `emptyIcon`, `emptyAction`, `dense`, `stickyHeader`
  * (default true), `footer`.
  */
 export function DataTable<T>({
@@ -63,12 +62,13 @@ export function DataTable<T>({
   const cellPad = dense ? "px-4 py-2" : "px-5 py-3";
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-ink-100 bg-white">
       {(title || description || action) && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <div className="min-w-0">
             {title && (
-              <h3 className="font-display text-base font-semibold tracking-[-0.02em] text-ink-950 md:text-lg">
+              <h3 className="flex items-center gap-2.5 font-display text-base font-semibold tracking-[-0.02em] text-ink-950 md:text-lg">
+                <span aria-hidden className="h-4 w-1 rounded-full bg-energy-gradient" />
                 {title}
               </h3>
             )}
@@ -84,7 +84,7 @@ export function DataTable<T>({
         <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
           <thead
             className={cn(
-              "text-left text-[11px] font-semibold uppercase tracking-wider text-ink-500",
+              "text-left text-[10px] font-bold uppercase tracking-[0.14em] text-royal-500",
               stickyHeader && "sticky top-0 z-[1]"
             )}
           >
@@ -94,7 +94,7 @@ export function DataTable<T>({
                   key={String(c.key)}
                   scope="col"
                   className={cn(
-                    "whitespace-nowrap border-y border-ink-100 bg-ink-50/60 font-semibold backdrop-blur",
+                    "whitespace-nowrap border-t border-ink-100 border-b-2 border-b-ink-200 bg-white",
                     cellPad,
                     c.align === "right" && "text-right",
                     c.align === "center" && "text-center"
@@ -163,16 +163,17 @@ export function DataTable<T>({
               data.map((row, i) => (
                 <tr
                   key={(row as { id?: string | number }).id ?? i}
-                  className="group transition-colors hover:bg-brand-50/30"
+                  className={cn(
+                    "group transition-colors hover:bg-accent-50/40",
+                    i % 2 === 1 && "bg-ink-50/40"
+                  )}
                 >
-                  {columns.map((c, ci) => (
+                  {columns.map((c) => (
                     <td
                       key={String(c.key)}
                       className={cn(
-                        "whitespace-nowrap border-b border-ink-100 transition-colors",
+                        "whitespace-nowrap border-b border-ink-50 transition-colors",
                         cellPad,
-                        ci === 0 &&
-                          "relative before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:rounded-r-full before:bg-energy-gradient before:opacity-0 before:transition-opacity before:duration-200 before:content-[''] group-hover:before:opacity-100",
                         c.align === "right" && "text-right",
                         c.align === "center" && "text-center",
                         c.className

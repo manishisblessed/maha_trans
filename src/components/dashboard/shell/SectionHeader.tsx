@@ -29,7 +29,17 @@ export function SectionHeader({
   return (
     <div className={cn("flex flex-wrap items-start justify-between gap-3", className)}>
       <div className="flex min-w-0 items-start gap-3">
-        {icon && <IconTile icon={icon} tone={tone} size={size === "sm" ? "sm" : "md"} />}
+        {icon ? (
+          <IconTile icon={icon} tone={tone} size={size === "sm" ? "sm" : "md"} />
+        ) : (
+          <span
+            aria-hidden
+            className={cn(
+              "mt-1 w-1 shrink-0 rounded-full bg-energy-gradient",
+              size === "sm" ? "h-4" : "h-5"
+            )}
+          />
+        )}
         <div className="min-w-0">
           <h2
             className={cn(

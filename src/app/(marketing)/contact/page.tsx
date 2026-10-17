@@ -20,48 +20,59 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { company, grievanceOfficer, nodalOfficer } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Support",
   description:
     "Call, WhatsApp or write to TRANSPE. Support, partnerships, grievance and nodal officer contacts, plus our Pune office."
 };
 
-type Channel = {
+/** The three fast lanes shown as hero tiles. */
+const fastLanes: {
   icon: PhosphorIcon;
   tone: IconTone;
   label: string;
   title: string;
-  lines: { text: string; href?: string }[];
-  note?: string;
-};
-
-const channels: Channel[] = [
+  href: string;
+  linkText: string;
+  note: string;
+}[] = [
   {
     icon: WhatsappLogo,
     tone: "accent",
-    label: "Call or WhatsApp",
+    label: "Fastest · transactions",
     title: `+91 ${company.phone}`,
-    lines: [
-      { text: "Call", href: `tel:+91${company.phone}` },
-      { text: "WhatsApp", href: `https://wa.me/91${company.phone}` }
-    ],
-    note: "Retailer helpline · fastest for transaction help"
+    href: `https://wa.me/91${company.phone}`,
+    linkText: "Open WhatsApp",
+    note: "Retailer helpline, Mon–Sat"
   },
   {
     icon: Envelope,
     tone: "brand",
     label: "Email support",
     title: company.supportEmail,
-    lines: [{ text: "Write to support", href: `mailto:${company.supportEmail}` }],
-    note: "We reply within one working day"
+    href: `mailto:${company.supportEmail}`,
+    linkText: "Write to support",
+    note: "Reply within one working day"
   },
   {
     icon: MapPin,
     tone: "royal",
     label: "Registered office",
     title: company.shortAddress,
-    lines: [{ text: company.address }],
+    href: "https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037",
+    linkText: "Get directions",
     note: company.legalName
-  },
+  }
+];
+
+/** Statutory desks — rendered as a compact directory. */
+const statutoryDesks: {
+  icon: PhosphorIcon;
+  tone: IconTone;
+  label: string;
+  title: string;
+  lines: { text: string; href?: string }[];
+  note?: string;
+}[] = [
   {
     icon: ShieldCheck,
     tone: "coral",
@@ -91,8 +102,8 @@ export default function ContactPage() {
     <>
       <PageHero
         variant="light"
-        eyebrow="Contact"
-        breadcrumbs={[{ label: "Contact", href: "/contact" }]}
+        eyebrow="Support"
+        breadcrumbs={[{ label: "Support", href: "/contact" }]}
         title={
           <>
             Talk to a person,
@@ -116,18 +127,57 @@ export default function ContactPage() {
             </a>
           </>
         }
-      />
+      >
+        {/* Fast lanes */}
+        <Stagger className="grid gap-4 md:grid-cols-3">
+          {fastLanes.map((c) => (
+            <StaggerItem
+              key={c.label}
+              className="gradient-ring group rounded-3xl border border-ink-100 bg-white p-6 transition hover:-translate-y-1 hover:shadow-energy-sm"
+            >
+              <div className="flex items-center justify-between">
+                <IconTile tone={c.tone} size="lg">
+                  <c.icon size={24} weight="duotone" aria-hidden />
+                </IconTile>
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
+                  {c.label}
+                </span>
+              </div>
+              <p className="mt-5 break-words font-display text-lg font-semibold tracking-[-0.01em] text-ink-950">
+                {c.title}
+              </p>
+              <p className="mt-1 text-xs text-ink-500">{c.note}</p>
+              <a
+                href={c.href}
+                target={c.href.startsWith("http") ? "_blank" : undefined}
+                rel={c.href.startsWith("http") ? "noreferrer" : undefined}
+                className="mt-4 inline-flex items-center gap-1.5 border-t border-ink-100 pt-4 text-sm font-semibold text-royal-700 transition hover:text-royal-900 focus-energy"
+              >
+                {c.linkText}
+                <ArrowUpRight size={13} weight="bold" aria-hidden className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      </PageHero>
 
-      <Section className="bg-white pt-4 md:pt-8">
+      <Section className="bg-ink-50/60">
         <Container>
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
-            {/* Channels */}
+            {/* Form — leads the section now */}
+            <div id="message" className="scroll-mt-28 lg:col-span-7">
+              <Reveal>
+                <ContactForm />
+              </Reveal>
+            </div>
+
+            {/* Statutory directory + hours */}
             <div className="lg:col-span-5">
-              <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                {channels.map((c) => (
+              <Stagger className="space-y-4">
+                {statutoryDesks.map((c) => (
                   <StaggerItem
                     key={c.label}
-                    className="gradient-ring rounded-3xl border border-ink-100 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-energy-sm"
+                    className="rounded-3xl border border-ink-100 bg-white p-5 transition hover:shadow-energy-sm"
                   >
                     <div className="flex items-start gap-4">
                       <IconTile tone={c.tone} size="lg">
@@ -164,7 +214,7 @@ export default function ContactPage() {
                 ))}
 
                 {/* Office hours */}
-                <StaggerItem className="grain relative overflow-hidden rounded-3xl bg-ink-950 p-5 text-white sm:col-span-2 lg:col-span-1">
+                <StaggerItem className="grain relative overflow-hidden rounded-3xl bg-ink-950 p-5 text-white">
                   <div
                     aria-hidden
                     className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-energy-gradient opacity-50 blur-2xl"
@@ -196,45 +246,43 @@ export default function ContactPage() {
                 </StaggerItem>
               </Stagger>
             </div>
-
-            {/* Form */}
-            <div id="message" className="scroll-mt-28 lg:col-span-7">
-              <Reveal>
-                <ContactForm />
-              </Reveal>
-
-              <Reveal delay={0.1} className="mt-6">
-                <div className="overflow-hidden rounded-3xl border border-ink-100">
-                  <div className="flex flex-col gap-2 border-b border-ink-100 bg-ink-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
-                        Visit us
-                      </p>
-                      <p className="mt-0.5 text-sm font-medium text-ink-900">
-                        Shivtej Nagar, Indira Nagar, Pune
-                      </p>
-                    </div>
-                    <a
-                      href="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-royal-700 hover:text-royal-900 focus-energy"
-                    >
-                      Get directions <ArrowUpRight size={14} weight="bold" aria-hidden />
-                    </a>
-                  </div>
-                  <div className="aspect-[16/7] w-full bg-ink-100">
-                    <iframe
-                      title="TRANSPE HQ — Shivtej Nagar, Indira Nagar, Pune"
-                      src="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037&output=embed"
-                      className="h-full w-full"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              </Reveal>
-            </div>
           </div>
+        </Container>
+      </Section>
+
+      {/* Map band */}
+      <Section className="bg-white pt-0">
+        <Container>
+          <Reveal>
+            <div className="overflow-hidden rounded-4xl border border-ink-100">
+              <div className="flex flex-col gap-2 border-b border-ink-100 bg-ink-50/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">
+                    Visit us
+                  </p>
+                  <p className="mt-0.5 text-sm font-medium text-ink-900">
+                    Shivtej Nagar, Indira Nagar, Pune
+                  </p>
+                </div>
+                <a
+                  href="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-royal-700 hover:text-royal-900 focus-energy"
+                >
+                  Get directions <ArrowUpRight size={14} weight="bold" aria-hidden />
+                </a>
+              </div>
+              <div className="aspect-[16/6] w-full bg-ink-100">
+                <iframe
+                  title="TRANSPE HQ — Shivtej Nagar, Indira Nagar, Pune"
+                  src="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037&output=embed"
+                  className="h-full w-full"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </Reveal>
         </Container>
       </Section>
     </>

@@ -3,7 +3,6 @@ import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
   ArrowRight,
   ArrowUpRight,
-  Briefcase,
   ChartLineUp,
   Clock,
   Envelope,
@@ -53,7 +52,7 @@ const openings = [
     type: "Full-time"
   },
   {
-    title: "Compliance Manager (RBI)",
+    title: "Compliance Manager (Regulatory)",
     team: "Compliance",
     location: "Mumbai",
     type: "Full-time"
@@ -120,13 +119,13 @@ export default function CareerPage() {
   return (
     <>
       <PageHero
-        variant="light"
+        variant="dark"
         eyebrow="Careers"
         breadcrumbs={[{ label: "Careers", href: "/career" }]}
         title={
           <>
-            Build the counter that
-            <br className="hidden md:block" /> brings the bank to the shop.
+            Do the best work
+            <br className="hidden md:block" /> of your career, for India.
           </>
         }
         description="We are a small team in Pune with people in the field across India. Engineers, designers, salespeople and compliance folks who have all stood behind a shop counter."
@@ -146,29 +145,28 @@ export default function CareerPage() {
         }
       />
 
-      {/* Culture statement */}
-      <Section className="grain relative overflow-hidden bg-ink-950 text-white">
-        <div
-          aria-hidden
-          className="aurora-glow pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full"
-        />
-        <Container className="relative z-10">
-          <div className="grid gap-10 lg:grid-cols-12">
-            <Reveal className="lg:col-span-7">
-              <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
-                <span className="brand-dot" aria-hidden /> How we work
-              </span>
-              <p className="mt-6 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.02em] md:text-6xl">
-                Move fast, stay honest, put the shopkeeper first. Everything
-                else follows.
-              </p>
-            </Reveal>
-            <Reveal delay={0.1} className="space-y-5 text-base leading-relaxed text-white/65 md:text-lg lg:col-span-5 lg:pt-16">
+      {/* Culture statement — light, centered */}
+      <Section className="bg-white">
+        <Container>
+          <Reveal className="mx-auto max-w-4xl text-center">
+            <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-royal-700">
+              <span className="brand-dot" aria-hidden /> How we work
+            </span>
+            <p className="mt-6 font-display text-3xl font-semibold leading-[1.06] tracking-[-0.02em] text-ink-950 md:text-5xl">
+              Move fast, stay honest,{" "}
+              <span className="gradient-text">put the shopkeeper first.</span>{" "}
+              Everything else follows.
+            </p>
+          </Reveal>
+          <div className="mx-auto mt-10 grid max-w-3xl gap-6 text-left text-base leading-relaxed text-ink-600 md:grid-cols-2 md:text-lg">
+            <Reveal>
               <p>
                 The people we build for run businesses with razor-thin margins
                 and a queue forming at the counter. Every product decision
                 starts with what that person needs right now.
               </p>
+            </Reveal>
+            <Reveal delay={0.08}>
               <p>
                 Compact teams, clear ownership, no meetings that could be
                 messages. You will see your code serving real shops within
@@ -179,39 +177,41 @@ export default function CareerPage() {
         </Container>
       </Section>
 
-      {/* Perks */}
-      <Section className="bg-white">
+      {/* Perks — joined two-column panel */}
+      <Section className="bg-ink-50/60">
         <Container>
           <SectionIntro
             eyebrow="What you get"
             title="Four things we take care of so you can do the work."
           />
-          <Stagger className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Stagger className="grid gap-px overflow-hidden rounded-4xl border border-ink-100 bg-ink-100 md:grid-cols-2">
             {perks.map((p) => (
               <StaggerItem
                 key={p.title}
-                className="gradient-ring rounded-3xl border border-ink-100 bg-white p-6 transition hover:-translate-y-1 hover:shadow-energy-sm"
+                className="group flex items-start gap-5 bg-white p-7 transition hover:bg-ink-50/70 md:p-9"
               >
                 <IconTile tone={p.tone} size="lg">
                   <p.icon size={24} weight="duotone" aria-hidden />
                 </IconTile>
-                <h3 className="mt-6 font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">{p.text}</p>
+                <div>
+                  <h3 className="font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
+                    {p.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-600">{p.text}</p>
+                </div>
               </StaggerItem>
             ))}
           </Stagger>
         </Container>
       </Section>
 
-      {/* Open roles */}
-      <Section id="roles" className="scroll-mt-28 bg-ink-50/60">
+      {/* Open roles — grouped list */}
+      <Section id="roles" className="scroll-mt-28 bg-white">
         <Container>
           <SectionIntro
             eyebrow="Open roles"
             title="Where we need you."
-            description="Hover a role to apply. We reply to every application within five working days."
+            description="We reply to every application within five working days."
             aside={
               <a href={`mailto:${company.email}?subject=Open%20application`} className="rounded-2xl focus-energy">
                 <Button variant="outline" tabIndex={-1}>
@@ -221,7 +221,7 @@ export default function CareerPage() {
               </a>
             }
           />
-          <Stagger className="overflow-hidden rounded-3xl border border-ink-100 bg-white">
+          <Stagger className="space-y-3">
             {openings.map((job, i) => {
               const mailto = `mailto:${company.email}?subject=${encodeURIComponent(
                 `Application: ${job.title}`
@@ -230,10 +230,10 @@ export default function CareerPage() {
                 <StaggerItem key={job.title} distance={12}>
                   <a
                     href={mailto}
-                    className="group flex flex-col gap-4 border-b border-ink-100 p-5 transition last:border-b-0 hover:bg-ink-50/70 focus-energy sm:flex-row sm:items-center sm:justify-between md:px-7"
+                    className="gradient-ring group flex flex-col gap-4 rounded-3xl border border-ink-100 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-energy-sm focus-energy sm:flex-row sm:items-center sm:justify-between md:px-7"
                   >
-                    <div className="flex items-start gap-4">
-                      <span className="mt-1 hidden font-display text-sm font-semibold tabular-nums text-ink-300 sm:block">
+                    <div className="flex items-start gap-5">
+                      <span className="mt-1 hidden font-display text-sm font-bold tabular-nums text-royal-300 sm:block">
                         0{i + 1}
                       </span>
                       <div>
@@ -242,7 +242,6 @@ export default function CareerPage() {
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
                           <Badge variant="royal" size="sm">
-                            <Briefcase size={11} weight="duotone" aria-hidden />
                             {job.team}
                           </Badge>
                           <Badge size="sm">
@@ -259,7 +258,7 @@ export default function CareerPage() {
                         </div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-ink-400 transition sm:self-auto sm:translate-x-2 sm:opacity-0 group-hover:text-royal-700 sm:group-hover:translate-x-0 sm:group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <span className="inline-flex h-10 shrink-0 items-center gap-1.5 self-start rounded-full bg-ink-950 px-5 text-sm font-semibold text-white transition group-hover:bg-energy-gradient sm:self-auto">
                       Apply
                       <ArrowUpRight size={14} weight="bold" aria-hidden />
                     </span>
@@ -271,50 +270,64 @@ export default function CareerPage() {
         </Container>
       </Section>
 
-      {/* How we hire */}
-      <Section className="bg-white">
-        <Container>
-          <SectionIntro
-            eyebrow="How we hire"
-            title="Four steps. One week."
-          />
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-royal-500 via-brand-500 to-coral-500 lg:block"
-            />
-            <Stagger className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {hiring.map((h) => (
-                <StaggerItem key={h.step} className="relative">
-                  <span className="relative z-10 grid h-12 w-12 place-items-center rounded-2xl bg-ink-950 font-display text-sm font-semibold text-white shadow-energy-sm">
-                    {h.step}
-                  </span>
-                  <h3 className="mt-5 font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
-                    {h.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-600">{h.text}</p>
-                </StaggerItem>
-              ))}
-            </Stagger>
-          </div>
-          <Reveal className="mt-14">
-            <div className="flex flex-col items-start gap-4 rounded-3xl border border-ink-100 bg-ink-50/60 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-              <div>
-                <p className="font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
-                  Don&rsquo;t see your role?
-                </p>
-                <p className="mt-1 text-sm text-ink-600">
-                  Tell us what you would build for a shopkeeper. We make room for good people.
-                </p>
-              </div>
-              <a href={`mailto:${company.email}?subject=Open%20application`} className="rounded-2xl focus-energy">
-                <Button tabIndex={-1}>
-                  Write to {company.email}
-                  <ArrowRight size={16} weight="bold" aria-hidden />
-                </Button>
-              </a>
+      {/* How we hire — vertical steps + sticky note */}
+      <Section className="grain relative overflow-hidden bg-ink-950 text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-accent-500/10 blur-3xl"
+        />
+        <Container className="relative z-10">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <SectionIntro
+                dark
+                eyebrow="How we hire"
+                title="Four steps. One week."
+                className="mb-0 lg:sticky lg:top-32"
+                description="No panel interviews, no take-homes that eat your weekend. A paid work sample and a fast, honest decision."
+              />
             </div>
-          </Reveal>
+            <div className="lg:col-span-7">
+              <ol className="space-y-4">
+                {hiring.map((h) => (
+                  <Reveal as="li" key={h.step} delay={Number(h.step) * 0.05}>
+                    <div className="flex items-start gap-5 rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur transition hover:bg-white/[0.07]">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-energy-gradient font-display text-sm font-semibold text-white shadow-energy-sm">
+                        {h.step}
+                      </span>
+                      <div>
+                        <h3 className="font-display text-lg font-semibold tracking-[-0.01em]">
+                          {h.title}
+                        </h3>
+                        <p className="mt-1.5 text-sm leading-relaxed text-white/60">{h.text}</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </ol>
+              <Reveal className="mt-6">
+                <div className="flex flex-col items-start gap-4 rounded-3xl border border-dashed border-white/15 p-6 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="font-display text-lg font-semibold tracking-[-0.01em]">
+                      Don&rsquo;t see your role?
+                    </p>
+                    <p className="mt-1 text-sm text-white/60">
+                      Tell us what you would build for a shopkeeper. We make room for good people.
+                    </p>
+                  </div>
+                  <a
+                    href={`mailto:${company.email}?subject=Open%20application`}
+                    className="shrink-0 rounded-2xl focus-energy"
+                  >
+                    <Button tabIndex={-1}>
+                      Write to us
+                      <ArrowRight size={16} weight="bold" aria-hidden />
+                    </Button>
+                  </a>
+                </div>
+              </Reveal>
+            </div>
+          </div>
         </Container>
       </Section>
     </>

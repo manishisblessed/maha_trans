@@ -34,7 +34,7 @@ export function LogoMark({
 }
 
 /** Brand tagline shown beside the logo. Change here to update it everywhere. */
-export const LOGO_TAGLINE = "Payments. Powered for Bharat.";
+export const LOGO_TAGLINE = "Payments. Powered for India.";
 
 const sizeMap = {
   sm: "h-8",

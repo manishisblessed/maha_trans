@@ -34,7 +34,7 @@ const team = [
   {
     name: "Tanvi Patil",
     role: "VP Product",
-    bio: "Crafts simple flows for first-time smartphone users across Bharat."
+    bio: "Crafts simple flows for first-time smartphone users across India."
   },
   {
     name: "Arjun Deshpande",
@@ -44,7 +44,7 @@ const team = [
   {
     name: "Ritu Menon",
     role: "Head of Compliance",
-    bio: "Ex-RBI examiner. Ensures every transaction stays safe and compliant."
+    bio: "Veteran banking-compliance examiner. Ensures every transaction stays safe and compliant."
   },
   {
     name: "Deepak Pawar",
@@ -78,10 +78,13 @@ function initials(name: string) {
 }
 
 export default function TeamPage() {
+  const founders = team.slice(0, 2);
+  const leads = team.slice(2);
+
   return (
     <>
       <PageHero
-        variant="dark"
+        variant="light"
         eyebrow="Team"
         breadcrumbs={[{ label: "Team", href: "/team" }]}
         title={
@@ -107,23 +110,28 @@ export default function TeamPage() {
         }
       />
 
-      <Section className="bg-white">
+      {/* Founders — full-width feature panels */}
+      <Section className="bg-ink-50/60">
         <Container>
           <SectionIntro
-            eyebrow="Leadership"
-            title="Namaste. Here is who picks up when you call."
+            eyebrow="Founders"
+            title="Meet the people who pick up when you call."
             description="No stock photos. Just names, roles and what each of us is responsible for."
           />
-          <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {team.map((m, i) => (
+          <Stagger className="grid gap-6 md:grid-cols-2">
+            {founders.map((m, i) => (
               <StaggerItem
                 key={m.name}
-                className="gradient-ring group flex h-full flex-col rounded-3xl border border-ink-100 bg-white p-6 transition hover:-translate-y-1 hover:shadow-energy-sm"
+                className="grain group relative overflow-hidden rounded-4xl bg-ink-950 p-8 text-white transition hover:shadow-energy md:p-10"
               >
-                <div className="flex items-start justify-between">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-energy-gradient opacity-40 blur-3xl transition group-hover:opacity-70"
+                />
+                <div className="relative z-10 flex items-start justify-between">
                   <span
                     className={cn(
-                      "grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br font-display text-lg font-semibold text-white shadow-soft transition group-hover:scale-105",
+                      "grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br font-display text-2xl font-semibold text-white shadow-energy-sm transition group-hover:scale-105",
                       tiles[i % tiles.length]
                     )}
                     aria-hidden
@@ -133,30 +141,68 @@ export default function TeamPage() {
                   <a
                     href="#"
                     aria-label={`${m.name} on LinkedIn`}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-ink-100 text-ink-400 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-energy"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/60 transition hover:border-white/40 hover:bg-white/10 hover:text-white focus-energy"
                   >
-                    <LinkedinLogo size={16} weight="duotone" aria-hidden />
+                    <LinkedinLogo size={17} weight="duotone" aria-hidden />
                   </a>
                 </div>
-                <h3 className="mt-6 font-display text-xl font-semibold tracking-[-0.02em] text-ink-950">
+                <h3 className="relative z-10 mt-7 font-display text-2xl font-semibold tracking-[-0.02em] md:text-3xl">
                   {m.name}
                 </h3>
-                <div className="mt-2">
-                  <Badge variant={i < 2 ? "energy" : "royal"} size="sm">
-                    {m.role}
-                  </Badge>
+                <p className="relative z-10 mt-1 text-sm font-semibold text-accent-300">{m.role}</p>
+                <p className="relative z-10 mt-4 max-w-md text-sm leading-relaxed text-white/65">
+                  {m.bio}
+                </p>
+              </StaggerItem>
+            ))}
+          </Stagger>
+
+          {/* Leads — roster rows */}
+          <Stagger className="mt-6 grid gap-4 md:grid-cols-2">
+            {leads.map((m, i) => (
+              <StaggerItem
+                key={m.name}
+                className="gradient-ring group flex items-start gap-5 rounded-3xl border border-ink-100 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-energy-sm"
+              >
+                <span
+                  className={cn(
+                    "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br font-display text-base font-semibold text-white shadow-soft transition group-hover:scale-105",
+                    tiles[(i + 2) % tiles.length]
+                  )}
+                  aria-hidden
+                >
+                  {initials(m.name)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-ink-950">
+                      {m.name}
+                    </h3>
+                    <a
+                      href="#"
+                      aria-label={`${m.name} on LinkedIn`}
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-ink-100 text-ink-400 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-energy"
+                    >
+                      <LinkedinLogo size={14} weight="duotone" aria-hidden />
+                    </a>
+                  </div>
+                  <div className="mt-1.5">
+                    <Badge variant="royal" size="sm">
+                      {m.role}
+                    </Badge>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-600">{m.bio}</p>
                 </div>
-                <p className="mt-4 flex-1 text-sm leading-relaxed text-ink-600">{m.bio}</p>
               </StaggerItem>
             ))}
           </Stagger>
         </Container>
       </Section>
 
-      <Section className="bg-ink-50/60 pt-0">
+      <Section className="bg-white pt-0">
         <Container>
           <Reveal>
-            <div className="flex flex-col items-start gap-6 rounded-4xl border border-ink-100 bg-white p-8 md:flex-row md:items-center md:justify-between md:p-10">
+            <div className="flex flex-col items-start gap-6 rounded-4xl border border-ink-100 bg-ink-50/60 p-8 md:flex-row md:items-center md:justify-between md:p-10">
               <div>
                 <p className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink-950 md:text-3xl">
                   85 more of us are in the field right now.
@@ -166,7 +212,7 @@ export default function TeamPage() {
                 </p>
               </div>
               <Link href="/career" className="shrink-0 rounded-2xl focus-energy">
-                <Button variant="outline" size="lg" tabIndex={-1}>
+                <Button size="lg" tabIndex={-1}>
                   See open roles
                   <ArrowRight size={16} weight="bold" aria-hidden />
                 </Button>

@@ -102,7 +102,7 @@ export function MasterOverview({ session }: { session: Session }) {
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        eyebrow={`Namaste 🙏 · ${isSuper ? "Super distributor desk" : "Master distributor desk"}`}
+        eyebrow={`Network console · ${isSuper ? "Super distributor" : "Master distributor"}`}
         subtitle={
           loading
             ? "Loading your network…"

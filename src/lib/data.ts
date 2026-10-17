@@ -28,7 +28,7 @@ import {
 // values before going live.
 // ─────────────────────────────────────────────────────────────────────────────
 export const company = {
-  legalName: "TRANSPE",
+  legalName: "Transpe Fintech Private Limited",
   brand: "TRANSPE",
   tradeName: "transpe",
   domain: "transpe.net",
@@ -47,7 +47,7 @@ export const company = {
   shortAddress: "Shivtej Nagar, Indira Nagar, Pune"
 };
 
-// Mandatory under IT Rules 2021 (Intermediary Guidelines) & RBI Master Direction
+// Mandatory under IT Rules 2021 (Intermediary Guidelines) & applicable Master Direction
 // on Customer Service in Banks, 2024.
 export const grievanceOfficer = {
   name: "Grievance Officer",
@@ -265,7 +265,7 @@ export const faqs: FaqItem[] = [
   },
   {
     q: "How is the money protected?",
-    a: "Every transaction is routed through RBI-authorised partner banks over NPCI-certified rails. Two-factor authentication guards your login, a separate MPIN protects high-value operations, and biometric data is processed only on STQC-approved devices — never stored on our servers."
+    a: "Every transaction is routed through authorised partner banks over NPCI-certified rails. Two-factor authentication guards your login, a separate MPIN protects high-value operations, and biometric data is processed only on STQC-approved devices — never stored on our servers."
   },
   {
     q: "What types of bills can I accept?",
@@ -289,7 +289,7 @@ export const faqs: FaqItem[] = [
   },
   {
     q: "What happens when a transaction fails?",
-    a: "If the customer is debited but the service is not delivered, the amount auto-reverses within the RBI-mandated window — T+1 for UPI/IMPS, T+5 for AePS. A delay beyond that triggers ₹100/day compensation. You can also raise a dispute from your dashboard and our ops team follows up end to end."
+    a: "If the customer is debited but the service is not delivered, the amount auto-reverses within the mandated reversal window — T+1 for UPI/IMPS, T+5 for AePS. A delay beyond that triggers ₹100/day compensation. You can also raise a dispute from your dashboard and our ops team follows up end to end."
   }
 ];
 
@@ -300,7 +300,7 @@ export type Testimonial = {
   rating: number;
 };
 
-// `role` is "<shop name>, <city>" — RetailerStories splits on the last comma.
+// `role` is "<shop name>, <city>" — ProofLoop splits on the last comma.
 export const testimonials: Testimonial[] = [
   {
     name: "Ramesh Gupta",
@@ -451,10 +451,9 @@ export type NavLink = {
   children?: NavLink[];
 };
 
-// Public nav — TRANSPE service sub-labels are verb-led and action-oriented.
+// Public nav — TRANSPE top-level tabs. Services leads (it is the product),
+// the logo is the home link, and Team lives in the footer only.
 export const mainNav: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "Why TRANSPE", href: "/about" },
   {
     label: "Services",
     href: "/services",
@@ -466,9 +465,11 @@ export const mainNav: NavLink[] = [
       { label: "Travel Desk", href: "/services#travel" }
     ]
   },
-  { label: "Products", href: "/products" },
-  { label: "Team", href: "/team" },
-  { label: "Contact", href: "/contact" }
+  { label: "Platform", href: "/products" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Company", href: "/about" },
+  { label: "Careers", href: "/career" },
+  { label: "Support", href: "/contact" }
 ];
 
 export const footerLinks = {
@@ -497,14 +498,14 @@ export const footerLinks = {
     { label: "Pricing", href: "/#pricing" },
     { label: "Become an Agent", href: "/register" },
     { label: "Developer APIs", href: "/dashboard/api" },
-    { label: "Blog & Insights", href: "/#blog" },
+    { label: "FAQs", href: "/#faq" },
     { label: "Press & Media", href: "/contact" }
   ]
 };
 
 // Compact certification chips shown in the footer compliance strip.
 export const footerCertifications = [
-  "RBI Authorised",
+  "Authorised Bank Rails",
   "NPCI Certified",
   "UIDAI Sub-AUA",
   "PCI-DSS v4.0",
@@ -515,13 +516,13 @@ export const footerCertifications = [
 ];
 
 export const trustBadges = [
-  { label: "RBI-licensed partner banks", icon: ShieldCheck },
+  { label: "Licensed partner banks", icon: ShieldCheck },
   { label: "NPCI certified rails", icon: ShieldCheck },
   { label: "PCI-DSS v4.0", icon: ShieldCheck },
   { label: "ISO 27001:2022", icon: ShieldCheck }
 ];
 
-// India-first missions powering Digital Bharat.
+// India-first missions powering Digital India.
 export type IndiaMission = {
   code: string;
   title: string;
@@ -557,9 +558,9 @@ export const indiaMissions: IndiaMission[] = [
   },
   {
     code: "04",
-    title: "Aatmanirbhar Bharat",
+    title: "Self-Reliant India",
     body:
-      "Engineered in Pune, hosted on Indian data centres, supported in 9 regional languages. Built for Bharat, by Bharat.",
+      "Engineered in Pune, hosted on Indian data centres, supported in 9 regional languages. Built in India, for India.",
     stat: "100%",
     statLabel: "Made in India"
   }
@@ -576,12 +577,12 @@ export type Certification = {
 
 export const certifications: Certification[] = [
   {
-    code: "RBI",
-    name: "RBI Authorised Partners",
+    code: "REG",
+    name: "Authorised Partner Banks",
     authority: "Reserve Bank of India",
     status: "Live",
     description:
-      "All money-movement is settled through RBI-licensed sponsor banks holding a valid PA / PPI / BBPOU licence."
+      "All money-movement is settled through licensed sponsor banks holding a valid PA / PPI / BBPOU licence."
   },
   {
     code: "NPCI",
@@ -613,7 +614,7 @@ export const certifications: Certification[] = [
     authority: "PCI Security Standards Council",
     status: "Certified",
     description:
-      "Card data tokenised at issuer per RBI CoFT guidelines. Quarterly ASV scans & annual on-site audit."
+      "Card data tokenised at issuer per card-on-file tokenisation (CoFT) guidelines. Quarterly ASV scans & annual on-site audit."
   },
   {
     code: "ISO",
@@ -684,14 +685,14 @@ export const coverageZones: CoverageRegion[] = [
 
 export const languagesSupported = [
   "English",
-  "हिन्दी",
-  "ગુજરાતી",
-  "मराठी",
-  "தமிழ்",
-  "తెలుగు",
-  "ಕನ್ನಡ",
-  "বাংলা",
-  "മലയാളം"
+  "Hindi",
+  "Gujarati",
+  "Marathi",
+  "Tamil",
+  "Telugu",
+  "Kannada",
+  "Bengali",
+  "Malayalam"
 ];
 
 // Real, India-compliant legal page content rendered by /legal/[slug].
@@ -723,14 +724,14 @@ export const legalDocuments: Record<string, LegalDocument> = {
       "Digital Personal Data Protection Act, 2023",
       "Information Technology Act, 2000",
       "SPDI Rules, 2011",
-      "RBI Master Direction on Digital Payment Security Controls, 2021"
+      "applicable Master Direction on Digital Payment Security Controls, 2021"
     ],
     sections: [
       {
         id: "introduction",
         heading: "1. Introduction",
         body: [
-          "This Privacy Policy (\"Policy\") governs the processing of personal data by TRANSPE, a company incorporated under the Companies Act, 2013 and having its registered office at S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN (\"TRANSPE\", \"Company\", \"We\", \"Us\"), through its website transpe.net, mobile applications and APIs (collectively, the \"Platform\").",
+          "This Privacy Policy (\"Policy\") governs the processing of personal data by Transpe Fintech Private Limited, a company incorporated under the Companies Act, 2013 and having its registered office at S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN (\"Transpe Fintech Private Limited\", \"Company\", \"We\", \"Us\"), through its website transpe.net, mobile applications and APIs (collectively, the \"Platform\").",
           "By accessing or using the Platform, you (the \"Data Principal\") consent to the practices described in this Policy. If you do not agree, please do not use the Platform."
         ]
       },
@@ -759,10 +760,10 @@ export const legalDocuments: Record<string, LegalDocument> = {
           "Your data is processed only for the specific, lawful purposes notified to you at the time of collection, in accordance with Section 7 of the DPDP Act, 2023:",
           {
             list: [
-              "Customer onboarding, KYC and re-KYC as required by RBI Master Direction on KYC, 2016 and PMLA, 2002.",
+              "Customer onboarding, KYC and re-KYC as required by applicable Master Direction on KYC, 2016 and PMLA, 2002.",
               "Processing payment, AePS, DMT, BBPS, recharge, travel & PAN service requests initiated by you.",
               "Detection and prevention of fraud, money-laundering and terror-financing.",
-              "Compliance with statutory and regulatory obligations including responding to lawful requests from RBI, NPCI, UIDAI, FIU-IND, Income-Tax Department, GSTN and law-enforcement agencies.",
+              "Compliance with statutory and regulatory obligations including responding to lawful requests from NPCI, UIDAI, FIU-IND, Income-Tax Department, GSTN and law-enforcement agencies.",
               "Customer support, grievance redressal and dispute resolution.",
               "Improving the Platform, security testing and product analytics (only on de-identified data)."
             ]
@@ -778,8 +779,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
           {
             list: [
               "Sponsor banks, payment system providers, card networks (Visa, Mastercard, RuPay), NPCI, BBPCU, UIDAI and acquirer banks to execute your transactions.",
-              "Statutory authorities — RBI, FIU-IND, Income-Tax Department, GSTN, courts, tribunals and law-enforcement agencies when legally compelled.",
-              "Audit, KYC and risk-assessment vendors empanelled by RBI / SEBI / IRDAI, under written confidentiality and DPDP-aligned data processing agreements.",
+              "Statutory authorities — FIU-IND, Income-Tax Department, GSTN, courts, tribunals and law-enforcement agencies when legally compelled.",
+              "Audit, KYC and risk-assessment vendors empanelled by statutory regulators, under written confidentiality and DPDP-aligned data processing agreements.",
               "Cloud infrastructure providers operating data centres located within the territory of India."
             ]
           }
@@ -789,7 +790,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "storage",
         heading: "5. Data localisation, retention & deletion",
         body: [
-          "All payment system data is stored only in India in compliance with the RBI circular dated 06 April 2018 on Storage of Payment System Data. End-of-day backups are encrypted at rest using AES-256.",
+          "All payment system data is stored only in India in compliance with the regulatory circular dated 06 April 2018 on Storage of Payment System Data. End-of-day backups are encrypted at rest using AES-256.",
           "We retain personal data for the period mandated by applicable law — typically ten (10) years from the date of completion of the transaction (per Section 12, PMLA, 2002) — after which it is securely deleted or anonymised."
         ]
       },
@@ -815,7 +816,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "security",
         heading: "7. Security safeguards",
         body: [
-          "We implement reasonable security practices as defined in Rule 8 of the SPDI Rules, 2011 and the RBI Master Direction on Digital Payment Security Controls, 2021, including: ISO/IEC 27001:2022 certified ISMS, PCI-DSS v4.0 Level-1 controls, mTLS-only APIs, HSM-backed key management, role-based access, 24×7 SOC monitoring and annual VAPT by a CERT-In empanelled auditor."
+          "We implement reasonable security practices as defined in Rule 8 of the SPDI Rules, 2011 and the applicable Master Direction on Digital Payment Security Controls, 2021, including: ISO/IEC 27001:2022 certified ISMS, PCI-DSS v4.0 Level-1 controls, mTLS-only APIs, HSM-backed key management, role-based access, 24×7 SOC monitoring and annual VAPT by a CERT-In empanelled auditor."
         ]
       },
       {
@@ -859,28 +860,28 @@ export const legalDocuments: Record<string, LegalDocument> = {
       "Indian Contract Act, 1872",
       "Information Technology Act, 2000",
       "Consumer Protection Act, 2019",
-      "RBI Payment & Settlement Systems Act, 2007"
+      "Payment & Settlement Systems Act, 2007"
     ],
     sections: [
       {
         id: "acceptance",
         heading: "1. Acceptance of Terms",
         body: [
-          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and TRANSPE (\"TRANSPE\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
+          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and Transpe Fintech Private Limited (\"TRANSPE\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
         ]
       },
       {
         id: "eligibility",
         heading: "2. Eligibility",
         body: [
-          "You are eligible to use the Platform only if you are: (a) at least 18 years of age; (b) competent to contract under Section 11 of the Indian Contract Act, 1872; and (c) not barred from receiving services under any Indian law, including RBI / FIU / OFAC sanctions lists."
+          "You are eligible to use the Platform only if you are: (a) at least 18 years of age; (b) competent to contract under Section 11 of the Indian Contract Act, 1872; and (c) not barred from receiving services under any Indian law, including applicable sanctions lists."
         ]
       },
       {
         id: "services",
         heading: "3. Description of services",
         body: [
-          "TRANSPE is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by RBI-licensed sponsor banks and NPCI rails. TRANSPE does not itself accept deposits or extend credit."
+          "TRANSPE is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by licensed sponsor banks and NPCI rails. TRANSPE does not itself accept deposits or extend credit."
         ]
       },
       {
@@ -889,7 +890,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         body: [
           {
             list: [
-              "You shall complete KYC as required under the RBI Master Direction on KYC, 2016 prior to availing transactional services.",
+              "You shall complete KYC as required under the applicable Master Direction on KYC, 2016 prior to availing transactional services.",
               "You are responsible for maintaining confidentiality of your login credentials, MPIN, biometric authentication and OTPs. TRANSPE will never ask for these over phone, SMS or e-mail.",
               "Any transaction performed using your credentials shall be deemed to be performed by you.",
               "You shall not share, sublicense or commercially exploit your access in violation of these Terms."
@@ -908,7 +909,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
               "Hosting, transmitting or facilitating content prohibited under Rule 3(1)(b) of the IT Intermediary Rules, 2021.",
               "Impersonation, identity theft or unauthorised use of Aadhaar / PAN / KYC data.",
               "Reverse-engineering, scraping, or circumventing the security controls of the Platform.",
-              "Use for gambling, crypto-currency trading, adult content, or any activity restricted by RBI / SEBI."
+              "Use for gambling, crypto-currency trading, adult content, or any activity restricted by Indian financial regulators."
             ]
           }
         ]
@@ -945,7 +946,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "termination",
         heading: "10. Suspension & termination",
         body: [
-          "TRANSPE reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any RBI / NPCI / UIDAI direction."
+          "TRANSPE reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any regulatory or network direction."
         ]
       },
       {
@@ -969,10 +970,10 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Refund & Cancellation Policy",
     eyebrow: "Legal · Refunds",
     description:
-      "Timelines and process for chargebacks, failed transactions and cancellations, drafted in accordance with the RBI Harmonisation of TAT circular dated 20 September 2019 and the Consumer Protection Act, 2019.",
+      "Timelines and process for chargebacks, failed transactions and cancellations, drafted in accordance with the Harmonisation of TAT circular dated 20 September 2019 and the Consumer Protection Act, 2019.",
     lastUpdated: "01 April 2026",
     governedBy: [
-      "RBI Circular on Harmonisation of TAT, 20 Sept 2019",
+      "Circular on Harmonisation of TAT, 20 Sept 2019",
       "Consumer Protection Act, 2019",
       "Payment & Settlement Systems Act, 2007"
     ],
@@ -986,9 +987,9 @@ export const legalDocuments: Record<string, LegalDocument> = {
       },
       {
         id: "failed",
-        heading: "2. Failed-transaction auto-reversal — RBI TAT",
+        heading: "2. Failed-transaction auto-reversal — mandated TAT",
         body: [
-          "In line with the RBI's circular on Harmonisation of Turn-Around-Time and Customer Compensation for Failed Transactions, the timelines below apply for auto-reversal. Where the auto-reversal fails to happen within the prescribed TAT, you are entitled to compensation of ₹100 per day of delay credited automatically to the same account.",
+          "In line with the regulator's circular on Harmonisation of Turn-Around-Time and Customer Compensation for Failed Transactions, the timelines below apply for auto-reversal. Where the auto-reversal fails to happen within the prescribed TAT, you are entitled to compensation of ₹100 per day of delay credited automatically to the same account.",
           {
             table: {
               headers: ["Channel", "Failure scenario", "Auto-reversal TAT"],
@@ -1012,7 +1013,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
             list: [
               "Log in to your TRANSPE dashboard → Transactions → Raise Dispute.",
               "Or e-mail support@transpe.net with the transaction reference number (RRN), date, amount and a short description.",
-              "For UPI disputes you may also raise a request directly with the issuer bank, the NPCI UDIR portal or the RBI Digital Ombudsman."
+              "For UPI disputes you may also raise a request directly with the issuer bank, the NPCI UDIR portal or the Digital Ombudsman."
             ]
           }
         ]
@@ -1046,7 +1047,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
             list: [
               "L2 — Grievance Officer, grievance@transpe.net (response within 15 working days)",
               "L3 — Principal Nodal Officer, nodal@transpe.net",
-              "L4 — RBI Integrated Ombudsman Scheme, 2021 at cms.rbi.org.in or NPCI Digital Ombudsman"
+              "L4 — Integrated Ombudsman Scheme, 2021 or the NPCI Digital Ombudsman"
             ]
           }
         ]
@@ -1058,10 +1059,10 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Charges & Fees",
     eyebrow: "Legal · Pricing transparency",
     description:
-      "All convenience fees, commissions and GST that may apply to transactions on the TRANSPE Platform — published in line with RBI's directions on display of charges.",
+      "All convenience fees, commissions and GST that may apply to transactions on the TRANSPE Platform — published in line with regulatory directions on display of charges.",
     lastUpdated: "01 April 2026",
     governedBy: [
-      "RBI Master Direction on Issuance & Operation of PPIs, 2021",
+      "applicable Master Direction on Issuance & Operation of PPIs, 2021",
       "Consumer Protection (E-Commerce) Rules, 2020",
       "Central Goods & Services Tax Act, 2017"
     ],
@@ -1117,10 +1118,10 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Grievance Redressal Policy",
     eyebrow: "Legal · Customer Service",
     description:
-      "Our customer-grievance redressal framework drafted as per the RBI Master Direction on Customer Service, the IT Rules 2021 and the Consumer Protection Act, 2019.",
+      "Our customer-grievance redressal framework drafted as per the applicable Master Direction on Customer Service, the IT Rules 2021 and the Consumer Protection Act, 2019.",
     lastUpdated: "01 April 2026",
     governedBy: [
-      "RBI Master Direction on Customer Service in Banks",
+      "applicable Master Direction on Customer Service in Banks",
       "IT (Intermediary Guidelines) Rules, 2021",
       "Consumer Protection Act, 2019",
       "Integrated Ombudsman Scheme, 2021"
@@ -1158,7 +1159,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
                 ["Level 1", "Customer Care Executive", "support@transpe.net", "7 working days"],
                 ["Level 2", "Grievance Officer", "grievance@transpe.net · +91 9004080939", "15 working days"],
                 ["Level 3", "Principal Nodal Officer", "nodal@transpe.net · +91 9004080939", "30 days"],
-                ["Level 4", "RBI Integrated Ombudsman", "cms.rbi.org.in · 14448 (toll-free)", "As per scheme"]
+                ["Level 4", "Integrated Ombudsman", "14448 (toll-free)", "As per scheme"]
               ]
             }
           }
@@ -1296,17 +1297,18 @@ export type CommissionSlab = {
   retailer: string;
   distributor: string;
   master: string;
+  superDistributor: string;
 };
 
 export const commissionSlabs: CommissionSlab[] = [
-  { service: "AePS Withdrawal", retailer: "0.40%", distributor: "0.10%", master: "0.05%" },
-  { service: "DMT (IMPS)", retailer: "₹6 / txn", distributor: "₹2 / txn", master: "₹1 / txn" },
-  { service: "Mobile Recharge", retailer: "3.00%", distributor: "0.40%", master: "0.20%" },
-  { service: "DTH Recharge", retailer: "3.50%", distributor: "0.50%", master: "0.20%" },
-  { service: "Electricity Bill", retailer: "0.80%", distributor: "0.20%", master: "0.10%" },
-  { service: "LPG Booking", retailer: "₹4 / txn", distributor: "₹1 / txn", master: "₹0.50 / txn" },
-  { service: "UPI Collect", retailer: "0.20%", distributor: "0.05%", master: "0.025%" },
-  { service: "Travel - Bus", retailer: "5.00%", distributor: "0.80%", master: "0.40%" }
+  { service: "AePS Withdrawal", retailer: "0.40%", distributor: "0.10%", master: "0.05%", superDistributor: "0.025%" },
+  { service: "DMT (IMPS)", retailer: "₹6 / txn", distributor: "₹2 / txn", master: "₹1 / txn", superDistributor: "₹0.50 / txn" },
+  { service: "Mobile Recharge", retailer: "3.00%", distributor: "0.40%", master: "0.20%", superDistributor: "0.10%" },
+  { service: "DTH Recharge", retailer: "3.50%", distributor: "0.50%", master: "0.20%", superDistributor: "0.10%" },
+  { service: "Electricity Bill", retailer: "0.80%", distributor: "0.20%", master: "0.10%", superDistributor: "0.05%" },
+  { service: "LPG Booking", retailer: "₹4 / txn", distributor: "₹1 / txn", master: "₹0.50 / txn", superDistributor: "₹0.25 / txn" },
+  { service: "UPI Collect", retailer: "0.20%", distributor: "0.05%", master: "0.025%", superDistributor: "0.0125%" },
+  { service: "Travel - Bus", retailer: "5.00%", distributor: "0.80%", master: "0.40%", superDistributor: "0.20%" }
 ];
 
 export type Biller = {
@@ -1394,7 +1396,7 @@ export type Integration = {
 export const integrations: Integration[] = [
   { name: "NPCI", category: "Switch", initials: "NPCI", color: "from-brand-500 to-brand-700" },
   { name: "NPCI Bharat BillPay", category: "BBPS", initials: "BBPS", color: "from-brand-600 to-violet-600" },
-  { name: "RBI Sandbox", category: "Regulatory", initials: "RBI", color: "from-ink-700 to-ink-900" },
+  { name: "Regulatory Sandbox", category: "Regulatory", initials: "RS", color: "from-ink-700 to-ink-900" },
   { name: "ICICI Nodal", category: "Nodal Bank", initials: "ICICI", color: "from-orange-500 to-rose-500" },
   { name: "Yes Bank Nodal", category: "Nodal Bank", initials: "YES", color: "from-blue-500 to-indigo-600" },
   { name: "Axis Bank", category: "DMT Partner", initials: "AXIS", color: "from-rose-500 to-pink-600" },

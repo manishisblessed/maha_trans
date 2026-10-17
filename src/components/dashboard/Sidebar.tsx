@@ -45,6 +45,11 @@ const ROLE_LABEL: Record<Role, string> = {
   retailer: "Retailer",
 };
 
+/**
+ * TRANSPE dashboard rail — light "paper" theme. White surface, hairline
+ * border, gradient left-bar on the active tab and a navy user chip at the
+ * bottom. (The dark rail belongs to the previous generation of the product.)
+ */
 export function Sidebar({
   open,
   onClose,
@@ -158,13 +163,12 @@ export function Sidebar({
     <>
       {/* ── Desktop: fixed rail with animated width ───────────────────── */}
       <motion.aside
-        className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-ink-950 text-ink-200 lg:flex"
+        className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-ink-100 bg-white text-ink-700 lg:flex"
         initial={false}
         animate={{ width: collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH }}
         transition={{ duration: reduce ? 0 : 0.32, ease: EASE }}
         aria-label="Primary"
       >
-        <GrainLayer />
         {content("desktop")}
       </motion.aside>
 
@@ -174,7 +178,7 @@ export function Sidebar({
           <>
             <motion.div
               key="backdrop"
-              className="fixed inset-0 z-40 bg-ink-950/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-ink-950/50 backdrop-blur-sm lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -184,7 +188,7 @@ export function Sidebar({
             />
             <motion.aside
               key="drawer"
-              className="fixed inset-y-0 left-0 z-50 flex w-[288px] max-w-[88vw] flex-col overflow-hidden bg-ink-950 text-ink-200 shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 flex w-[288px] max-w-[88vw] flex-col overflow-hidden rounded-r-[1.75rem] bg-white text-ink-700 shadow-2xl lg:hidden"
               initial={reduce ? { x: 0 } : { x: "-100%" }}
               animate={{ x: 0 }}
               exit={reduce ? undefined : { x: "-100%" }}
@@ -193,26 +197,12 @@ export function Sidebar({
               aria-modal="true"
               aria-label="Navigation menu"
             >
-              <GrainLayer />
               {content("mobile")}
             </motion.aside>
           </>
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-/** Film-grain + soft top glow layered under the rail content. `.grain` sets
- *  `position: relative`, so it lives on an inner full-size div rather than the
- *  fixed <aside> itself. */
-function GrainLayer() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="grain h-full w-full" />
-      <div className="absolute -left-20 -top-24 h-64 w-64 rounded-full bg-royal-500/15 blur-3xl" />
-      <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl" />
-    </div>
   );
 }
 
@@ -248,20 +238,16 @@ function SidebarContent({
       {/* Brand */}
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center md:h-20",
+          "flex h-16 shrink-0 items-center border-b border-ink-100/80 md:h-20",
           collapsed ? "justify-center px-2" : "justify-between px-5"
         )}
       >
-        {collapsed ? (
-          <Logo iconOnly />
-        ) : (
-          <Logo variant="light" size="sm" />
-        )}
+        {collapsed ? <Logo iconOnly /> : <Logo size="sm" />}
         {variant === "mobile" && (
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-ink-300 transition hover:bg-white/[0.06] hover:text-white focus-energy"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-ink-500 transition hover:bg-ink-50 hover:text-ink-900 focus-energy"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -272,17 +258,17 @@ function SidebarContent({
       {/* Nav */}
       <nav
         className={cn(
-          "scrollbar-none min-h-0 flex-1 overflow-y-auto pb-4 pt-1",
+          "scrollbar-none min-h-0 flex-1 overflow-y-auto pb-4 pt-3",
           collapsed ? "px-2" : "px-3"
         )}
         aria-label="Sections"
       >
         {groups.map((group, gi) => (
-          <div key={group.heading} className="mb-4 last:mb-0">
+          <div key={group.heading} className="mb-5 last:mb-0">
             {collapsed ? (
-              gi > 0 && <div className="mx-auto mb-3 h-px w-8 bg-white/[0.08]" />
+              gi > 0 && <div className="mx-auto mb-3 h-px w-8 bg-ink-100" />
             ) : (
-              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
+              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-royal-400">
                 {group.heading}
               </p>
             )}
@@ -316,7 +302,7 @@ function SidebarContent({
       {/* Footer: user card + collapse toggle */}
       <div
         className={cn(
-          "shrink-0 border-t border-white/[0.06]",
+          "shrink-0 border-t border-ink-100/80",
           collapsed ? "flex flex-col items-center gap-2 p-2 py-3" : "p-3"
         )}
       >
@@ -332,7 +318,7 @@ function SidebarContent({
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-ink-400 transition hover:bg-white/[0.06] hover:text-white focus-energy"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-ink-400 transition hover:bg-ink-50 hover:text-ink-900 focus-energy"
                 aria-label="Expand sidebar"
                 title="Expand sidebar"
               >
@@ -341,18 +327,22 @@ function SidebarContent({
             )}
           </>
         ) : (
-          <div className="flex items-center gap-3 rounded-2xl bg-white/[0.04] p-2.5 ring-1 ring-inset ring-white/[0.06]">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-energy-gradient font-display text-xs font-semibold text-white shadow-energy-sm">
+          <div className="grain relative flex items-center gap-3 overflow-hidden rounded-2xl bg-ink-950 p-2.5 text-white">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-energy-gradient opacity-50 blur-2xl"
+            />
+            <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-energy-gradient font-display text-xs font-semibold text-white shadow-energy-sm">
               {initials}
             </span>
-            <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-sm font-semibold text-white">{userName}</p>
+            <div className="relative z-10 min-w-0 flex-1 leading-tight">
+              <p className="truncate text-sm font-semibold">{userName}</p>
               <p className="mt-0.5 flex items-center gap-1.5">
-                <span className="truncate rounded-md bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-200">
+                <span className="truncate rounded-md bg-white/[0.12] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/80">
                   {roleLabel}
                 </span>
                 {userCode && (
-                  <span className="truncate font-mono text-[10px] text-ink-400">{userCode}</span>
+                  <span className="truncate font-mono text-[10px] text-white/50">{userCode}</span>
                 )}
               </p>
             </div>
@@ -360,7 +350,7 @@ function SidebarContent({
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition hover:bg-white/[0.08] hover:text-white focus-energy"
+                className="relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white focus-energy"
                 aria-label="Collapse sidebar"
                 title="Collapse sidebar"
               >
@@ -422,13 +412,13 @@ function NavLeaf({
         className={cn(
           "group relative isolate flex items-center rounded-xl text-sm font-medium transition-colors duration-200 focus-energy",
           collapsed ? "mx-auto h-11 w-11 justify-center" : nested ? "gap-3 px-3 py-2" : "gap-3 px-3 py-2.5",
-          active ? "text-white" : "text-ink-300 hover:bg-white/[0.04] hover:text-white"
+          active ? "text-royal-900" : "text-ink-600 hover:bg-ink-50 hover:text-ink-950"
         )}
       >
         {active && (
           <motion.span
             layoutId={layoutId}
-            className="absolute inset-0 -z-10 rounded-xl bg-white/[0.06]"
+            className="pill-active absolute inset-0 -z-10 rounded-xl"
             transition={{ type: "spring", stiffness: 420, damping: 38, mass: 0.8 }}
             aria-hidden
           >
@@ -438,7 +428,7 @@ function NavLeaf({
         <Icon
           className={cn(
             "h-[18px] w-[18px] shrink-0 transition-colors",
-            active ? "text-white" : "text-ink-400 group-hover:text-ink-100"
+            active ? "text-royal-800" : "text-ink-400 group-hover:text-ink-700"
           )}
         />
         {!collapsed && <span className="truncate">{item.label}</span>}
@@ -513,18 +503,18 @@ function CollapsibleNavItem({
         aria-controls={panelId}
         className={cn(
           "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 focus-energy",
-          childActive ? "text-white" : "text-ink-300 hover:bg-white/[0.04] hover:text-white"
+          childActive ? "text-royal-900" : "text-ink-600 hover:bg-ink-50 hover:text-ink-950"
         )}
       >
         <Icon
           className={cn(
             "h-[18px] w-[18px] shrink-0 transition-colors",
-            childActive ? "text-white" : "text-ink-400 group-hover:text-ink-100"
+            childActive ? "text-royal-800" : "text-ink-400 group-hover:text-ink-700"
           )}
         />
         <span className="truncate">{item.label}</span>
         <motion.span
-          className="ml-auto inline-flex shrink-0 text-ink-500"
+          className="ml-auto inline-flex shrink-0 text-ink-400"
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: reduce ? 0 : 0.22, ease: EASE }}
         >
@@ -542,7 +532,7 @@ function CollapsibleNavItem({
             transition={{ duration: 0.26, ease: EASE }}
             className="overflow-hidden"
           >
-            <ul className="ml-[22px] mt-1 space-y-0.5 border-l border-white/[0.08] pl-2">
+            <ul className="ml-[22px] mt-1 space-y-0.5 border-l border-ink-100 pl-2">
               {children.map((child) => (
                 <NavLeaf
                   key={child.href}

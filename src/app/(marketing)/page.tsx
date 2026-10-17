@@ -1,39 +1,38 @@
-import { HeroEditorial } from "@/components/home/HeroEditorial";
-import { ServiceTicker } from "@/components/home/ServiceTicker";
-import { PartnerLogos } from "@/components/home/PartnerLogos";
-import { EarningsCalculator } from "@/components/home/EarningsCalculator";
-import { ServiceBento } from "@/components/home/ServiceBento";
-import { HowItWorks } from "@/components/home/HowItWorks";
-import { ForEveryRole } from "@/components/home/ForEveryRole";
-import { ComparisonTable } from "@/components/home/ComparisonTable";
-import { RetailerStories } from "@/components/home/RetailerStories";
-import { BharatReach } from "@/components/home/BharatReach";
-import { TrustWall } from "@/components/home/TrustWall";
-import { PlansCompare } from "@/components/home/PlansCompare";
-import { FaqSplit } from "@/components/home/FaqSplit";
-import { AppDownloadBanner } from "@/components/home/AppDownloadBanner";
-import { InsightsPreview } from "@/components/home/InsightsPreview";
-import { FinalCTA } from "@/components/home/FinalCTA";
+import { HeroConsole } from "@/components/home/HeroConsole";
+import { ImpactStrip } from "@/components/home/ImpactStrip";
+import { ServiceRail } from "@/components/home/ServiceRail";
+import { LaunchPath } from "@/components/home/LaunchPath";
+import { IncomeDesigner } from "@/components/home/IncomeDesigner";
+import { NetworkLadder } from "@/components/home/NetworkLadder";
+import { ProofLoop } from "@/components/home/ProofLoop";
+import { TrustVault } from "@/components/home/TrustVault";
+import { BharatGrid } from "@/components/home/BharatGrid";
+import { PlansBoard } from "@/components/home/PlansBoard";
+import { AnswerDesk } from "@/components/home/AnswerDesk";
+import { ClosingSlab } from "@/components/home/ClosingSlab";
 
+/**
+ * TRANSPE home — the "counter console" narrative.
+ *
+ * Flow: prove it's alive (hero + numbers) → show the catalogue → show how
+ * fast you start → let the visitor model their income → explain the network
+ * → social proof → regulation → India reach → pricing → objections → close.
+ */
 export default function HomePage() {
   return (
     <>
-      <HeroEditorial />
-      <ServiceTicker />
-      <PartnerLogos />
-      <EarningsCalculator />
-      <ServiceBento />
-      <HowItWorks />
-      <ForEveryRole />
-      <ComparisonTable />
-      <RetailerStories />
-      <BharatReach />
-      <TrustWall />
-      <PlansCompare />
-      <FaqSplit />
-      <AppDownloadBanner />
-      <InsightsPreview />
-      <FinalCTA />
+      <HeroConsole />
+      <ImpactStrip />
+      <ServiceRail />
+      <LaunchPath />
+      <IncomeDesigner />
+      <NetworkLadder />
+      <ProofLoop />
+      <TrustVault />
+      <BharatGrid />
+      <PlansBoard />
+      <AnswerDesk />
+      <ClosingSlab />
     </>
   );
 }

@@ -103,7 +103,7 @@ export function DistributorOverview({ session }: { session: Session }) {
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        eyebrow="Namaste 🙏 · Distributor desk"
+        eyebrow="Network console · Distributor"
         subtitle={
           loading ? "Loading your network…" : `${retailers.length} retailers · ${formatINR(mtdTurnover)} this month`
         }
