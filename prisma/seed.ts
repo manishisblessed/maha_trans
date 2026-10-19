@@ -153,39 +153,6 @@ async function main() {
     }
   });
 
-  // ── K3next demo accounts (K3next@250120) ──
-  const k3Hash = await bcrypt.hash("K3next@250120", 12);
-
-  const k3SD = await prisma.user.upsert({
-    where: { email: "nikunjdeshani7878@gmail.com" },
-    update: { passwordHash: k3Hash, role: Role.SUPER_DISTRIBUTOR, status: UserStatus.ACTIVE },
-    create: {
-      name: "Nikunj Ashokbhai Deshani",
-      email: "nikunjdeshani7878@gmail.com",
-      phone: "+919712344484",
-      passwordHash: k3Hash,
-      role: Role.SUPER_DISTRIBUTOR,
-      status: UserStatus.ACTIVE,
-      walletBalance: 0,
-      parentId: masterAdmin.id
-    }
-  });
-
-  await prisma.user.upsert({
-    where: { email: "kishangondaliya7575@gmail.com" },
-    update: { passwordHash: k3Hash, role: Role.MASTER_DISTRIBUTOR, status: UserStatus.ACTIVE },
-    create: {
-      name: "Kishan Gondaliya",
-      email: "kishangondaliya7575@gmail.com",
-      phone: "+916354202777",
-      passwordHash: k3Hash,
-      role: Role.MASTER_DISTRIBUTOR,
-      status: UserStatus.ACTIVE,
-      walletBalance: 0,
-      parentId: k3SD.id
-    }
-  });
-
   // ── Operators (master data for recharge/bill services) ──
   const ops = [
     { service: ServiceCode.RECHARGE_MOBILE, name: "Jio", code: "JIO" },
@@ -222,9 +189,6 @@ async function main() {
   console.log("  Distributor:         manishkshah27@outlook.com     (Manish DT)");
   console.log("  Retailer:            manishisspecial@gmail.com     (Manish RT)");
   console.log("");
-  console.log("  K3next accounts (password: K3next@250120):");
-  console.log("  Super Distributor:   nikunjdeshani7878@gmail.com   (Nikunj Ashokbhai Deshani)");
-  console.log("  Master Distributor:  kishangondaliya7575@gmail.com (Kishan Gondaliya)");
 }
 
 main()
