@@ -316,7 +316,7 @@ export default function SchemeManagementPage() {
       <PageHeader
         eyebrow="Admin · Pricing"
         title="Scheme management"
-        description="Create and manage schemes with charges, MDR rates, and commission values. Assign any scheme directly to any user. Commissions apply only to PG/POS/QR transactions."
+        description="Create and manage schemes with charges, MDR rates, and commission values. Admin assigns schemes to Super Distributors (SD) only — SD then assigns to MD, MD to DT, DT to RT. Commissions apply only to PG/POS/QR transactions."
         actions={
           <>
             <Button variant="outline" onClick={load} disabled={loading}>
@@ -2075,8 +2075,8 @@ function AssignModal({
         <div className="space-y-4 p-5">
           <p className="text-xs text-ink-400">
             {ownerId
-              ? "This is a derived scheme — it can only be assigned to the owner's direct children (any tier below them)."
-              : "This is a platform scheme — it can only be assigned to super-distributors. Lower tiers receive schemes derived from their parent."}
+              ? "This is a derived scheme — it can only be assigned to the owner's direct children."
+              : "Platform schemes can only be assigned to Super Distributors (SD). MD, DT, and RT users receive their scheme from their direct parent in the network hierarchy (SD assigns to MD, MD to DT, DT to RT)."}
           </p>
 
           {/* Available users — scoped to who can actually hold this scheme */}

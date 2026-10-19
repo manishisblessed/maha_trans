@@ -309,7 +309,9 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
         { href: "/dashboard/network", label: "My Retailers", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
         { href: "/dashboard/network/onboard", label: "Invite Retailer", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
         { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
@@ -325,7 +327,9 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
         { href: "/dashboard/network", label: "My Network", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
         { href: "/dashboard/network/onboard", label: "Invite Master Distributor", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
         { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
@@ -341,7 +345,9 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
         { href: "/dashboard/network", label: "My Distributors", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
         { href: "/dashboard/network/onboard", label: "Invite Distributor", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
         { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }

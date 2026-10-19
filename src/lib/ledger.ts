@@ -66,6 +66,7 @@ async function lockUser(tx: Tx, userId: string) {
       walletBalance: true,
       heldBalance: true,
       lienBalance: true,
+      dmtBalance: true,
       aepsBalance: true,
       revenueBalance: true,
       payinBalance: true,
@@ -92,9 +93,10 @@ function primarySpendable(user: {
 
 /** The balance column backing a wallet book. */
 function bookBalance(
-  user: { walletBalance: Money; aepsBalance: Money; revenueBalance: Money; payinBalance: Money },
+  user: { walletBalance: Money; dmtBalance: Money; aepsBalance: Money; revenueBalance: Money; payinBalance: Money },
   walletType: WalletType
 ): Money {
+  if (walletType === "DMT") return user.dmtBalance;
   if (walletType === "AEPS") return user.aepsBalance;
   if (walletType === "REVENUE") return user.revenueBalance;
   if (walletType === "PAYIN") return user.payinBalance;
@@ -103,6 +105,7 @@ function bookBalance(
 
 /** The Prisma update payload that writes a wallet book's new balance. */
 function bookUpdate(walletType: WalletType, newBalance: Money) {
+  if (walletType === "DMT") return { dmtBalance: newBalance };
   if (walletType === "AEPS") return { aepsBalance: newBalance };
   if (walletType === "REVENUE") return { revenueBalance: newBalance };
   if (walletType === "PAYIN") return { payinBalance: newBalance };
@@ -258,7 +261,7 @@ export async function debitWallet(m: WalletMovement, tx?: Tx): Promise<WalletTxn
       if (existing) return existing;
     }
     const user = await lockUser(t, m.userId);
-    // Only the PRIMARY book has holds/liens; AEPS/REVENUE books are fully spendable.
+      // Only the PRIMARY book has holds/liens; DMT/AEPS/REVENUE books are fully spendable.
     const spendable =
       walletType === "PRIMARY" ? primarySpendable(user) : bookBalance(user, walletType);
     if (!gte(spendable, m.amount)) {
@@ -511,6 +514,7 @@ export async function getBalances(userId: string) {
       walletBalance: true,
       heldBalance: true,
       lienBalance: true,
+      dmtBalance: true,
       aepsBalance: true,
       revenueBalance: true,
       payinBalance: true,
@@ -521,6 +525,7 @@ export async function getBalances(userId: string) {
     walletBalance: user.walletBalance as Money,
     heldBalance: user.heldBalance as Money,
     lienBalance: user.lienBalance as Money,
+    dmtBalance: user.dmtBalance as Money,
     aepsBalance: user.aepsBalance as Money,
     revenueBalance: user.revenueBalance as Money,
     payinBalance: user.payinBalance as Money,

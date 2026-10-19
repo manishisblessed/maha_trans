@@ -19,10 +19,9 @@ const AssignBody = z
 /**
  * POST /api/admin/schemes/assign
  *
- * Admin assigns (or unassigns) a scheme to user(s) directly. Assignment is
- * bound by the cascade invariant (same rule as PATCH /api/admin/network/[id]):
- *   - a platform scheme (ownerId null) can only go to SUPER_DISTRIBUTORs;
- *   - a derived scheme can only go to users whose parent owns that scheme.
+ * Admin assigns (or unassigns) a scheme to Super Distributor (SD) user(s)
+ * only. The scheme then cascades down the network via each tier's own
+ * assignment flow:  Admin → SD → MD → DT → RT.
  * Unassigning (schemeId null) is always allowed.
  */
 export async function POST(req: Request) {
@@ -46,28 +45,23 @@ export async function POST(req: Request) {
   if (schemeId) {
     const scheme = await prisma.scheme.findUnique({
       where: { id: schemeId },
-      select: { active: true, ownerId: true },
+      select: { active: true },
     });
     if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
     if (!scheme.active) return NextResponse.json({ error: "Cannot assign an inactive scheme" }, { status: 400 });
 
-    // Cascade invariant: a scheme can only land on users it's actually meant for.
-    // Platform scheme (no owner) -> super-distributors only; derived scheme ->
-    // only users whose parent owns it. Reject the whole batch on any violation
-    // so a bulk assign can never silently mis-price part of the network.
+    // Hierarchy rule: admin can only assign schemes to SUPER_DISTRIBUTORs (SD).
+    // Each tier below (MD/DT/RT) receives their scheme from their direct parent
+    // via /api/network/scheme — not from admin directly.
     const targets = await prisma.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, role: true, parentId: true },
+      select: { id: true, role: true },
     });
-    const invalid = targets.filter((u) =>
-      scheme.ownerId ? scheme.ownerId !== u.parentId : u.role !== "SUPER_DISTRIBUTOR"
-    );
+    const invalid = targets.filter((u) => u.role !== "SUPER_DISTRIBUTOR");
     if (invalid.length > 0) {
       return NextResponse.json(
         {
-          error: scheme.ownerId
-            ? `This scheme belongs to a specific parent — ${invalid.length} of the selected user(s) are not that parent's direct children. Assign each user a scheme derived from their own parent.`
-            : `Platform schemes can only be assigned to super-distributors — ${invalid.length} of the selected user(s) are lower tiers, who must receive a scheme from their parent.`,
+          error: `Admin can only assign schemes to Super Distributors (SD). ${invalid.length} of the selected user(s) are not Super Distributors. MD, DT, and RT users receive schemes from their direct parent in the network hierarchy.`,
         },
         { status: 400 }
       );

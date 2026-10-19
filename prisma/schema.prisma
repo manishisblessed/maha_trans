@@ -149,6 +149,11 @@ model User {
   // its own column so the ledger can maintain independent balanceAfter chains
   // per wallet (WalletTxn.walletType discriminates the two books).
   aepsBalance    Decimal @default(0) @db.Decimal(14, 2)
+  // DMT wallet — used exclusively for Domestic Money Transfer transactions.
+  // Funded via cash-collection deposits (NEFT/RTGS/UPI/CASH_DEPOSIT). Debited
+  // when a DMT transaction is processed. Discriminated by
+  // WalletTxn.walletType = DMT with its own balanceAfter chain.
+  dmtBalance     Decimal @default(0) @db.Decimal(14, 2)
   // Company revenue wallet — used ONLY on the platform revenue account. The MDR
   // margin (serviceCharge − vendorCharge) of every POS/PG/QR txn is credited
   // here, and upline (DT/MD/SD) commissions are debited from here. Discriminated
@@ -231,6 +236,9 @@ model User {
   transfersInitiated     HierarchyTransfer[]     @relation("TransferInitiator")
   incentiveConfigs       UserIncentiveConfig[]   @relation("UserIncentiveConfig")
   incentivePayouts       IncentivePayout[]       @relation("IncentivePayoutUser")
+  cashCollections        CashCollection[]        @relation("CashCollectionRequester")
+  cashCollectionsApproved CashCollection[]       @relation("CashCollectionApprover")
+  companyBankAccountsCreated CompanyBankAccount[] @relation("CompanyBankAccountCreator")
 
   // POS acquirer settlement mode (admin-toggleable only).
   // true = proceeds credit instantly on webhook; false = T+1 cron.
@@ -603,15 +611,19 @@ enum WalletReason {
   LIEN // Admin lien recovery: funds swept from a user to the Company Suspense account
   PAYIN_COLLECTION // Gross inbound (POS/PG/QR/top-up) mirrored to the company payin wallet for live monitoring
   INCENTIVE // Monthly volume incentive / reverse cashback (QR/POS) credited by the month-end engine
+  CASH_COLLECTION          // User deposits cash via NEFT/RTGS/UPI/CASH_DEPOSIT; admin credits wallet
+  CASH_COLLECTION_CHARGE   // Platform charge deducted from the deposited amount before crediting
 }
 
 /// Which wallet book a ledger entry belongs to. PRIMARY = the main spendable
-/// wallet (User.walletBalance); AEPS = the secondary AEPS proceeds wallet
+/// wallet (User.walletBalance); DMT = the DMT-transactions wallet
+/// (User.dmtBalance); AEPS = the secondary AEPS proceeds wallet
 /// (User.aepsBalance); REVENUE = the company margin wallet; PAYIN = the company
 /// live-inbound monitoring wallet. Each book keeps its own balanceAfter chain.
 enum WalletType {
-  PRIMARY
-  AEPS
+  PRIMARY  // Main Wallet — POS / PG transactions
+  DMT      // DMT Wallet — Domestic Money Transfer transactions
+  AEPS     // AEPS Wallet — AePS / Aadhaar-Pay transactions
   REVENUE
   PAYIN
 }
@@ -904,6 +916,102 @@ model FundRequest {
 
   @@index([requesterId, status])
   @@index([approverId, status])
+}
+
+// ---------- Cash Collection (NEFT / RTGS / UPI / CASH DEPOSIT) ----------
+// Users deposit funds into a company bank account and upload a payment slip.
+// Admin reviews the slip, optionally deducts a platform charge, and credits the
+// chosen wallet (Main / DMT / AEPS). Every action is audit-logged.
+
+enum CashCollectionMode {
+  NEFT
+  RTGS
+  UPI
+  CASH_DEPOSIT
+}
+
+enum CashCollectionStatus {
+  PENDING    // slip uploaded; awaiting admin review
+  APPROVED   // admin approved; wallet credited (net of charge)
+  REJECTED   // admin rejected; no wallet movement
+  CANCELLED  // user cancelled before admin acted
+}
+
+/// Company bank accounts that users can deposit into.
+/// Admin (ADMIN / MASTER_ADMIN) creates and manages these.
+model CompanyBankAccount {
+  id            String   @id @default(cuid())
+  accountName   String   // Beneficiary name (e.g. "Transpe Payments Pvt Ltd")
+  bankName      String   // e.g. "HDFC Bank"
+  accountNumber String   // Bank account number
+  ifscCode      String   // IFSC code
+  branch        String?  // Branch name
+  upiId         String?  // UPI ID for UPI deposits
+  // Accepted payment modes for this account
+  acceptedModes CashCollectionMode[]
+  // Platform charge per deposit on this account.
+  // chargeType = FLAT → ₹ flat fee; PERCENT → % of deposited amount.
+  chargeType    String   @default("FLAT") // "FLAT" | "PERCENT"
+  chargeValue   Decimal  @default(0) @db.Decimal(14, 4)
+  // When true chargeValue already includes 18% GST.
+  chargeGstInclusive Boolean @default(false)
+  // Which wallet the credit goes to when approved via this account.
+  // Admin can override per-request at approval time.
+  defaultTargetWallet WalletType @default(PRIMARY)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0) // display order
+  notes         String?  // Internal notes for admin
+  createdById   String?
+  createdBy     User?    @relation("CompanyBankAccountCreator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  cashCollections CashCollection[]
+
+  @@index([isActive, sortOrder])
+}
+
+/// A single cash-deposit request raised by a user.
+model CashCollection {
+  id                  String               @id @default(cuid())
+  requesterId         String
+  requester           User                 @relation("CashCollectionRequester", fields: [requesterId], references: [id])
+  companyBankAccountId String
+  companyBankAccount  CompanyBankAccount   @relation(fields: [companyBankAccountId], references: [id])
+  // Payment details provided by the user
+  mode                CashCollectionMode
+  amount              Decimal              @db.Decimal(14, 2) // gross deposited amount
+  utr                 String?              // UTR / reference number from the bank
+  paymentDate         DateTime?            // date of deposit/transfer
+  // Proof — Document.id pointing to the uploaded slip stored in S3
+  proofDocId          String?
+  slipUrl             String?              // public or signed URL for quick preview
+  // Remarks / notes from user
+  userRemarks         String?
+  // Admin decision
+  approverId          String?
+  approver            User?                @relation("CashCollectionApprover", fields: [approverId], references: [id])
+  status              CashCollectionStatus @default(PENDING)
+  adminRemarks        String?
+  // Charge decided by admin at approval time (may differ from account default)
+  chargeType          String?              // "FLAT" | "PERCENT"
+  chargeValue         Decimal?             @db.Decimal(14, 4)
+  chargeAmount        Decimal?             @db.Decimal(14, 2) // resolved ₹ charge
+  netAmount           Decimal?             @db.Decimal(14, 2) // amount - chargeAmount → credited to wallet
+  // Which wallet received the credit
+  targetWallet        WalletType?
+  walletTxnId         String?              // WalletTxn.id of the credit entry
+  chargeTxnId         String?              // WalletTxn.id of the charge debit (if any)
+  approvedAt          DateTime?
+  rejectedAt          DateTime?
+  cancelledAt         DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([requesterId, status])
+  @@index([approverId, status])
+  @@index([companyBankAccountId, createdAt])
+  @@index([status, createdAt])
 }
 
 // ---------- API keys (for white-label master distributors) ----------

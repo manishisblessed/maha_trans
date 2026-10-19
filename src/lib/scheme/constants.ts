@@ -107,8 +107,30 @@ export function familyOf(code: string): ServiceFamily {
 }
 
 /**
- * Who assigns a scheme. In the flat model, admin assigns all schemes directly.
+ * Who assigns a scheme to a user of the given role.
+ *
+ * Hierarchy (each tier assigns to the tier immediately below):
+ *   Admin → SD → MD → DT → RT
  */
-export function schemeAssignerLabel(_role: string | null | undefined): string {
-  return "admin";
+export function schemeAssignerLabel(role: string | null | undefined): string {
+  switch (role) {
+    // SD gets their scheme from admin
+    case "SUPER_DISTRIBUTOR":
+    case "super-distributor":
+      return "admin";
+    // MD gets their scheme from their Super Distributor
+    case "MASTER_DISTRIBUTOR":
+    case "master-distributor":
+      return "your Super Distributor";
+    // DT gets their scheme from their Master Distributor
+    case "DISTRIBUTOR":
+    case "distributor":
+      return "your Master Distributor";
+    // RT gets their scheme from their Distributor
+    case "RETAILER":
+    case "retailer":
+      return "your Distributor";
+    default:
+      return "admin";
+  }
 }

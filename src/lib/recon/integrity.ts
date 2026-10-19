@@ -52,8 +52,9 @@ export type IntegrityReport = {
 };
 
 /** The wallet books tracked per user, mapped to their denormalized column. */
-const BOOK_COLUMN: Record<WalletType, "walletBalance" | "aepsBalance" | "revenueBalance" | "payinBalance"> = {
+const BOOK_COLUMN: Record<WalletType, "walletBalance" | "dmtBalance" | "aepsBalance" | "revenueBalance" | "payinBalance"> = {
   PRIMARY: "walletBalance",
+  DMT: "dmtBalance",
   AEPS: "aepsBalance",
   REVENUE: "revenueBalance",
   PAYIN: "payinBalance",
@@ -61,6 +62,7 @@ const BOOK_COLUMN: Record<WalletType, "walletBalance" | "aepsBalance" | "revenue
 
 const BOOK_CHECK: Record<WalletType, IntegrityFinding["check"]> = {
   PRIMARY: "BALANCE_VS_LEDGER",
+  DMT: "BALANCE_VS_LEDGER",
   AEPS: "AEPS_VS_LEDGER",
   REVENUE: "REVENUE_VS_LEDGER",
   PAYIN: "PAYIN_VS_LEDGER",
@@ -148,15 +150,16 @@ export async function runLedgerIntegrityAudit(): Promise<IntegrityReport> {
   const [users, ledgerNet, lastBalanceAfter, held, activeLien] = await Promise.all([
     prisma.user.findMany({
       where: { deletedAt: null },
-      select: {
-        id: true,
-        walletBalance: true,
-        aepsBalance: true,
-        revenueBalance: true,
-        payinBalance: true,
-        heldBalance: true,
-        lienBalance: true,
-      },
+        select: {
+          id: true,
+          walletBalance: true,
+          dmtBalance: true,
+          aepsBalance: true,
+          revenueBalance: true,
+          payinBalance: true,
+          heldBalance: true,
+          lienBalance: true,
+        },
     }),
     ledgerNetByUserBook(),
     latestBalanceAfterByUserBook(),
@@ -165,7 +168,7 @@ export async function runLedgerIntegrityAudit(): Promise<IntegrityReport> {
   ]);
 
   const findings: IntegrityFinding[] = [];
-  const BOOKS: WalletType[] = ["PRIMARY", "AEPS", "REVENUE", "PAYIN"];
+  const BOOKS: WalletType[] = ["PRIMARY", "DMT", "AEPS", "REVENUE", "PAYIN"];
 
   for (const user of users) {
     const balance = dec(user.walletBalance);
