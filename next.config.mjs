@@ -28,6 +28,11 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },
+  // Limit the number of parallel workers during static page generation.
+  // The Amplify build container has 8GiB RAM; with --max-old-space-size=4096
+  // the main process uses up to 4GB, so we cap workers at 2 to avoid
+  // ENOMEM when forking (each worker needs its own V8 heap).
+  experimental: { cpus: 2 },
   // The in-build `tsc` type-check is the single biggest memory consumer of
   // `next build` and OOM-kills (exit 137) the small production instance AFTER
   // webpack has already compiled — leaving PM2 serving the stale build. Types
