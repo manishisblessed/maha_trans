@@ -110,12 +110,12 @@ const retailerServices: NavItem[] = [...baseServices, bbpsGroup];
 const networkServices: NavItem[] = baseServices.filter((s) => s.href !== "/dashboard/wallet");
 
 const account: NavItem[] = [
-  { href: "/dashboard/transactions", label: "Transactions", icon: History },
-  { href: "/dashboard/ledger", label: "Passbook", icon: BookOpenCheck, badge: "New" },
-  { href: "/dashboard/performance", label: "Scorecard", icon: Activity },
-  { href: "/dashboard/profile", label: "Profile & KYC", icon: User },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard/disputes", label: "Support Desk", icon: LifeBuoy, badge: "New" }
+  { href: "/dashboard/transactions", label: "Transaction Hub", icon: History },
+  { href: "/dashboard/ledger", label: "Digital Passbook", icon: BookOpenCheck, badge: "New" },
+  { href: "/dashboard/performance", label: "My Scorecard", icon: Activity },
+  { href: "/dashboard/profile", label: "My Identity", icon: User },
+  { href: "/dashboard/settings", label: "Preferences", icon: Settings },
+  { href: "/dashboard/disputes", label: "Help & Care", icon: LifeBuoy, badge: "New" }
 ];
 
 /**
@@ -132,40 +132,40 @@ export const ASSIGNABLE_ADMIN_TABS = [
   { href: "join-requests", label: "Join Requests" },
   { href: "users", label: "Users" },
   { href: "network", label: "Network Manager" },
-  { href: "sub-admins", label: "Sub-Admins" },
-  { href: "wallet-ops", label: "Wallet Operations" },
-  { href: "ledger", label: "Ledger Explorer" },
-  { href: "pg", label: "Payment Gateway" },
-  { href: "pos", label: "POS Fleet" },
-  { href: "pos-rental", label: "POS Rental & Billing" },
-  { href: "pos-bookings", label: "POS Bookings" },
+  { href: "sub-admins", label: "Staff Desk" },
+  { href: "wallet-ops", label: "Wallet Command" },
+  { href: "ledger", label: "Ledger Lens" },
+  { href: "pg", label: "Gateway Hub" },
+  { href: "pos", label: "Terminal Fleet" },
+  { href: "pos-rental", label: "Terminal Rentals" },
+  { href: "pos-bookings", label: "Terminal Orders" },
   { href: "kyc", label: "KYC Approvals" },
-  { href: "schemes", label: "Scheme Manager" },
-  { href: "incentives", label: "Reward Incentives" },
-  { href: "brands", label: "Brands & MDR" },
-  { href: "settlement-ops", label: "Settlement Ops" },
-  { href: "pos-settlement", label: "POS Settlement" },
-  { href: "pos-slips", label: "External POS Slips" },
-  { href: "pos-reversals", label: "POS Reversals" },
-  { href: "reversals", label: "Reversal Desk" },
-  { href: "needs-review", label: "Needs Review" },
-  { href: "payout-review", label: "Held Payouts" },
-  { href: "money-at-risk", label: "Money at Risk" },
-  { href: "aeps", label: "AEPS Centre" },
-  { href: "qr", label: "QR Collections" },
-  { href: "disputes", label: "Disputes & Support" },
-  { href: "aml", label: "AML Monitoring" },
-  { href: "commission-report", label: "Commission Distributed" },
-  { href: "earnings", label: "Per-Txn Earnings" },
-  { href: "analytics", label: "Business Analytics" },
-  { href: "agreements", label: "Agreements Vault" },
-  { href: "verify", label: "Identity Toolkit" },
-  { href: "services", label: "On/Off Services" },
-  { href: "controls", label: "Platform Controls" },
-  { href: "limits", label: "Limits" },
-  { href: "slider", label: "Slider & Pop-ups" },
-  { href: "audit", label: "Audit Log" },
-  { href: "system", label: "System Health" },
+  { href: "schemes", label: "Scheme Studio" },
+  { href: "incentives", label: "Reward Engine" },
+  { href: "brands", label: "Brand & Rate Desk" },
+  { href: "settlement-ops", label: "Settlement Engine" },
+  { href: "pos-settlement", label: "Terminal Settlement" },
+  { href: "pos-slips", label: "Slip Inbox" },
+  { href: "pos-reversals", label: "Terminal Reversals" },
+  { href: "reversals", label: "Reversal Bay" },
+  { href: "needs-review", label: "Review Queue" },
+  { href: "payout-review", label: "Payout Hold Desk" },
+  { href: "money-at-risk", label: "Exposure Watch" },
+  { href: "aeps", label: "AePS Control" },
+  { href: "qr", label: "QR Collect Hub" },
+  { href: "disputes", label: "Care Centre" },
+  { href: "aml", label: "Risk Radar" },
+  { href: "commission-report", label: "Commission Flow" },
+  { href: "earnings", label: "Earning Stream" },
+  { href: "analytics", label: "Insight Studio" },
+  { href: "agreements", label: "Document Vault" },
+  { href: "verify", label: "Verify Suite" },
+  { href: "services", label: "Service Switchboard" },
+  { href: "controls", label: "Master Switch" },
+  { href: "limits", label: "Limit Manager" },
+  { href: "slider", label: "Banner Studio" },
+  { href: "audit", label: "Audit Trail" },
+  { href: "system", label: "Pulse Monitor" },
 ] as const;
 
 /** Tabs a master-admin creator can assign to another master-admin.
@@ -174,7 +174,7 @@ export const ASSIGNABLE_MASTER_ADMIN_TABS = [
   { href: "admins", label: "Manage Admins" },
   // "Company Earnings" (Revenue Wallet) is owner-only — assignable to master
   // admins, but never to plain admins/sub-admins (not in ASSIGNABLE_ADMIN_TABS).
-  { href: "revenue", label: "Company Earnings" },
+  { href: "revenue", label: "Revenue Vault" },
   ...ASSIGNABLE_ADMIN_TABS,
 ] as const;
 
@@ -183,77 +183,73 @@ export const ASSIGNABLE_MASTER_ADMIN_TABS = [
  *  view-only for the SUPPORT role via the per-endpoint requireRole guards. */
 export const ASSIGNABLE_SUB_ADMIN_TABS = ASSIGNABLE_ADMIN_TABS;
 
-/** Money / operations tabs shared by master-admin and admin. */
+/** Money / operations tabs shared by master-admin and admin.
+ *  TRANSPE "upgraded" vocabulary — unique names, routes unchanged. */
 const adminMoneyOps: NavItem[] = [
-  { href: "/dashboard/admin/wallet-ops", label: "Wallet Operations", icon: Wallet, badge: "New" },
-  { href: "/dashboard/admin/ledger", label: "Ledger Explorer", icon: BookOpenCheck, badge: "New" },
-  { href: "/dashboard/admin/brands", label: "Brands & MDR", icon: Tag, badge: "New" },
-  { href: "/dashboard/admin/settlement-ops", label: "Settlement Ops", icon: Timer, badge: "New" },
-  { href: "/dashboard/admin/reversals", label: "Reversal Desk", icon: Undo2, badge: "New" },
-  { href: "/dashboard/admin/needs-review", label: "Needs Review", icon: AlertTriangle, badge: "New" },
-  { href: "/dashboard/admin/payout-review", label: "Held Payouts", icon: Landmark, badge: "New" },
-  { href: "/dashboard/admin/money-at-risk", label: "Money at Risk", icon: ShieldAlert, badge: "New" },
-  { href: "/dashboard/admin/aeps", label: "AEPS Centre", icon: Fingerprint, badge: "New" },
-  { href: "/dashboard/admin/pos-rental", label: "POS Rental & Billing", icon: ReceiptText, badge: "New" },
-  { href: "/dashboard/admin/pos-bookings", label: "POS Bookings", icon: PackagePlus, badge: "New" },
-  { href: "/dashboard/admin/pos-settlement", label: "POS Settlement", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/admin/pos-slips", label: "External POS Slips", icon: ListChecks, badge: "New" },
-  { href: "/dashboard/admin/pos-reversals", label: "POS Reversals", icon: RotateCcw, badge: "New" },
-  // NOTE: "Company Earnings" (the Revenue Wallet) is deliberately NOT here — it
+  { href: "/dashboard/admin/wallet-ops", label: "Wallet Command", icon: Wallet, badge: "New" },
+  { href: "/dashboard/admin/ledger", label: "Ledger Lens", icon: BookOpenCheck, badge: "New" },
+  { href: "/dashboard/admin/brands", label: "Brand & Rate Desk", icon: Tag, badge: "New" },
+  { href: "/dashboard/admin/settlement-ops", label: "Settlement Engine", icon: Timer, badge: "New" },
+  { href: "/dashboard/admin/reversals", label: "Reversal Bay", icon: Undo2, badge: "New" },
+  { href: "/dashboard/admin/needs-review", label: "Review Queue", icon: AlertTriangle, badge: "New" },
+  { href: "/dashboard/admin/payout-review", label: "Payout Hold Desk", icon: Landmark, badge: "New" },
+  { href: "/dashboard/admin/money-at-risk", label: "Exposure Watch", icon: ShieldAlert, badge: "New" },
+  { href: "/dashboard/admin/aeps", label: "AePS Control", icon: Fingerprint, badge: "New" },
+  { href: "/dashboard/admin/pos-rental", label: "Terminal Rentals", icon: ReceiptText, badge: "New" },
+  { href: "/dashboard/admin/pos-bookings", label: "Terminal Orders", icon: PackagePlus, badge: "New" },
+  { href: "/dashboard/admin/pos-settlement", label: "Terminal Settlement", icon: CreditCard, badge: "New" },
+  { href: "/dashboard/admin/pos-slips", label: "Slip Inbox", icon: ListChecks, badge: "New" },
+  { href: "/dashboard/admin/pos-reversals", label: "Terminal Reversals", icon: RotateCcw, badge: "New" },
+  // NOTE: "Revenue Vault" (the Revenue Wallet) is deliberately NOT here — it
   // is owner-only and injected into the master-admin menu via masterAdminMoneyOps.
-  { href: "/dashboard/admin/commission-report", label: "Commission Distributed", icon: HandCoins, badge: "New" },
-  { href: "/dashboard/admin/earnings", label: "Per-Txn Earnings", icon: TrendingUp, badge: "New" },
-  { href: "/dashboard/admin/analytics", label: "Business Analytics", icon: LineChart, badge: "New" },
-  { href: "/dashboard/admin/agreements", label: "Agreements Vault", icon: FileSignature, badge: "New" },
-  { href: "/dashboard/admin/verify", label: "Identity Toolkit", icon: ScanSearch, badge: "New" },
-  { href: "/dashboard/admin/controls", label: "Platform Controls", icon: SlidersHorizontal, badge: "New" },
-  { href: "/dashboard/admin/limits", label: "Limits", icon: Gauge, badge: "New" },
+  { href: "/dashboard/admin/commission-report", label: "Commission Flow", icon: HandCoins, badge: "New" },
+  { href: "/dashboard/admin/earnings", label: "Earning Stream", icon: TrendingUp, badge: "New" },
+  { href: "/dashboard/admin/analytics", label: "Insight Studio", icon: LineChart, badge: "New" },
+  { href: "/dashboard/admin/agreements", label: "Document Vault", icon: FileSignature, badge: "New" },
+  { href: "/dashboard/admin/verify", label: "Verify Suite", icon: ScanSearch, badge: "New" },
+  { href: "/dashboard/admin/controls", label: "Master Switch", icon: SlidersHorizontal, badge: "New" },
+  { href: "/dashboard/admin/limits", label: "Limit Manager", icon: Gauge, badge: "New" },
 ];
 
 /** Money / operations tabs for the platform OWNER (master-admin). Identical to
- *  adminMoneyOps but ALSO surfaces "Company Earnings" (the Revenue Wallet) —
+ *  adminMoneyOps but ALSO surfaces "Revenue Vault" (the Revenue Wallet) —
  *  company earnings are owner-only and never shown to plain admins/sub-admins. */
 const masterAdminMoneyOps: NavItem[] = adminMoneyOps.flatMap((item) =>
   item.href === "/dashboard/admin/pos-settlement"
-    ? [item, { href: "/dashboard/admin/revenue", label: "Company Earnings", icon: CircleDollarSign, badge: "New" }]
+    ? [item, { href: "/dashboard/admin/revenue", label: "Revenue Vault", icon: CircleDollarSign, badge: "New" }]
     : [item]
 );
 
-/** Onboarding / network-management tabs collapsed under a single "Onboarding"
- *  tab. Shared by master-admin, admin and sub-admin. */
-const onboardingGroup: NavItem = {
-  href: "/dashboard/admin/invites",
-  label: "Onboarding",
-  icon: PackagePlus,
-  children: [
-    { href: "/dashboard/admin/invites", label: "Onboarding Invites", icon: PackagePlus, badge: "New" },
-    { href: "/dashboard/admin/join-requests", label: "Join Requests", icon: Inbox, badge: "New" },
-    { href: "/dashboard/admin/users", label: "Users", icon: Users },
-    { href: "/dashboard/admin/network", label: "Network Manager", icon: Users, badge: "New" },
-    { href: "/dashboard/admin/kyc", label: "KYC Approvals", icon: ShieldCheck, badge: "8" },
-    { href: "/dashboard/admin/identity-exceptions", label: "Identity Exceptions", icon: Fingerprint, badge: "New" },
-  ],
-};
+/** Onboarding / network-management tabs — flat list (no collapsible parent).
+ *  Each item is a direct top-level link. Shared by master-admin, admin and sub-admin. */
+const onboardingItems: NavItem[] = [
+  { href: "/dashboard/admin/invites", label: "Onboarding Invites", icon: PackagePlus, badge: "New" },
+  { href: "/dashboard/admin/join-requests", label: "Join Requests", icon: Inbox, badge: "New" },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
+  { href: "/dashboard/admin/network", label: "Network Manager", icon: Users, badge: "New" },
+  { href: "/dashboard/admin/kyc", label: "KYC Approvals", icon: ShieldCheck, badge: "8" },
+  { href: "/dashboard/admin/identity-exceptions", label: "Identity Exceptions", icon: Fingerprint, badge: "New" },
+];
 
 /** Workspace tabs shared by admin and sub-admin. Sub-admins are scoped down
  *  through their allowedTabs; with none set they inherit the full menu. */
 const adminWorkspace: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  onboardingGroup,
-  { href: "/dashboard/admin/sub-admins", label: "Sub-Admins", icon: UserCog },
-  { href: "/dashboard/admin/pg", label: "Payment Gateway", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/admin/pos", label: "POS Fleet", icon: Monitor, badge: "New" },
-  { href: "/dashboard/admin/qr", label: "QR Collections", icon: QrCode, badge: "New" },
-  { href: "/dashboard/admin/schemes", label: "Schemes", icon: Layers, badge: "New" },
-  { href: "/dashboard/admin/incentives", label: "Incentives", icon: Gift, badge: "New" },
-  { href: "/dashboard/admin/disputes", label: "Help Desk", icon: LifeBuoy, badge: "New" },
-  { href: "/dashboard/admin/aml", label: "AML Monitor", icon: ShieldAlert, badge: "New" },
-  { href: "/dashboard/payout-approvals", label: "Payout Approvals", icon: ListChecks },
-  { href: "/dashboard/admin/services", label: "Service Control", icon: Power, badge: "New" },
-  { href: "/dashboard/admin/slider", label: "Slider & Pop-ups", icon: Images, badge: "New" },
-  { href: "/dashboard/admin/audit", label: "Audit Log", icon: ScrollText },
-  { href: "/dashboard/admin/system", label: "System Health", icon: ServerCog },
-  { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+  ...onboardingItems,
+  { href: "/dashboard/admin/sub-admins", label: "Staff Desk", icon: UserCog },
+  { href: "/dashboard/admin/pg", label: "Gateway Hub", icon: CreditCard, badge: "New" },
+  { href: "/dashboard/admin/pos", label: "Terminal Fleet", icon: Monitor, badge: "New" },
+  { href: "/dashboard/admin/qr", label: "QR Collect Hub", icon: QrCode, badge: "New" },
+  { href: "/dashboard/admin/schemes", label: "Scheme Studio", icon: Layers, badge: "New" },
+  { href: "/dashboard/admin/incentives", label: "Reward Engine", icon: Gift, badge: "New" },
+  { href: "/dashboard/admin/disputes", label: "Care Centre", icon: LifeBuoy, badge: "New" },
+  { href: "/dashboard/admin/aml", label: "Risk Radar", icon: ShieldAlert, badge: "New" },
+  { href: "/dashboard/payout-approvals", label: "Payout Gate", icon: ListChecks },
+  { href: "/dashboard/admin/services", label: "Service Switchboard", icon: Power, badge: "New" },
+  { href: "/dashboard/admin/slider", label: "Banner Studio", icon: Images, badge: "New" },
+  { href: "/dashboard/admin/audit", label: "Audit Trail", icon: ScrollText },
+  { href: "/dashboard/admin/system", label: "Pulse Monitor", icon: ServerCog },
+  { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
 ];
 
 export const navByRole: Record<Role, NavGroup[]> = {
@@ -263,21 +259,21 @@ export const navByRole: Record<Role, NavGroup[]> = {
       items: [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/admin/admins", label: "Admins", icon: ShieldCheck, badge: "New" },
-        onboardingGroup,
-        { href: "/dashboard/admin/sub-admins", label: "Sub-Admins", icon: UserCog },
-        { href: "/dashboard/admin/pg", label: "Payment Gateway", icon: CreditCard, badge: "New" },
-        { href: "/dashboard/admin/pos", label: "POS Fleet", icon: Monitor, badge: "New" },
-        { href: "/dashboard/admin/qr", label: "QR Collections", icon: QrCode, badge: "New" },
-        { href: "/dashboard/admin/schemes", label: "Schemes", icon: Layers, badge: "New" },
-        { href: "/dashboard/admin/incentives", label: "Incentives", icon: Gift, badge: "New" },
-        { href: "/dashboard/admin/disputes", label: "Help Desk", icon: LifeBuoy, badge: "New" },
-        { href: "/dashboard/admin/aml", label: "AML Monitor", icon: ShieldAlert, badge: "New" },
-        { href: "/dashboard/payout-approvals", label: "Payout Approvals", icon: ListChecks },
-        { href: "/dashboard/admin/services", label: "Service Control", icon: Power, badge: "New" },
-        { href: "/dashboard/admin/slider", label: "Slider & Pop-ups", icon: Images, badge: "New" },
-        { href: "/dashboard/admin/audit", label: "Audit Log", icon: ScrollText },
-        { href: "/dashboard/admin/system", label: "System Health", icon: ServerCog },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        ...onboardingItems,
+        { href: "/dashboard/admin/sub-admins", label: "Staff Desk", icon: UserCog },
+        { href: "/dashboard/admin/pg", label: "Gateway Hub", icon: CreditCard, badge: "New" },
+        { href: "/dashboard/admin/pos", label: "Terminal Fleet", icon: Monitor, badge: "New" },
+        { href: "/dashboard/admin/qr", label: "QR Collect Hub", icon: QrCode, badge: "New" },
+        { href: "/dashboard/admin/schemes", label: "Scheme Studio", icon: Layers, badge: "New" },
+        { href: "/dashboard/admin/incentives", label: "Reward Engine", icon: Gift, badge: "New" },
+        { href: "/dashboard/admin/disputes", label: "Care Centre", icon: LifeBuoy, badge: "New" },
+        { href: "/dashboard/admin/aml", label: "Risk Radar", icon: ShieldAlert, badge: "New" },
+        { href: "/dashboard/payout-approvals", label: "Payout Gate", icon: ListChecks },
+        { href: "/dashboard/admin/services", label: "Service Switchboard", icon: Power, badge: "New" },
+        { href: "/dashboard/admin/slider", label: "Banner Studio", icon: Images, badge: "New" },
+        { href: "/dashboard/admin/audit", label: "Audit Trail", icon: ScrollText },
+        { href: "/dashboard/admin/system", label: "Pulse Monitor", icon: ServerCog },
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "Treasury & ops", items: masterAdminMoneyOps },
@@ -295,7 +291,7 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/rewards", label: "Rewards Club", icon: Gift, badge: "New" },
         { href: "/dashboard/pos-booking", label: "Get a Terminal", icon: PackagePlus, badge: "New" },
         { href: "/dashboard/pos-rental", label: "Terminal Billing", icon: ReceiptText, badge: "New" },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "Sell & earn", items: retailerServices },
@@ -314,7 +310,7 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "My account", items: account }
@@ -332,7 +328,7 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "My account", items: account }
@@ -350,7 +346,7 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "My account", items: account }
@@ -367,17 +363,17 @@ export const navByRole: Record<Role, NavGroup[]> = {
       heading: "Finance",
       items: [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/admin/wallet-ops", label: "Wallet Balances", icon: Wallet },
-        { href: "/dashboard/admin/ledger", label: "Ledger Explorer", icon: BookOpenCheck },
+        { href: "/dashboard/admin/wallet-ops", label: "Wallet Command", icon: Wallet },
+        { href: "/dashboard/admin/ledger", label: "Ledger Lens", icon: BookOpenCheck },
         // Read-only for finance: the queue is viewable but Approve/Reject is
         // gated to master-admin/admin in both the UI and the API.
-        { href: "/dashboard/admin/pos-slips", label: "External POS Slips", icon: ListChecks },
-        // "Company Earnings" (Revenue Wallet) is owner-only; finance uses the
-        // Commission Distributed + Per-Txn Earnings reports instead.
-        { href: "/dashboard/admin/commission-report", label: "Commission Paid", icon: HandCoins },
-        { href: "/dashboard/admin/earnings", label: "Per-Txn Earnings", icon: TrendingUp },
-        { href: "/dashboard/admin/analytics", label: "Analytics", icon: LineChart },
-        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+        { href: "/dashboard/admin/pos-slips", label: "Slip Inbox", icon: ListChecks },
+        // "Revenue Vault" (Revenue Wallet) is owner-only; finance uses the
+        // Commission Flow + Earning Stream reports instead.
+        { href: "/dashboard/admin/commission-report", label: "Commission Flow", icon: HandCoins },
+        { href: "/dashboard/admin/earnings", label: "Earning Stream", icon: TrendingUp },
+        { href: "/dashboard/admin/analytics", label: "Insight Studio", icon: LineChart },
+        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
       ]
     },
     { heading: "My account", items: account }

@@ -256,7 +256,7 @@ export default function HeldPayoutsPage() {
   return (
     <>
       <PageHeader
-        title="Held Payouts"
+        title="Payout Hold Desk"
         description={
           total > 0
             ? `${total} payout(s) held after an indeterminate send · ${formatINR(

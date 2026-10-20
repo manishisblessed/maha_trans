@@ -270,7 +270,7 @@ export default function LedgerExplorerPage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Admin · Money"
-        title="Ledger Explorer"
+        title="Ledger Lens"
         description="Every rupee that has ever moved, across both wallet books. Filter, inspect and export — the ledger is append-only and never edited."
         actions={
           <>

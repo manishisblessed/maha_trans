@@ -164,7 +164,7 @@ export default function WalletOpsPage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Admin · Money"
-        title="Wallet Operations"
+        title="Wallet Command"
         description="Platform liability at a glance, user-wise balances, and audited admin credit/debit that executes immediately."
         actions={
           <>
