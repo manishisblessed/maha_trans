@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   Storefront,
@@ -41,15 +41,34 @@ const roleOptions: { id: PublicRole; label: string; icon: PhosphorIcon; tagline:
 ];
 
 export default function LoginPage() {
+  // Suspense is required by Next.js App Router when a child uses useSearchParams.
   return (
-    <LocationGate>
-      {(location) => <LoginForm location={location} />}
-    </LocationGate>
+    <Suspense>
+      <LocationGate>
+        {(location) => <LoginForm location={location} />}
+      </LocationGate>
+    </Suspense>
   );
+}
+
+/** Validate a callbackUrl is a relative path on this origin (no open-redirect). */
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw) return "/dashboard";
+  // Allow only relative paths that start with / but not // (protocol-relative).
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  // Full URL on same origin is also fine.
+  try {
+    const parsed = new URL(raw);
+    if (parsed.origin === window.location.origin) return parsed.pathname + parsed.search;
+  } catch {
+    // not a URL
+  }
+  return "/dashboard";
 }
 
 function LoginForm({ location }: { location: LocationData }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState<PublicRole>("retailer");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -188,8 +207,13 @@ function LoginForm({ location }: { location: LocationData }) {
           setLoading(false);
           return;
         }
-        router.push("/dashboard/settings/security");
-        router.refresh();
+        // Hard redirect so the browser sends a fresh request with the new
+        // session cookie — avoids Next.js router-cache races that can trigger
+        // a SessionRequired → /api/auth/signin loop.
+        // If the user came from a specific dashboard page, return them there;
+        // otherwise land on the security page so they can finish 2FA setup.
+        const cb = safeCallbackUrl(searchParams.get("callbackUrl"));
+        window.location.href = cb !== "/dashboard" ? cb : "/dashboard/settings/security";
         return;
       }
     } catch {

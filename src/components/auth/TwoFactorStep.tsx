@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   ShieldCheck,
@@ -24,7 +23,6 @@ interface TwoFactorStepProps {
 }
 
 export function TwoFactorStep({ tempToken, userName, userEmail, onBack }: TwoFactorStepProps) {
-  const router = useRouter();
   const [code, setCode] = useState("");
   const [useBackup, setUseBackup] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -80,15 +78,17 @@ export function TwoFactorStep({ tempToken, userName, userEmail, onBack }: TwoFac
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Hard redirect so the browser sends a fresh request with the new
+      // session cookie — avoids Next.js router-cache races where useSession
+      // hasn't picked up the cookie yet and triggers a SessionRequired loop.
+      window.location.href = "/dashboard";
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);
       setCode("");
       verifyingRef.current = false;
     }
-  }, [code, tempToken, useBackup, router]);
+  }, [code, tempToken, useBackup]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Key, ArrowRight, ArrowCounterClockwise, ShieldWarning } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
@@ -24,7 +23,6 @@ interface PinLoginStepProps {
  * first time, must accept that they carry all account risk without 2FA.
  */
 export function PinLoginStep({ tempToken, userName, riskAlreadyAccepted, onBack }: PinLoginStepProps) {
-  const router = useRouter();
   const [pin, setPin] = useState("");
   const [riskAccepted, setRiskAccepted] = useState(riskAlreadyAccepted);
   const [loading, setLoading] = useState(false);
@@ -71,15 +69,17 @@ export function PinLoginStep({ tempToken, userName, riskAlreadyAccepted, onBack 
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Hard redirect so the browser sends a fresh request with the new
+      // session cookie — avoids Next.js router-cache races where useSession
+      // hasn't picked up the cookie yet and triggers a SessionRequired loop.
+      window.location.href = "/dashboard";
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);
       setPin("");
       submittingRef.current = false;
     }
-  }, [pin, tempToken, riskAccepted, riskAlreadyAccepted, router]);
+  }, [pin, tempToken, riskAccepted, riskAlreadyAccepted]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();

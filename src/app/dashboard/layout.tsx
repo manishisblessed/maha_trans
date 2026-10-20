@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -23,7 +24,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status, update } = useSession({ required: true });
+  const router = useRouter();
+  const { data: session, status, update } = useSession({
+    required: true,
+    // Redirect directly to /login instead of going through NextAuth's
+    // /api/auth/signin endpoint. That endpoint is an extra server hop that
+    // returns 503 when the upstream is under load, leaving users stuck.
+    onUnauthenticated() {
+      router.replace("/login");
+    },
+  });
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   // Whether we've re-validated a "2FA appears off" session against the server.
