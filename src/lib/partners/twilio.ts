@@ -327,15 +327,14 @@ export const twilioSms: SmsProvider = {
   name: "TWILIO_SMS",
 
   async sendOtp({ phone, otp }) {
-    // Use Twilio Verify if configured — it handles DLT/delivery automatically.
-    if (isTwilioOtpEnabled()) {
-      const r = await sendVerification({ to: toE164India(phone), channel: "sms" });
-      // Twilio Verify generates its own OTP; the otp arg is ignored here.
-      // (Routes that use getPartner("otpVerify") bypass this entirely.)
-      if (r.ok) return { ok: true, data: { messageId: r.data.sid } };
-      return r as PartnerResult<{ messageId: string }>;
-    }
-    // Fallback: deliver OTP via Programmable Messaging
+    // IMPORTANT: always use Programmable Messaging here.
+    //
+    // Do NOT call sendVerification — that belongs to the Twilio Verify flow
+    // where Twilio generates its own code. When this method is reached the
+    // caller has already created the OTP and stored its hash in the DB; we
+    // must deliver *that exact code* via a plain SMS so it matches what the
+    // verify route looks up in the DB. Calling sendVerification would send a
+    // *different* Twilio-generated code and permanently break verification.
     const body = `Your TRANSPE verification code is ${otp}. Valid for 5 minutes. Do not share.`;
     const r = await sendSms({ to: toE164India(phone), body });
     return r;

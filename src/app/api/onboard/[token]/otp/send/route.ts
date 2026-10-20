@@ -54,20 +54,27 @@ export async function POST(
     return NextResponse.json({ ok: true, alreadyVerified: true });
   }
 
-  // Twilio Verify handles SMS OTPs end-to-end
+  // Twilio Verify handles SMS OTPs end-to-end (preferred path).
+  // If Twilio rejects the request (wrong credentials, rate-limit, DLT block, etc.)
+  // we fall through to the self-managed OTP path below instead of hard-failing.
   if (channel === "SMS" && isTwilioOtpEnabled()) {
     const phone = target.startsWith("+")
       ? target
       : `+91${target.replace(/\D/g, "").slice(-10)}`;
 
     const r = await sendVerification({ to: phone, channel: "sms" });
-    if (!r.ok) {
-      return NextResponse.json({ error: r.message }, { status: 502 });
+    if (r.ok) {
+      return NextResponse.json({ ok: true, provider: "twilio" });
     }
-    return NextResponse.json({ ok: true, provider: "twilio" });
+    // Twilio Verify failed — log and fall through to self-managed OTP so the
+    // user still receives a code. This covers DLT/carrier blocks, trial-account
+    // restrictions, and transient Twilio outages.
+    console.error(
+      `[onboard/otp/send] Twilio Verify failed (${r.code}): ${r.message}. Falling back to self-managed OTP.`
+    );
   }
 
-  // Fallback: self-managed OTP (MSG91 for SMS, Resend for email)
+  // Self-managed OTP — Twilio Programmable Messaging (or MSG91 if configured)
   const otp = generate6();
   const codeHash = sha256(otp);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);

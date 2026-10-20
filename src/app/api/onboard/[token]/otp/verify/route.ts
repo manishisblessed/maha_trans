@@ -79,7 +79,11 @@ export async function POST(
     );
   }
 
-  // Twilio Verify handles SMS verification end-to-end
+  // Twilio Verify handles SMS verification when it was the send provider.
+  // If Twilio approves the code we're done. If Twilio rejects it we fall through
+  // to the self-managed DB check — this covers the case where the OTP was sent
+  // via the Programmable Messaging fallback path (i.e. Twilio Verify failed at
+  // send time and a self-managed OTP was stored in the DB instead).
   if (channel === "SMS" && isTwilioOtpEnabled()) {
     const phone = target.startsWith("+")
       ? target
@@ -87,19 +91,17 @@ export async function POST(
 
     const r = await checkVerification({ to: phone, code });
 
-    if (!r.ok) {
-      return NextResponse.json({ error: r.message ?? "Invalid code" }, { status: 400 });
+    if (r.ok) {
+      await prisma.invite.update({
+        where: { id: invite.id },
+        data: { phoneVerifiedAt: new Date() },
+      });
+      return NextResponse.json({ ok: true });
     }
-
-    await prisma.invite.update({
-      where: { id: invite.id },
-      data: { phoneVerifiedAt: new Date() },
-    });
-
-    return NextResponse.json({ ok: true });
+    // Twilio did not approve — fall through to self-managed OTP check below.
   }
 
-  // Fallback: self-managed OTP verification
+  // Self-managed OTP verification (used when Twilio Verify was not the sender)
   const otp = await prisma.otp.findFirst({
     where: {
       target,
