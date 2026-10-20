@@ -77,6 +77,10 @@ function client(): S3Client {
     // with 403 SignatureDoesNotMatch. WHEN_REQUIRED restores the old behavior.
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
+    // Automatically follow S3 PermanentRedirect (301) responses that occur when
+    // the configured AWS_REGION doesn't match the bucket's actual region.
+    // Prevents "wrong endpoint" errors and avoids stale presigned URL failures.
+    followRegionRedirects: true,
     ...(hasStaticKeys
       ? {
           credentials: {
@@ -162,6 +166,21 @@ export async function headKycVideoObject(key: string): Promise<KycObjectHead | n
   } catch {
     return null;
   }
+}
+
+/**
+ * Server-side PUT — used by the proxy upload route when the browser cannot
+ * reach S3 directly (e.g. CORS not yet configured on the bucket).
+ * Bytes never exceed KYC_VIDEO_MAX_BYTES (validated by the caller).
+ */
+export async function putKycVideoObject(
+  key: string,
+  body: Buffer,
+  contentType: KycVideoContentType,
+): Promise<void> {
+  await client().send(
+    new PutObjectCommand({ Bucket: bucket(), Key: key, Body: body, ContentType: contentType }),
+  );
 }
 
 /** Download the full object bytes (worker-side: sha256 + ffmpeg frame extraction). */

@@ -56,8 +56,11 @@ const PAYOUT_PATHS: Array<{ prefix: string; roles: string[] }> = [
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── 1. Request-size limit on mutating API calls (defense vs oversized bodies)
-  if (pathname.startsWith("/api/") && ["POST", "PUT", "PATCH"].includes(req.method)) {
+  // ── 1. Request-size limit on mutating API calls (defense vs oversized bodies).
+  //       Video upload proxy routes (/video/upload) handle their own size check
+  //       internally (up to KYC_VIDEO_MAX_BYTES = 15 MiB), so skip them here.
+  const isVideoUploadProxy = pathname.endsWith("/video/upload");
+  if (!isVideoUploadProxy && pathname.startsWith("/api/") && ["POST", "PUT", "PATCH"].includes(req.method)) {
     const len = Number(req.headers.get("content-length") ?? 0);
     if (Number.isFinite(len) && len > MAX_BODY_BYTES) {
       return NextResponse.json(

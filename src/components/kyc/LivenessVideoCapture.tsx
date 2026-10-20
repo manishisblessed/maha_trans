@@ -370,7 +370,9 @@ export function LivenessVideoCapture({ onComplete, apiPrefix }: { onComplete?: (
       return;
     }
 
-    // Upload to S3 with one automatic retry (covers transient network drops).
+    // ── Attempt A: direct presigned PUT to S3 (2 tries, 800 ms apart).
+    // A thrown fetch() on a cross-origin PUT usually means the S3 bucket's
+    // CORS rules are missing or incomplete — we fall through to the proxy.
     let uploaded = false;
     for (let attempt = 0; attempt < 2 && !uploaded; attempt++) {
       try {
@@ -381,18 +383,44 @@ export function LivenessVideoCapture({ onComplete, apiPrefix }: { onComplete?: (
         });
         if (put.ok) {
           uploaded = true;
-        } else if (attempt === 1) {
-          fail(`Upload failed (HTTP ${put.status}). Please try again.`);
+        }
+        // Non-2xx on second attempt → fall through to server proxy below.
+      } catch {
+        // CORS preflight failure or hard network error — try proxy next.
+      }
+      if (!uploaded && attempt === 0) await new Promise((r) => setTimeout(r, 800));
+    }
+
+    // ── Attempt B: server-side proxy (same origin → no CORS involved).
+    // Sends the raw bytes to our API which PUTs them to S3 via the AWS SDK.
+    if (!uploaded) {
+      const proxyUrl = apiPrefix ? `${apiPrefix}/video/upload` : "/api/kyc/video/upload";
+      try {
+        const put = await fetch(proxyUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": init.contentType,
+            "X-Upload-Key": init.key,
+            "X-Upload-Token": init.uploadToken,
+            "Idempotency-Key": crypto.randomUUID(),
+          },
+          body: blob,
+        });
+        if (put.ok) {
+          uploaded = true;
+        } else {
+          const data: unknown = await put.json().catch(() => ({}));
+          const msg =
+            typeof data === "object" && data !== null && "error" in data && typeof (data as Record<string, unknown>).error === "string"
+              ? (data as { error: string }).error
+              : `Upload failed (HTTP ${put.status}). Please try again.`;
+          fail(msg);
           return;
         }
       } catch {
-        // A thrown fetch on a cross-origin PUT is typically a CORS/network issue.
-        if (attempt === 1) {
-          fail("Upload failed — network or storage error. Please check your connection and try again.");
-          return;
-        }
+        fail("Upload failed — network or storage error. Please check your connection and try again.");
+        return;
       }
-      if (!uploaded) await new Promise((r) => setTimeout(r, 800));
     }
 
     setPhase("processing");
