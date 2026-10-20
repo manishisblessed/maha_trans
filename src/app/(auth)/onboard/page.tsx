@@ -501,32 +501,6 @@ function OnboardContent() {
     setVerifying(false);
   }
 
-  // ── Skip OTP (testing only) ───────────────────────────────────────────────
-  async function skipOtp(channel: "SMS" | "EMAIL") {
-    setVerifying(true);
-    setError("");
-    try {
-      const res = await fetch(`/api/onboard/${token}/otp/skip`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        if (channel === "SMS") setPhoneVerified(true);
-        else setEmailVerified(true);
-        setOtpSent(false);
-        setOtpCode("");
-      } else {
-        setError(data.error ?? "Skip failed");
-      }
-    } catch {
-      setError("Network error. Please try again.");
-    }
-    setVerifying(false);
-  }
-
-
   // ----- Aadhaar DigiLocker -----
   async function initAadhaar() {
     setVerifying(true);
@@ -1462,14 +1436,6 @@ function OnboardContent() {
                         )}
                         Send OTP
                       </Button>
-                      <button
-                        type="button"
-                        onClick={() => skipOtp("SMS")}
-                        disabled={verifying}
-                        className="w-full rounded-xl border border-dashed border-amber-400 bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        ⚠️ Skip verification (testing only)
-                      </button>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1504,14 +1470,6 @@ function OnboardContent() {
                         {otpResendTimer > 0
                           ? `Resend OTP in ${otpResendTimer}s`
                           : "Resend OTP"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => skipOtp("SMS")}
-                        disabled={verifying}
-                        className="w-full rounded-xl border border-dashed border-amber-400 bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        ⚠️ Skip verification (testing only)
                       </button>
                     </div>
                   )}
@@ -1562,14 +1520,6 @@ function OnboardContent() {
                         )}
                         Send OTP
                       </Button>
-                      <button
-                        type="button"
-                        onClick={() => skipOtp("EMAIL")}
-                        disabled={verifying}
-                        className="w-full rounded-xl border border-dashed border-amber-400 bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        ⚠️ Skip verification (testing only)
-                      </button>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1604,14 +1554,6 @@ function OnboardContent() {
                         {otpResendTimer > 0
                           ? `Resend OTP in ${otpResendTimer}s`
                           : "Resend OTP"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => skipOtp("EMAIL")}
-                        disabled={verifying}
-                        className="w-full rounded-xl border border-dashed border-amber-400 bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        ⚠️ Skip verification (testing only)
                       </button>
                     </div>
                   )}
