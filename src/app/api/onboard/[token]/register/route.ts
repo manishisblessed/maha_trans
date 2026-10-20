@@ -298,11 +298,27 @@ export async function POST(
     allVerified || nameDeclarationAccepted ? "PENDING_REVIEW" : "NOT_STARTED";
   const nameDeclarationAt = nameDeclarationAccepted ? new Date() : undefined;
 
+  // ── Pre-compute values that need their OWN DB reads BEFORE the transaction ──
+  // generateNextUserCode() and defaultServicesForRole() use the global `prisma`
+  // client. Calling them INSIDE prisma.$transaction() acquires a second pooled
+  // connection, which breaks interactive transactions under Supabase PgBouncer
+  // (transaction pooling) → "Transaction ID is invalid, refers to an old closed
+  // transaction". Computing them up-front keeps the transaction single-connection.
+  const isExistingUser = Boolean(invite.userId && existingUser);
+  let newUserCode: string | undefined;
+  let newEnabledServices: string[] = [];
+  if (!isExistingUser) {
+    newUserCode = await generateNextUserCode(invite.role);
+    // New network users start with only the tier's configured default services
+    // (empty = none); admins grant the rest per user afterwards.
+    newEnabledServices = await defaultServicesForRole(invite.role);
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     let user;
-    if (invite.userId && existingUser) {
+    if (isExistingUser) {
       user = await tx.user.update({
-        where: { id: invite.userId },
+        where: { id: invite.userId! },
         data: {
           name: data.name,
           passwordHash,
@@ -316,10 +332,8 @@ export async function POST(
         },
       });
     } else {
-      const userCode = await generateNextUserCode(invite.role);
-      // New network users start with only the tier's configured default
-      // services (empty = none); admins grant the rest per user afterwards.
-      const enabledServices = await defaultServicesForRole(invite.role);
+      const userCode = newUserCode;
+      const enabledServices = newEnabledServices;
       user = await tx.user.create({
         data: {
           name: data.name,
@@ -421,6 +435,11 @@ export async function POST(
     });
 
     return user;
+  }, {
+    // Generous bounds for the pooled connection: default 5s timeout / 2s maxWait
+    // is tight when the DB round-trips to Supabase (Mumbai) under load.
+    timeout: 20_000,
+    maxWait: 10_000,
   });
 
   await prisma.auditLog.create({
