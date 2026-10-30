@@ -110,6 +110,10 @@ function LoginForm({ location }: { location: LocationData }) {
   // True when the account has BOTH factors available, so "Start over" from a
   // factor step returns to the chooser instead of the password form.
   const [canChoose, setCanChoose] = useState(false);
+  // Whether the authenticator (TOTP) is actually set up for this account.
+  // Passed to LoginMethodChoice so it can disable the authenticator option
+  // (and show a "Set up" CTA) when only TPIN login has been enabled.
+  const [canAuthenticatorLogin, setCanAuthenticatorLogin] = useState(false);
 
   function pickRole(r: PublicRole) {
     setRole(r);
@@ -121,6 +125,7 @@ function LoginForm({ location }: { location: LocationData }) {
     setPassword("");
     setError("");
     setCanChoose(false);
+    setCanAuthenticatorLogin(false);
   }
 
   function backFromFactorStep() {
@@ -170,11 +175,16 @@ function LoginForm({ location }: { location: LocationData }) {
         setTempToken(data.tempToken);
         setUserName(data.user?.name || "");
         setPinRiskAccepted(Boolean(data.riskAccepted));
+        setCanAuthenticatorLogin(Boolean(data.canAuthenticator));
         setCanChoose(true);
+        // Jump straight to a preferred method only if it is actually usable.
+        // (A "2fa" preference is skipped when the authenticator isn't set up.)
         setStep(
-          data.preferredMethod === "2fa" || data.preferredMethod === "pinlogin"
-            ? data.preferredMethod
-            : "choose"
+          data.preferredMethod === "pinlogin"
+            ? "pinlogin"
+            : data.preferredMethod === "2fa" && data.canAuthenticator
+              ? "2fa"
+              : "choose"
         );
         setLoading(false);
         return;
@@ -228,6 +238,7 @@ function LoginForm({ location }: { location: LocationData }) {
     content = (
       <LoginMethodChoice
         userName={userName}
+        canAuthenticator={canAuthenticatorLogin}
         onChoose={(method) => setStep(method)}
         onBack={resetToCredentials}
       />
@@ -315,7 +326,7 @@ function LoginForm({ location }: { location: LocationData }) {
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <FloatingInput
             id="identifier"
-            label="Email or mobile number"
+            label="Email, mobile or User Code (e.g. RT0101)"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             autoComplete="username"

@@ -153,6 +153,32 @@ async function main() {
     }
   });
 
+  // ── Second Demo Retailer (Tejas_90907070) ──
+  const tejasHash = await bcrypt.hash("Tejas_90907070", 12);
+  await prisma.user.upsert({
+    where: { email: "tejasj7663@gmail.com" },
+    update: {
+      name: "Tejas Ramesh Jadhav",
+      passwordHash: tejasHash,
+      role: Role.RETAILER,
+      status: UserStatus.ACTIVE,
+      walletBalance: 0,
+    },
+    create: {
+      name: "Tejas Ramesh Jadhav",
+      email: "tejasj7663@gmail.com",
+      phone: "+919096619172",
+      passwordHash: tejasHash,
+      role: Role.RETAILER,
+      status: UserStatus.ACTIVE,
+      city: "Mumbai",
+      state: "Maharashtra",
+      pincode: "400001",
+      walletBalance: 0,
+      parentId: demoDT.id
+    }
+  });
+
   // ── Operators (master data for recharge/bill services) ──
   const ops = [
     { service: ServiceCode.RECHARGE_MOBILE, name: "Jio", code: "JIO" },
@@ -188,6 +214,7 @@ async function main() {
   console.log("  Master Distributor:  manishspecial009@gmail.com    (Manish MD)");
   console.log("  Distributor:         manishkshah27@outlook.com     (Manish DT)");
   console.log("  Retailer:            manishisspecial@gmail.com     (Manish RT)");
+  console.log("  Retailer:            tejasj7663@gmail.com          (Tejas Ramesh Jadhav) — pass: Tejas_90907070");
   console.log("");
 }
 

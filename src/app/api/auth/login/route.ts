@@ -117,7 +117,16 @@ export async function POST(req: Request) {
 
   try {
     const user = await prisma.user.findFirst({
-      where: { OR: [{ email: normalized }, { phone: normalized }], deletedAt: null },
+      where: {
+        OR: [
+          { email: normalized },
+          { phone: normalized },
+          // Allow login with the assigned user code (RT0101 / DT0101 / MD0101 / SD0101).
+          // The lookup is case-insensitive so both "rt0101" and "RT0101" resolve correctly.
+          { userCode: { equals: normalized, mode: "insensitive" } },
+        ],
+        deletedAt: null,
+      },
     });
 
     const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
@@ -276,31 +285,42 @@ export async function POST(req: Request) {
 
     // Second-factor selection. A master-admin can *allow* an account to sign in
     // with its transaction PIN instead of an authenticator app. When allowed,
-    // the choice of which factor to use is the USER's:
-    //   - Authenticator (TOTP) is available when 2FA is set up.
-    //   - TPIN login is available when the master-admin allowed it AND a PIN is
-    //     set (the pin-login/verify route requires twoFactorExempt too).
-    // If BOTH are available we let the user pick; otherwise we route straight to
-    // whichever single factor is available.
+    // the method chooser is ALWAYS shown (even if only TPIN is available) so
+    // the user makes a deliberate, conscious choice on every sign-in.
+    //
+    //   canAuthenticator  → TOTP is set up (twoFactorEnabled + secret stored)
+    //   canPinLogin       → master-admin granted TPIN login AND user has set a PIN
+    //
+    // Priority:
+    //   1. TPIN enabled  → always show the method chooser. The `canAuthenticator`
+    //      flag is passed to the frontend so it can disable the authenticator
+    //      option when the user hasn't set it up yet (showing a "Set up" CTA).
+    //   2. Authenticator only (no TPIN exemption) → route straight to TOTP step.
+    //   3. Neither set up → needsSetup flow (first-time 2FA setup prompt).
     const canAuthenticator = Boolean(user.twoFactorEnabled && user.twoFactorSecret);
     const canPinLogin = Boolean(
       user.twoFactorExempt && user.pinLoginEnabled && user.txnPinHash
     );
 
-    // Both factors available — the user chooses authenticator or TPIN. If they
-    // have saved a default preference we surface it so the frontend can skip
-    // straight to that method (while still letting them switch).
-    if (canAuthenticator && canPinLogin) {
+    // TPIN is enabled → always surface the method chooser.
+    // If the user has a saved preference AND that preference is currently
+    // available, the frontend can jump straight to it (while still letting
+    // the user switch via "Start over"). The `canAuthenticator` flag tells
+    // the frontend whether to render the authenticator option as active or
+    // as a "Not set up — go to Security settings" prompt.
+    if (canPinLogin) {
       const tempToken = createTempToken(user.id);
+      // Only honour a "2fa" preference if the authenticator is actually available.
       const preferredMethod =
         user.preferredLoginMethod === "tpin"
           ? "pinlogin"
-          : user.preferredLoginMethod === "authenticator"
+          : user.preferredLoginMethod === "authenticator" && canAuthenticator
             ? "2fa"
             : null;
       return NextResponse.json({
         ok: true,
         needsMethodChoice: true,
+        canAuthenticator,        // ← tells the frontend if TOTP is usable
         preferredMethod,
         needs2FA: false,
         needsPinLogin: false,
@@ -311,24 +331,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // TPIN login: a master-admin has waived mandatory 2FA for this account and
-    // allowed authentication with the transaction PIN as the second factor. The
-    // frontend collects the PIN + risk acceptance and calls
-    // /api/auth/pin-login/verify with this tempToken.
-    if (canPinLogin) {
-      const tempToken = createTempToken(user.id);
-      return NextResponse.json({
-        ok: true,
-        needsPinLogin: true,
-        needs2FA: false,
-        needsSetup: false,
-        riskAccepted: Boolean(user.pinLoginRiskAcceptedAt),
-        tempToken,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      });
-    }
-
-    // 2FA is mandatory for all users without a TPIN-login waiver.
+    // Authenticator only (no TPIN exemption) — route straight to the TOTP step.
     if (canAuthenticator) {
       const tempToken = createTempToken(user.id);
       return NextResponse.json({

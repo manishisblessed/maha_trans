@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUTVA-CS-2610 — Channel system for RUTVA MULTISERVICES LLP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,560;7..72,700&family=Syne:wght@600;700;800&display=swap');
+
+  :root {
+    --ink: #141820;
+    --leaf: #1b3a6b;
+    --leaf-deep: #122743;
+    --brass: #5c6b82;
+    --paper: #f5f6f8;
+    --desk: #e4e7ee;
+    --card: #ffffff;
+    --text: #242a33;
+    --muted: #5c6570;
+    --line: #d5dbe3;
+    --soft: #eef2f7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Literata', Georgia, serif;
+    color: var(--text);
+    background: var(--desk);
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a { color: var(--leaf); }
+
+  .sheet {
+    width: min(920px, calc(100% - 32px));
+    margin: 22px auto;
+    background: var(--paper);
+    border-left: 10px solid var(--leaf);
+    padding: 42px 48px 32px;
+    box-shadow: 0 16px 40px rgba(28, 36, 24, 0.08);
+  }
+
+  .running {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .running span:last-child { white-space: nowrap; }
+
+  .footline {
+    margin-top: 36px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  h1, h2, h3, .syne { font-family: 'Syne', sans-serif; color: var(--ink); }
+
+  /* ── Cover ── */
+  .kicker {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 18px;
+  }
+
+  .client-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(46px, 8vw, 78px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .client-sub {
+    margin-top: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--leaf);
+  }
+
+  .rule {
+    height: 1px;
+    background: var(--line);
+    margin: 26px 0;
+  }
+
+  .addressed {
+    font-size: 17px;
+    max-width: 36em;
+  }
+  .addressed strong { color: var(--ink); font-weight: 700; }
+
+  h1.claim {
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    max-width: 16em;
+    margin: 8px 0 18px;
+  }
+
+  .lead {
+    font-size: 17px;
+    max-width: 40em;
+    color: var(--text);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid var(--ink);
+  }
+  .facts span {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 6px;
+  }
+  .facts p { font-size: 14px; }
+
+  /* ── Interior ── */
+  h2 {
+    font-size: clamp(28px, 4vw, 36px);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    max-width: 16em;
+  }
+
+  .intro {
+    font-size: 16.5px;
+    max-width: 42em;
+    margin-bottom: 26px;
+  }
+
+  .outcomes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .outcome {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 16px 16px 18px;
+  }
+  .outcome em {
+    font-family: 'Syne', sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+  }
+  .outcome h3 {
+    font-size: 18px;
+    margin: 8px 0;
+    letter-spacing: -0.02em;
+  }
+  .outcome p { font-size: 14.5px; color: var(--muted); }
+
+  .ledger { list-style: none; padding-left: 0; border-top: 1px solid var(--ink); }
+  .ledger li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger .n {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--leaf);
+  }
+  .ledger h3 { font-size: 16px; margin-bottom: 2px; }
+  .ledger p { font-size: 14px; color: var(--muted); }
+
+  /* White label */
+  .scene {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .chain {
+    background: var(--leaf-deep);
+    color: #f4f6fa;
+    padding: 22px 22px 8px;
+  }
+  .chain h3 {
+    font-family: 'Syne', sans-serif;
+    color: #f4f6fa;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .chain ol { list-style: none; padding-left: 0; margin: 0; }
+  .chain li {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 10px;
+    padding-bottom: 16px;
+    position: relative;
+  }
+  .chain li:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 28px;
+    bottom: 0;
+    width: 1px;
+    background: rgba(244, 246, 250, 0.28);
+  }
+  .chain b {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  .chain span { display: block; font-size: 13px; color: rgba(244, 246, 250, 0.72); }
+
+  .service-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0 8px;
+  }
+  .service-pills span {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--leaf);
+    color: var(--leaf);
+    padding: 6px 10px;
+  }
+
+  .notes { margin-top: 18px; padding-left: 1.15em; }
+  .notes li { margin-bottom: 8px; font-size: 15px; }
+
+  /* Seats */
+  .seats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .seat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 16px 16px 12px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .seat header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .seat h3 { font-size: 18px; letter-spacing: -0.02em; }
+  .seat .key {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    color: var(--leaf);
+    letter-spacing: 0.04em;
+  }
+  .seat > p { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  .seat ul { list-style: none; padding-left: 0; margin: 0; }
+  .seat li {
+    position: relative;
+    padding: 4px 0 4px 14px;
+    font-size: 13.5px;
+  }
+  .seat li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 1.5px;
+    background: var(--brass);
+  }
+
+  /* Line */
+  .line-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .step-list { list-style: none; }
+  .step-list li {
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+  .step-list strong {
+    font-family: 'Syne', sans-serif;
+    display: block;
+    font-size: 15px;
+  }
+  .step-list span { color: var(--muted); font-size: 14.5px; }
+
+  .stack {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--ink);
+  }
+  .stack div { padding: 14px 12px 0 0; }
+  .stack b {
+    font-family: 'Syne', sans-serif;
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  .stack span { font-size: 13.5px; color: var(--muted); }
+
+  /* Calendar */
+  .phase {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 18px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .phase:last-child { border-bottom: 1px solid var(--line); }
+  .when {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--leaf);
+    font-size: 14px;
+  }
+  .phase h3 { font-size: 18px; margin-bottom: 4px; }
+  .phase p { font-size: 14.5px; }
+  .gate {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--leaf-deep);
+  }
+
+  /* Handover */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .panel h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .panel ul { padding-left: 1.15em; margin: 0; }
+  .panel li { margin: 0 0 10px; font-size: 14.5px; }
+  .panel + .panel { margin-top: 0; }
+  .wide-panel { margin-top: 22px; }
+
+  /* Sign */
+  .sign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-top: 8px;
+  }
+  .sign h3 {
+    font-size: 22px;
+    margin: 4px 0 8px;
+    letter-spacing: -0.03em;
+  }
+  .sign .who {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+  .sign .details {
+    font-size: 14.5px;
+    color: var(--muted);
+    min-height: 96px;
+  }
+  .pen {
+    margin-top: 28px;
+    border-bottom: 1px solid var(--ink);
+    height: 36px;
+  }
+  .pen + p {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 6px 0 16px;
+  }
+
+  .contacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .contacts span {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brass);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .contacts a { text-decoration: none; border-bottom: 1px solid var(--line); }
+
+  @media screen and (max-width: 800px) {
+    .sheet { width: calc(100% - 16px); padding: 28px 18px 22px; margin: 10px auto; }
+    .running { letter-spacing: 0.08em; font-size: 10px; }
+    .facts, .outcomes, .scene, .seats, .line-block, .split, .sign-grid, .stack, .contacts {
+      grid-template-columns: 1fr;
+    }
+    .phase { grid-template-columns: 1fr; gap: 4px; }
+    .client-name { font-size: 46px; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: white; }
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      box-shadow: none;
+      padding: 14mm 14mm 12mm 16mm;
+      break-after: page;
+      page-break-after: always;
+    }
+    .sheet:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .seat, .phase, .outcome, .chain { break-inside: avoid; page-break-inside: avoid; }
+    h2 { font-size: 26px; margin-bottom: 8px; }
+    .lead, .intro { font-size: 14px; margin-bottom: 12px; }
+    .running { margin-bottom: 16px; }
+    .outcomes { gap: 8px; margin-bottom: 12px; }
+    .outcome { padding: 10px 12px; }
+    .outcome p { font-size: 13px; }
+    .ledger li { padding: 7px 0; }
+    .sheet { padding: 12mm 14mm 10mm 16mm; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<section class="sheet">
+  <div class="running">
+    <span>Private paper · RUTVA only</span>
+    <span>RUTVA-CS-2610</span>
+  </div>
+
+  <p class="kicker">Channel system · Anand</p>
+  <div class="client-name">RUTVA</div>
+  <div class="client-sub">Multiservices LLP</div>
+
+  <div class="rule"></div>
+
+  <p class="addressed">
+    Written for <strong>Mr. Patel</strong>.<br>
+    27 The Sun Residency, Nr. MatruBhaktiNani Bhagol, Mogri,<br>
+    Vidyanagar Police Station, Anand — 388345, Gujarat.
+  </p>
+
+  <div class="rule"></div>
+
+  <h1 class="claim">One portal for RUTVA’s line, and the same portal again on a user’s own domain.</h1>
+  <p class="lead">
+    Shah Works will build this web system for RUTVA MULTISERVICES LLP.
+    RUTVA’s network works as Super-Distributor, Master Distributor, Distributor, and Retailer.
+    A user of the system can take that same desk onto a domain he supplies, appoint his own
+    SD, MD, DT, and RT, and let those people run every service on the menu.
+  </p>
+
+  <div class="facts">
+    <div>
+      <span>Paper</span>
+      <p>RUTVA-CS-2610<br>26 October 2026</p>
+    </div>
+    <div>
+      <span>Prepared by</span>
+      <p>Shah Works<br>Dwarka, New Delhi</p>
+    </div>
+    <div>
+      <span>Window</span>
+      <p>Six to eight weeks<br>Four working reviews</p>
+    </div>
+    <div>
+      <span>Form</span>
+      <p>Web portals<br>White label included</p>
+    </div>
+  </div>
+
+  <div class="footline">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>Not for circulation</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>What this paper commits to</span>
+  </div>
+
+  <h2>The work Jagrutiben described</h2>
+  <p class="intro">
+    RUTVA asked for a hierarchy the partnership can operate from Anand, and for a user
+    to open that same hierarchy on his own domain. The short names in this paper
+    are RUTVA’s: SD, MD, DT, RT.
+  </p>
+
+  <div class="outcomes">
+    <article class="outcome">
+      <em>01 · One desk</em>
+      <h3>Services share a ledger</h3>
+      <p>POS, QR, BBPS, recharge, and payout use the same users, wallets, and reports. A retailer is not sent to a second product to finish the day.</p>
+    </article>
+    <article class="outcome">
+      <em>02 · One line</em>
+      <h3>SD, then MD, then DT, then RT</h3>
+      <p>Each seat appoints and funds the seat under it. Schemes and reports stop at that downline. They do not wander across the tree.</p>
+    </article>
+    <article class="outcome">
+      <em>03 · White label</em>
+      <h3>His domain, his people</h3>
+      <p>A user adds SD, MD, DT, and RT on an address he owns. Those users get the full service menu, under his name and logo.</p>
+    </article>
+  </div>
+
+  <ol class="ledger">
+    <li>
+      <span class="n">01</span>
+      <div>
+        <h3>Point of sale</h3>
+        <p>Machine stock, assignment, rental, and live device work.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">02</span>
+      <div>
+        <h3>QR acceptance</h3>
+        <p>Static and amount-locked QR, merchant history, reconciliation.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">03</span>
+      <div>
+        <h3>Super-Distributor (SD)</h3>
+        <p>Full service menu, plus control of the Master Distributors under him.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">04</span>
+      <div>
+        <h3>Master Distributor (MD)</h3>
+        <p>The same services, plus the Distributors he appoints.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">05</span>
+      <div>
+        <h3>Distributor (DT)</h3>
+        <p>The same services, plus retailer funding, KYC, and reports.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">06</span>
+      <div>
+        <h3>Retailer (RT)</h3>
+        <p>BBPS, recharge, payout, POS, QR, wallet, and receipts.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">07</span>
+      <div>
+        <h3>Sub-admin</h3>
+        <p>Department staff with a fence around what they are allowed to touch.</p>
+      </div>
+    </li>
+    <li>
+      <span class="n">08</span>
+      <div>
+        <h3>White label</h3>
+        <p>A user’s domain, his SD → MD → DT → RT line, and every service for those users.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="footline">
+    <span>RUTVA-CS-2610</span>
+    <span>Scope register</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>White label</span>
+  </div>
+
+  <h2>A user opens the system on his own domain</h2>
+  <div class="scene">
+    <div>
+      <p class="intro">
+        White label, in the words this paper is using for RUTVA, means a user of the
+        portal is not a guest on RUTVA’s address. He receives the product on a domain
+        he provides. On that domain he builds a line, and only in this order:
+        Super-Distributor, Master Distributor, Distributor, Retailer.
+        The people he adds are able to use the services. They are not given a
+        reduced menu because they sit on his brand.
+      </p>
+      <p class="intro">
+        His name and logo are what the browser shows. Wallets, schemes, and reports
+        for that line stay inside that downline. RUTVA still runs the estate from
+        the admin seats. One white-label user does not read another user’s books.
+      </p>
+      <p>On that domain, every seat in the line can use:</p>
+      <div class="service-pills">
+        <span>BBPS</span>
+        <span>Recharge</span>
+        <span>Payout</span>
+        <span>POS</span>
+        <span>QR</span>
+      </div>
+      <ul class="notes">
+        <li>The user creates SD, MD, DT, and RT accounts himself.</li>
+        <li>The order stays SD → MD → DT → RT. A retailer is not parked above a distributor.</li>
+        <li>Domain name and DNS come from that user. Shah Works points the portal at the name once DNS is in hand.</li>
+        <li>UAT for a white-label domain happens before that address is treated as live.</li>
+      </ul>
+    </div>
+    <aside class="chain">
+      <h3>His line</h3>
+      <ol>
+        <li>
+          <b>SD</b>
+          <span>Super-Distributor. First person he appoints. Can fund the MD seats and run the full menu.</span>
+        </li>
+        <li>
+          <b>MD</b>
+          <span>Master Distributor. Appointed by SD. Funds distributors. Same services on his own wallet.</span>
+        </li>
+        <li>
+          <b>DT</b>
+          <span>Distributor. Appointed by MD. Opens retailers, moves funds to them, and works the same menu.</span>
+        </li>
+        <li>
+          <b>RT</b>
+          <span>Retailer. The counter. BBPS, recharge, payout, POS, QR, wallet, and a receipt.</span>
+        </li>
+      </ol>
+    </aside>
+  </div>
+
+  <div class="footline">
+    <span>RUTVA-CS-2610</span>
+    <span>White label for a user’s domain</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>Seats and services</span>
+  </div>
+
+  <h2>What each seat can actually do</h2>
+  <p class="intro">
+    The same menu sits on the RUTVA portal and on a white-label domain.
+    What changes is who appointed the user, and whose logo is on the screen.
+  </p>
+
+  <div class="seats">
+    <article class="seat">
+      <header>
+        <h3>Point of sale</h3>
+        <span class="key">POS</span>
+      </header>
+      <p>The life of a machine, from the carton to the day’s settlement.</p>
+      <ul>
+        <li>Stock list, including a bulk upload of machines</li>
+        <li>Assign a device to a merchant or a retailer</li>
+        <li>Pay, refund, and void from the bridge</li>
+        <li>Rental plans that debit on their own schedule</li>
+        <li>Card, UPI, BharatQR, and cash</li>
+        <li>Last-seen health for each device</li>
+        <li>Commission carried into a T+1 settlement</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>QR acceptance</h3>
+        <span class="key">QR</span>
+      </header>
+      <p>A merchant collects without leaving the portal that holds the wallet.</p>
+      <ul>
+        <li>Static QR tied to the merchant VPA</li>
+        <li>Dynamic QR locked to one billed amount</li>
+        <li>Confirmation when the payment lands</li>
+        <li>That merchant’s QR history</li>
+        <li>Settlement and a reconciliation view</li>
+        <li>A QR sheet in the merchant’s brand</li>
+        <li>Duplicates and timeouts do not double-charge</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Super-Distributor</h3>
+        <span class="key">SD</span>
+      </header>
+      <p>The top of RUTVA’s selling line, under admin. The SD wallet is a working wallet, not a viewing seat.</p>
+      <ul>
+        <li>BBPS, mobile recharge, DTH, and payout</li>
+        <li>POS and QR on the SD login</li>
+        <li>Open and manage Master Distributors</li>
+        <li>Push funds down to an MD</li>
+        <li>Turn the same services on for the network</li>
+        <li>Schemes, limits, and the full tree</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Master Distributor</h3>
+        <span class="key">MD</span>
+      </header>
+      <p>Sees only the distributors under his SD. Runs the service menu on the MD wallet.</p>
+      <ul>
+        <li>BBPS, recharge, and payout on the MD wallet</li>
+        <li>POS and QR on the MD login</li>
+        <li>Open and manage Distributors</li>
+        <li>Fund those wallets and read balances</li>
+        <li>Switch services on for the people below</li>
+        <li>Schemes, limits, and downline reports</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Distributor</h3>
+        <span class="key">DT</span>
+      </header>
+      <p>Builds the retailer book, and also transacts on his own wallet.</p>
+      <ul>
+        <li>BBPS, recharge, and payout on the DT wallet</li>
+        <li>POS and QR on the DT login</li>
+        <li>Open retailers and take KYC</li>
+        <li>Top up a retailer and transfer funds</li>
+        <li>Turn the same services on for retailers</li>
+        <li>Earnings, wallets, and settlement for that book</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Retailer</h3>
+        <span class="key">RT</span>
+      </header>
+      <p>The counter. Daily volume stays here, with a receipt and a dispute path.</p>
+      <ul>
+        <li>BBPS, recharge, payout, POS, and QR</li>
+        <li>Wallet balance as it moves</li>
+        <li>History that can issue a receipt</li>
+        <li>Mini-statement and balance enquiry</li>
+        <li>File a dispute and follow it</li>
+        <li>SMS or in-app alert on a payment</li>
+        <li>Profile and KYC the retailer can update</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Sub-admin</h3>
+        <span class="key">OPS</span>
+      </header>
+      <p>RUTVA’s office staff work without holding the super-admin key.</p>
+      <ul>
+        <li>Rights split across wallets, MDR, and reports</li>
+        <li>A department sees only its own work</li>
+        <li>User management inside that fence</li>
+        <li>An activity log of what was done</li>
+        <li>Reversal and dispute rights by role</li>
+        <li>Maker and checker on sensitive moves</li>
+        <li>Reports limited to the team that needs them</li>
+      </ul>
+    </article>
+
+    <article class="seat">
+      <header>
+        <h3>Where the line sits</h3>
+        <span class="key">MAP</span>
+      </header>
+      <p>Admin is above the selling line. The selling line is the same shape on RUTVA’s portal and on a white-label domain.</p>
+      <ul>
+        <li>Super Admin, then Sub-admin</li>
+        <li>SD under admin</li>
+        <li>MD reports to SD</li>
+        <li>DT reports to MD</li>
+        <li>RT reports to DT</li>
+        <li>POS, QR, BBPS, recharge, payout, ledger, and alerts sit under every seat</li>
+        <li>Staging never shares a wallet with production</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="stack">
+    <div>
+      <b>Screens</b>
+      <span>Next.js / React, one portal per role</span>
+    </div>
+    <div>
+      <b>Books</b>
+      <span>PostgreSQL for the ledger</span>
+    </div>
+    <div>
+      <b>Hosting</b>
+      <span>AWS, staging apart from live</span>
+    </div>
+    <div>
+      <b>Access</b>
+      <span>Roles, sessions, and an audit trail</span>
+    </div>
+  </div>
+
+  <div class="footline">
+    <span>RUTVA-CS-2610</span>
+    <span>Seat guide</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>Six to eight weeks</span>
+  </div>
+
+  <h2>Four reviews, written for this build</h2>
+  <p class="intro">
+    Mr. Patel, or a person he names, sees working software at each review.
+    Shah Works does not open the next stretch until that review is accepted.
+    A short weekly call, or a recorded walkthrough, sits between the reviews
+    so a blocked credential does not wait until week eight.
+  </p>
+
+  <article class="phase">
+    <div class="when">Weeks 1–2<br>Review one</div>
+    <div>
+      <h3>Foundation</h3>
+      <p>Project setup, the data model, sign-in, super-admin and sub-admin, user management, portal settings, and the wallet ledger underneath.</p>
+      <p class="gate">Accepted when: a role can sign in on staging and the ledger skeleton holds an entry.</p>
+    </div>
+  </article>
+  <article class="phase">
+    <div class="when">Weeks 3–4<br>Review two</div>
+    <div>
+      <h3>The line, including white label</h3>
+      <p>SD, MD, DT, and RT screens. Fund transfers. Schemes. Reports that follow the tree. A user can be placed on his domain and can add his own SD, MD, DT, and RT.</p>
+      <p class="gate">Accepted when: a downline can be created, funds can move, reports respect the role, and a white-label domain can be signed into.</p>
+    </div>
+  </article>
+  <article class="phase">
+    <div class="when">Weeks 5–6<br>Review three</div>
+    <div>
+      <h3>The service menu</h3>
+      <p>POS with rental, QR acceptance, and BBPS, recharge, and payout on SD, MD, DT, and RT — on RUTVA’s portal and on a white-label domain.</p>
+      <p class="gate">Accepted when: sandbox transactions settle, and a device or QR can be assigned.</p>
+    </div>
+  </article>
+  <article class="phase">
+    <div class="when">Weeks 7–8<br>Review four</div>
+    <div>
+      <h3>Handover</h3>
+      <p>End-to-end checks, a security pass, report finish, UAT with RUTVA’s side, production on the agreed cloud, the white-label domain cut over, two training sessions, and the written handover.</p>
+      <p class="gate">Accepted when: UAT is signed, the production address is live, the white-label domain resolves, and admin access has been handed across.</p>
+    </div>
+  </article>
+
+  <div class="footline">
+    <span>RUTVA-CS-2610</span>
+    <span>Build calendar</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>Handover</span>
+  </div>
+
+  <h2>What reaches the partnership, and what we need back</h2>
+  <p class="intro">
+    At the close, RUTVA’s people can run the portal without a Shah Works login.
+    The list below is the close for this paper, not a generic pack.
+  </p>
+
+  <div class="split">
+    <div class="panel">
+      <h3>RUTVA receives</h3>
+      <ul>
+        <li>The live portal: admin, SD, MD, DT, RT, POS, and QR, plus white label on the user’s domain.</li>
+        <li>A staging copy that cannot touch a live wallet, for training and later changes.</li>
+        <li>The source repository and admin login, once the closing payment for this work has been received.</li>
+        <li>An operating note for onboarding, white-label domains, wallets, schemes, settlement, and disputes.</li>
+        <li>A technical note: environments, the integrations, webhooks, and how to deploy or roll back.</li>
+        <li>Two live sessions — admin, then channel. A recording if the session is remote.</li>
+        <li>A UAT list written against this paper, with open items named before cutover.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>RUTVA provides</h3>
+      <ul>
+        <li>Mr. Patel, or a person he names in writing, for decisions and UAT.</li>
+        <li>Sandbox and production keys when a service API needs them.</li>
+        <li>The cloud account, or a written go-ahead to open one at actual cost.</li>
+        <li>Logo, name, and legal lines within five business days of kickoff.</li>
+        <li>The white-label domain, and DNS access for that user’s address.</li>
+        <li>Comments on a staging review within three business days.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel wide-panel">
+    <h3>Not in this paper</h3>
+    <ul>
+      <li>Usage charges for third-party APIs, SMS, email, and KYC.</li>
+      <li>Server, domain, and SSL costs. Those sit with RUTVA, or are passed through at actuals.</li>
+      <li>Native mobile apps. This build is the web portals.</li>
+      <li>A bank or NPCI certification program.</li>
+      <li>Features added after this paper is accepted. Those are quoted before anyone starts them.</li>
+    </ul>
+  </div>
+
+  <div class="footline">
+    <span>RUTVA-CS-2610</span>
+    <span>Close of work</span>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="running">
+    <span>RUTVA MULTISERVICES LLP</span>
+    <span>Acceptance</span>
+  </div>
+
+  <h2>Sign this paper to open the work</h2>
+  <p class="intro">
+    A signature accepts the scope in RUTVA-CS-2610, prepared for
+    RUTVA MULTISERVICES LLP, Anand. Fees are not stated in this paper.
+    On Mr. Patel’s confirmation, Shah Works will set the kickoff.
+  </p>
+
+  <div class="sign-grid">
+    <div class="sign">
+      <div class="who">For the partnership</div>
+      <h3>RUTVA MULTISERVICES LLP</h3>
+      <p class="details">
+        Jagrutiben Keyur Kumar Patel, Partner<br>
+        27 The Sun Residency, Nr. MatruBhaktiNani Bhagol<br>
+        Mogri, Vidyanagar Police Station<br>
+        Anand, Anand — 388345, Gujarat
+      </p>
+      <div class="pen"></div>
+      <p>Authorized signatory and date</p>
+      <div class="pen"></div>
+      <p>Name and designation</p>
+    </div>
+    <div class="sign">
+      <div class="who">For the builder</div>
+      <h3>Shah Works</h3>
+      <p class="details">
+        Dwarka, Sector-14<br>
+        New Delhi — 110078<br>
+        www.shahworks.com
+      </p>
+      <div class="pen"></div>
+      <p>Authorized signatory and date</p>
+      <div class="pen"></div>
+      <p>Name and designation</p>
+    </div>
+  </div>
+
+  <div class="contacts">
+    <div>
+      <span>Phone / WhatsApp</span>
+      <a href="https://wa.me/919090702705" target="_blank">+91 9090702705</a>
+    </div>
+    <div>
+      <span>Website</span>
+      <a href="http://shahworks.com/" target="_blank">shahworks.com</a>
+    </div>
+    <div>
+      <span>Office</span>
+      New Delhi, India
+    </div>
+  </div>
+
+  <div class="footline">
+    <span>© 2026 Shah Works</span>
+    <span>Private — RUTVA MULTISERVICES LLP only</span>
+  </div>
+</section>
+
+</body>
+</html>
