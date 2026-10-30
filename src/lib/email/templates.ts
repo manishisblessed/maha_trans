@@ -2,29 +2,45 @@
  * Transactional email templates.
  *
  * Design constraints (email is not the web):
- * - Table-based layout â€” Gmail/Outlook still don't reliably render flexbox.
- * - All styles inline â€” most clients strip <style> blocks.
- * - System font stack â€” no external @font-face (blocked by many clients).
- * - Max width 600px, single column â€” the mobile-safe standard.
- * - Preheader text â€” the muted line inbox previews show next to the subject.
+ * - Table-based layout — Gmail/Outlook still don't reliably render flexbox.
+ * - All styles inline — most clients strip <style> blocks.
+ * - System font stack — no external @font-face (blocked by many clients).
+ * - Max width 600px, single column — the mobile-safe standard.
+ * - Preheader text — the muted line inbox previews show next to the subject.
  * - No JS, no external images beyond the sender's discretion.
  *
  * Palette matches tailwind.config.ts (brand.* / accent.*) so marketing emails
  * feel continuous with the dashboard.
  */
 
-// TRANSPE email palette â€” mirrors tailwind.config.ts brand (navy) & accent (teal).
+// TRANSPE email palette — mirrors tailwind.config.ts brand (navy) & accent (teal).
 const BRAND = {
-  primary: "#172b6b", // brand-700 (navy)
+  primary: "#172b6b",    // brand-700 (navy)
   primaryDark: "#0b1740", // brand-900 (deep navy)
   primarySoft: "#eef2fb", // brand-50
-  accent: "#17b8a6", // accent-500 (teal)
-  ink: "#0e1626", // ink-900
-  inkMuted: "#516a8c", // ink-500
-  inkLight: "#a4b3c8", // ink-300
-  border: "#d6def4", // brand-100
-  bg: "#f5f7fa", // ink-50
+  accent: "#17b8a6",     // accent-500 (teal)
+  ink: "#0e1626",        // ink-900
+  inkMuted: "#516a8c",   // ink-500
+  inkLight: "#a4b3c8",   // ink-300
+  border: "#d6def4",     // brand-100
+  bg: "#f5f7fa",         // ink-50
 } as const;
+
+/**
+ * Optional per-tenant brand override.
+ * Pass this from any email template to render with a white-label identity
+ * instead of the default TRANSPE branding.
+ */
+export type EmailBrand = {
+  /** White-label tenant name (replaces "TRANSPE" in all copy). */
+  brandName: string;
+  /** Hex primary colour (e.g. "#1a3c8f"). Defaults to TRANSPE navy. */
+  primaryColor?: string;
+  /** Hex accent colour. Defaults to TRANSPE teal. */
+  accentColor?: string;
+  /** Support email for the tenant. */
+  supportEmail?: string;
+};
 
 const ROLE_LABEL: Record<string, string> = {
   RETAILER: "Retailer",
@@ -52,15 +68,29 @@ function fmtExpiry(expiresAt: Date | string) {
 /**
  * Wraps the email body in a mobile-safe, inbox-safe outer shell with the
  * brand header, footer and a hidden preheader. Callers supply the inner
- * HTML â€” everything around it (fonts, layout table, footer) is standard.
+ * HTML — everything around it (fonts, layout table, footer) is standard.
+ * Pass `brand` to render with a white-label tenant identity.
  */
 function shell({
   preheader,
   bodyHtml,
+  brand,
 }: {
   preheader: string;
   bodyHtml: string;
+  brand?: EmailBrand;
 }) {
+  const platformName = brand?.brandName ?? "TRANSPE";
+  const primaryHex = brand?.primaryColor ?? BRAND.primary;
+  const primaryDark = brand?.primaryColor ?? BRAND.primaryDark;
+  const year = new Date().getFullYear();
+  const poweredByHtml = brand
+    ? `<div style="margin-top:8px;color:${BRAND.inkLight};font-size:11px;">Powered by TRANSPE</div>`
+    : "";
+  const nativeAddressHtml = brand
+    ? ""
+    : `<div>Pune, Maharashtra, India &middot; <a href="https://transpe.net" style="color:${primaryHex};text-decoration:none;">transpe.net</a></div>`;
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -68,7 +98,7 @@ function shell({
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
-    <title>TRANSPE</title>
+    <title>${platformName}</title>
     <!--[if mso]><style>* { font-family: Arial, sans-serif !important; }</style><![endif]-->
   </head>
   <body style="margin:0;padding:0;background:${BRAND.bg};color:${BRAND.ink};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
@@ -81,12 +111,12 @@ function shell({
         <td align="center">
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(26,35,80,0.08);">
             <tr>
-              <td style="background:linear-gradient(135deg,${BRAND.primary} 0%,${BRAND.primaryDark} 100%);padding:32px 32px 28px 32px;">
+              <td style="background:linear-gradient(135deg,${primaryHex} 0%,${primaryDark} 100%);padding:32px 32px 28px 32px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td>
                       <div style="display:inline-block;background:rgba(255,255,255,0.14);padding:8px 14px;border-radius:10px;">
-                        <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:0.3px;">TRANSPE</span>
+                        <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:0.3px;">${platformName}</span>
                       </div>
                       <div style="color:rgba(255,255,255,0.72);font-size:11px;font-weight:600;letter-spacing:2px;margin-top:10px;text-transform:uppercase;">PG &middot; POS &middot; QR Payments</div>
                     </td>
@@ -102,15 +132,16 @@ function shell({
             <tr>
               <td style="padding:24px 40px 32px 40px;">
                 <div style="border-top:1px solid ${BRAND.border};padding-top:20px;font-size:12px;line-height:18px;color:${BRAND.inkMuted};">
-                  <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">TRANSPE</div>
-                  <div>Pune, Maharashtra, India &middot; <a href="https://transpe.net" style="color:${BRAND.primary};text-decoration:none;">transpe.net</a></div>
-                  <div style="margin-top:12px;color:${BRAND.inkLight};">You are receiving this email because someone from your organisation invited you to TRANSPE. If this wasn't you, you can safely ignore this message.</div>
+                  <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">${platformName}</div>
+                  ${nativeAddressHtml}
+                  ${poweredByHtml}
+                  <div style="margin-top:12px;color:${BRAND.inkLight};">You are receiving this email because someone from your organisation invited you to ${platformName}. If this wasn't you, you can safely ignore this message.</div>
                 </div>
               </td>
             </tr>
           </table>
           <div style="max-width:600px;margin:16px auto 0;font-size:11px;color:${BRAND.inkLight};text-align:center;">
-            &copy; ${new Date().getFullYear()} TRANSPE. All rights reserved.
+            &copy; ${year} ${platformName}. All rights reserved.
           </div>
         </td>
       </tr>
@@ -120,9 +151,10 @@ function shell({
 }
 
 /**
- * Onboarding invite email â€” sent on invite creation and on manual resend.
+ * Onboarding invite email — sent on invite creation and on manual resend.
  * Same visual language for both; `isReminder=true` just re-frames copy so
  * the recipient understands this is a nudge rather than the first contact.
+ * Pass `brand` to render with a white-label tenant identity.
  */
 export function renderInviteEmail(opts: {
   name?: string;
@@ -130,26 +162,30 @@ export function renderInviteEmail(opts: {
   onboardingLink: string;
   expiresAt: Date | string;
   isReminder?: boolean;
+  brand?: EmailBrand;
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
   const expiry = fmtExpiry(opts.expiresAt);
   const firstName = opts.name?.split(" ")[0]?.trim();
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
+  const platformName = opts.brand?.brandName ?? "TRANSPE";
+  const primaryHex = opts.brand?.primaryColor ?? BRAND.primary;
+  const primaryDark = opts.brand?.primaryColor ?? BRAND.primaryDark;
 
   const preheader = opts.isReminder
-    ? `Reminder â€” finish setting up your ${roleLabel} account on TRANSPE. Link expires ${expiry}.`
-    : `You've been invited to join TRANSPE as a ${roleLabel}. Complete your onboarding in under 5 minutes.`;
+    ? `Reminder — finish setting up your ${roleLabel} account on ${platformName}. Link expires ${expiry}.`
+    : `You've been invited to join ${platformName} as a ${roleLabel}. Complete your onboarding in under 5 minutes.`;
 
   const subject = opts.isReminder
-    ? `Reminder: complete your TRANSPE ${roleLabel} onboarding`
-    : `You're invited to TRANSPE â€” start earning as a ${roleLabel}`;
+    ? `Reminder: complete your ${platformName} ${roleLabel} onboarding`
+    : `You're invited to ${platformName} — start earning as a ${roleLabel}`;
 
   const headline = opts.isReminder
-    ? "Your TRANSPE invite is still waiting"
-    : "Welcome to TRANSPE";
+    ? `Your ${platformName} invite is still waiting`
+    : `Welcome to ${platformName}`;
 
   const subhead = opts.isReminder
-    ? `Just a friendly nudge â€” your onboarding link expires on <strong>${expiry}</strong>. It only takes a few minutes to finish.`
+    ? `Just a friendly nudge — your onboarding link expires on <strong>${expiry}</strong>. It only takes a few minutes to finish.`
     : `You've been invited to join our merchant network. Complete a quick onboarding and start using the platform today.`;
 
   const featureRow = (icon: string, title: string, copy: string) => `
@@ -158,7 +194,7 @@ export function renderInviteEmail(opts: {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td valign="top" style="width:36px;padding-right:14px;">
-              <div style="width:36px;height:36px;border-radius:10px;background:${BRAND.primarySoft};color:${BRAND.primary};text-align:center;line-height:36px;font-size:16px;font-weight:800;">${icon}</div>
+              <div style="width:36px;height:36px;border-radius:10px;background:${BRAND.primarySoft};color:${primaryHex};text-align:center;line-height:36px;font-size:16px;font-weight:800;">${icon}</div>
             </td>
             <td valign="top">
               <div style="font-size:14px;font-weight:700;color:${BRAND.ink};line-height:20px;">${title}</div>
@@ -170,7 +206,7 @@ export function renderInviteEmail(opts: {
     </tr>`;
 
   const body = `
-    <div style="display:inline-block;background:${BRAND.primarySoft};color:${BRAND.primary};font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:6px 12px;border-radius:999px;">
+    <div style="display:inline-block;background:${BRAND.primarySoft};color:${primaryHex};font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:6px 12px;border-radius:999px;">
       ${opts.isReminder ? "Reminder" : "You're invited"}
     </div>
     <h1 style="font-size:26px;line-height:34px;color:${BRAND.ink};margin:14px 0 10px 0;font-weight:800;letter-spacing:-0.3px;">
@@ -182,8 +218,8 @@ export function renderInviteEmail(opts: {
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 22px 0;">
       <tr>
         <td style="background:${BRAND.primarySoft};border:1px solid ${BRAND.border};padding:14px 18px;border-radius:12px;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:${BRAND.primary};margin-bottom:4px;">Your role</div>
-          <div style="font-size:18px;font-weight:800;color:${BRAND.primaryDark};">${roleLabel}</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:${primaryHex};margin-bottom:4px;">Your role</div>
+          <div style="font-size:18px;font-weight:800;color:${primaryDark};">${roleLabel}</div>
         </td>
       </tr>
     </table>
@@ -191,7 +227,7 @@ export function renderInviteEmail(opts: {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px 0;">
       <tr>
         <td align="left">
-          <a href="${opts.onboardingLink}" style="display:inline-block;background:linear-gradient(135deg,${BRAND.primary} 0%,${BRAND.primaryDark} 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:12px;box-shadow:0 8px 20px rgba(46,73,173,0.35);">
+          <a href="${opts.onboardingLink}" style="display:inline-block;background:linear-gradient(135deg,${primaryHex} 0%,${primaryDark} 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:12px;box-shadow:0 8px 20px rgba(46,73,173,0.35);">
             Complete registration &rarr;
           </a>
         </td>
@@ -200,14 +236,14 @@ export function renderInviteEmail(opts: {
 
     <div style="border:1px dashed ${BRAND.border};border-radius:10px;padding:12px 14px;margin:0 0 24px 0;font-size:12px;color:${BRAND.inkMuted};word-break:break-all;">
       <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">Or paste this link in your browser</div>
-      <a href="${opts.onboardingLink}" style="color:${BRAND.primary};text-decoration:none;">${opts.onboardingLink}</a>
+      <a href="${opts.onboardingLink}" style="color:${primaryHex};text-decoration:none;">${opts.onboardingLink}</a>
     </div>
 
     <div style="font-size:13px;font-weight:700;color:${BRAND.ink};margin:8px 0 4px 0;">What you'll get</div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
       ${featureRow("&#8377;", "60+ digital services", "AePS, DMT, UPI collections, recharges, bill payments and more")}
       ${featureRow("&#9635;", "PG, POS &amp; QR Payment Services", "Accept payments in-store with our POS machines and static QR")}
-      ${featureRow("&#9679;", "Live wallet, &amp; ledger support", "Real-time commissions, settlements and downloadable statements")}
+      ${featureRow("&#9679;", "Live wallet &amp; ledger support", "Real-time commissions, settlements and downloadable statements")}
     </table>
 
     <div style="background:#fff8ec;border:1px solid #fde3a4;border-radius:10px;padding:12px 14px;font-size:13px;color:#7a5300;line-height:19px;">
@@ -215,20 +251,20 @@ export function renderInviteEmail(opts: {
     </div>
 
     <p style="font-size:13px;color:${BRAND.inkMuted};line-height:20px;margin:24px 0 0 0;">
-      Need help?, If this was not you Just reply to this email &mdash; Our custumer support executive will get back to you.
+      Need help? Just reply to this email — our customer support executive will get back to you.
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team TRANSPE</strong>
+      <strong>Team ${platformName}</strong>
     </p>
   `;
 
-  return { subject, html: shell({ preheader, bodyHtml: body }) };
+  return { subject, html: shell({ preheader, bodyHtml: body, brand: opts.brand }) };
 }
 
 /**
  * Sent when an admin flags specific uploaded documents for re-upload. The
- * applicant keeps everything else they've already verified â€” they only need to
+ * applicant keeps everything else they've already verified — they only need to
  * re-submit the listed documents via the fresh, targeted link.
  */
 export function renderDocResubmissionEmail(opts: {
@@ -237,14 +273,16 @@ export function renderDocResubmissionEmail(opts: {
   resubmitLink: string;
   expiresAt: Date | string;
   documents: { label: string; reason: string }[];
+  brand?: EmailBrand;
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
   const expiry = fmtExpiry(opts.expiresAt);
   const firstName = opts.name?.split(" ")[0]?.trim();
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
+  const platformName = opts.brand?.brandName ?? "TRANSPE";
 
-  const subject = "Action needed: re-upload a few documents for TRANSPE";
-  const preheader = `A few of your documents need to be re-uploaded. It only takes a minute â€” link expires ${expiry}.`;
+  const subject = `Action needed: re-upload a few documents for ${platformName}`;
+  const preheader = `A few of your documents need to be re-uploaded. It only takes a minute — link expires ${expiry}.`;
 
   const docRows = opts.documents
     .map(
@@ -268,7 +306,7 @@ export function renderDocResubmissionEmail(opts: {
     </h1>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 8px 0;">${greeting}</p>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 20px 0;">
-      Thanks for completing your <strong style="color:${BRAND.ink};">${roleLabel}</strong> onboarding. Our team reviewed your submission and a few documents need to be re-uploaded. <strong>You don't need to redo anything else</strong> â€” just replace the documents listed below.
+      Thanks for completing your <strong style="color:${BRAND.ink};">${roleLabel}</strong> onboarding. Our team reviewed your submission and a few documents need to be re-uploaded. <strong>You don't need to redo anything else</strong> — just replace the documents listed below.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px 0;">
@@ -295,15 +333,15 @@ export function renderDocResubmissionEmail(opts: {
     </div>
 
     <p style="font-size:13px;color:${BRAND.inkMuted};line-height:20px;margin:24px 0 0 0;">
-      Need help? Just reply to this email &mdash; our customer support executive will get back to you.
+      Need help? Just reply to this email — our customer support executive will get back to you.
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team TRANSPE</strong>
+      <strong>Team ${platformName}</strong>
     </p>
   `;
 
-  return { subject, html: shell({ preheader, bodyHtml: body }) };
+  return { subject, html: shell({ preheader, bodyHtml: body, brand: opts.brand }) };
 }
 
 function escapeHtml(s: string): string {
@@ -317,8 +355,9 @@ function escapeHtml(s: string): string {
 
 /**
  * Internal alert sent to the support/ops inbox when a prospect submits the
- * public Join Form. There is NO account yet â€” this is a lead the team must
+ * public Join Form. There is NO account yet — this is a lead the team must
  * reach out to and convert into an onboarding invite.
+ * (This email always goes to the TRANSPE ops team; no tenant override needed.)
  */
 export function renderJoinRequestEmail(opts: {
   name: string;
@@ -332,7 +371,7 @@ export function renderJoinRequestEmail(opts: {
   reviewLink: string;
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
-  const subject = `New join request â€” ${opts.name} (${roleLabel})`;
+  const subject = `New join request — ${opts.name} (${roleLabel})`;
   const preheader = `${opts.name} wants to join TRANSPE as a ${roleLabel}. Reach out and start onboarding.`;
 
   const row = (label: string, value?: string | null) =>
@@ -395,20 +434,26 @@ export function renderJoinRequestEmail(opts: {
 /**
  * Sent when an admin approves a registered network-tier account (SD/MD/DT/RT).
  * Tells the user they can now log in.
+ * Pass `brand` to render with a white-label tenant identity.
  */
 export function renderAccountApprovedEmail(opts: {
   name?: string;
   role: string;
   loginLink: string;
   email: string;
+  brand?: EmailBrand;
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
   const firstName = opts.name?.split(" ")[0]?.trim();
   const fullName = opts.name?.trim() || firstName || "there";
   const greeting = firstName ? `Dear ${fullName},` : "Dear user,";
+  const platformName = opts.brand?.brandName ?? "TRANSPE";
+  const primaryHex = opts.brand?.primaryColor ?? BRAND.primary;
+  const primaryDark = opts.brand?.primaryColor ?? BRAND.primaryDark;
+  const supportEmail = opts.brand?.supportEmail ?? "support@transpe.today";
 
-  const subject = `Your TRANSPE ${roleLabel} account is approved`;
-  const preheader = `Good news â€” your ${roleLabel} account is live. Sign in and start using TRANSPE.`;
+  const subject = `Your ${platformName} ${roleLabel} account is approved`;
+  const preheader = `Good news — your ${roleLabel} account is live. Sign in and start using ${platformName}.`;
 
   const body = `
     <div style="display:inline-block;background:#ecfdf5;color:#059669;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:6px 12px;border-radius:999px;">
@@ -419,7 +464,7 @@ export function renderAccountApprovedEmail(opts: {
     </h1>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 8px 0;">${greeting}</p>
     <p style="font-size:15px;line-height:24px;color:${BRAND.inkMuted};margin:0 0 20px 0;">
-      Great news &mdash; your <strong style="color:${BRAND.ink};">${roleLabel}</strong> account on TRANSPE has been approved by our team. You can now sign in and access your dashboard.
+      Great news &mdash; your <strong style="color:${BRAND.ink};">${roleLabel}</strong> account on <strong>${platformName}</strong> has been approved by our team. You can now sign in and access your dashboard.
     </p>
 
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 22px 0;width:100%;">
@@ -455,7 +500,7 @@ export function renderAccountApprovedEmail(opts: {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px 0;">
       <tr>
         <td align="left">
-          <a href="${opts.loginLink}" style="display:inline-block;background:linear-gradient(135deg,${BRAND.primary} 0%,${BRAND.primaryDark} 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:12px;box-shadow:0 8px 20px rgba(46,73,173,0.35);">
+          <a href="${opts.loginLink}" style="display:inline-block;background:linear-gradient(135deg,${primaryHex} 0%,${primaryDark} 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:12px;box-shadow:0 8px 20px rgba(46,73,173,0.35);">
             Login to your dashboard &rarr;
           </a>
         </td>
@@ -464,20 +509,20 @@ export function renderAccountApprovedEmail(opts: {
 
     <div style="border:1px dashed ${BRAND.border};border-radius:10px;padding:12px 14px;margin:0 0 24px 0;font-size:12px;color:${BRAND.inkMuted};word-break:break-all;">
       <div style="font-weight:700;color:${BRAND.ink};margin-bottom:4px;">Or paste this link in your browser</div>
-      <a href="${opts.loginLink}" style="color:${BRAND.primary};text-decoration:none;">${opts.loginLink}</a>
+      <a href="${opts.loginLink}" style="color:${primaryHex};text-decoration:none;">${opts.loginLink}</a>
     </div>
 
     <p style="font-size:13px;color:${BRAND.inkMuted};line-height:20px;margin:8px 0 0 0;">
       On first login you may be asked to set up two-factor authentication &mdash; this keeps your account secure.
     </p>
     <p style="font-size:13px;color:${BRAND.inkMuted};line-height:20px;margin:16px 0 0 0;">
-      Need help? Reply to this email or write to <a href="mailto:support@TRANSPE.today" style="color:${BRAND.primary};text-decoration:none;font-weight:600;">support@TRANSPE.today</a>.
+      Need help? Reply to this email or write to <a href="mailto:${supportEmail}" style="color:${primaryHex};text-decoration:none;font-weight:600;">${supportEmail}</a>.
     </p>
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
       Cheers,<br/>
-      <strong>Team TRANSPE</strong>
+      <strong>Team ${platformName}</strong>
     </p>
   `;
 
-  return { subject, html: shell({ preheader, bodyHtml: body }) };
+  return { subject, html: shell({ preheader, bodyHtml: body, brand: opts.brand }) };
 }

@@ -3,43 +3,31 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { clientIp, logSecurityEvent } from "@/lib/security/audit";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 
 /**
  * Self-service login (second-factor) method management.
  *
- * Any user may CHOOSE to sign in with their transaction PIN instead of an
- * authenticator app — no admin permission required. Because a 4–6 digit PIN is
- * weaker than a TOTP authenticator, enabling it is a deliberate security
- * downgrade, so the user must accept a liability declaration (all account risk
- * is theirs; the company bears no responsibility). The acceptance is recorded.
+ * TPIN login is auto-enabled for any user who has both a transaction PIN AND
+ * has completed authenticator setup at least once (twoFactorVerifiedAt). No
+ * admin permission or self-service toggle is required — the choice between
+ * authenticator and TPIN simply appears at login when conditions are met.
  *
- * When BOTH an authenticator and TPIN login are available, the user picks which
- * to use at every login; a saved default lets the login chooser be pre-selected
- * or skipped.
+ * This endpoint lets users set a preferred method (to skip the chooser) and
+ * view the current status. The first-time risk acceptance is handled at login
+ * by the PinLoginStep component + /api/auth/pin-login/verify.
  *
  *   GET  → current capabilities + preference
- *   POST → { action: "enablePinLogin", riskAccepted: true }
- *          { action: "disablePinLogin" }
- *          { action: "setPreference", preferred: "authenticator" | "tpin" | null }
+ *   POST → { action: "setPreference", preferred: "authenticator" | "tpin" | null }
  */
 
 // Highly-privileged staff accounts may not weaken their own login to a PIN.
 const SELF_PIN_LOGIN_BLOCKED_ROLES = new Set(["ADMIN", "MASTER_ADMIN"]);
 
-const Body = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("enablePinLogin"),
-    // Must be literally true — the declaration is mandatory.
-    riskAccepted: z.literal(true),
-  }),
-  z.object({ action: z.literal("disablePinLogin") }),
-  z.object({
-    action: z.literal("setPreference"),
-    preferred: z.enum(["authenticator", "tpin"]).nullable(),
-  }),
-]);
+const Body = z.object({
+  action: z.literal("setPreference"),
+  preferred: z.enum(["authenticator", "tpin"]).nullable(),
+});
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -51,8 +39,7 @@ async function loadState(userId: string) {
       role: true,
       twoFactorEnabled: true,
       twoFactorSecret: true,
-      twoFactorExempt: true,
-      pinLoginEnabled: true,
+      twoFactorVerifiedAt: true,
       txnPinHash: true,
       pinLoginRiskAcceptedAt: true,
       preferredLoginMethod: true,
@@ -63,17 +50,15 @@ async function loadState(userId: string) {
 
 function summarize(user: NonNullable<Awaited<ReturnType<typeof loadState>>>) {
   const canAuthenticator = Boolean(user.twoFactorEnabled && user.twoFactorSecret);
-  const pinLoginEnabled = Boolean(
-    user.twoFactorExempt && user.pinLoginEnabled && user.txnPinHash
-  );
+  // TPIN login is auto-enabled: txn PIN set + authenticator done at least once.
+  const pinLoginEnabled = Boolean(user.txnPinHash && user.twoFactorVerifiedAt);
   return {
-    // Whether this account is allowed to self-manage PIN login at all.
     selfManageable: !SELF_PIN_LOGIN_BLOCKED_ROLES.has(user.role),
     twoFactorEnabled: canAuthenticator,
     hasTxnPin: Boolean(user.txnPinHash),
+    hasCompletedAuthenticator: Boolean(user.twoFactorVerifiedAt),
     pinLoginEnabled,
     riskAccepted: Boolean(user.pinLoginRiskAcceptedAt),
-    // The login chooser only appears when BOTH factors are usable.
     canChoose: canAuthenticator && pinLoginEnabled,
     preferred: user.preferredLoginMethod ?? null,
   };
@@ -104,116 +89,31 @@ export async function POST(req: Request) {
 
     const state = summarize(user);
     const body = parsed.data;
-    const ip = clientIp(req);
 
-    // ── Enable TPIN login (self-service) ────────────────────────────────────
-    if (body.action === "enablePinLogin") {
-      if (!state.selfManageable) {
-        return NextResponse.json(
-          { error: "PIN login can't be enabled for this account type." },
-          { status: 403 }
-        );
-      }
-      if (!user.txnPinHash) {
-        return NextResponse.json(
-          {
-            error: "Set a transaction PIN first, then enable PIN login.",
-            code: "NO_TXN_PIN",
-          },
-          { status: 400 }
-        );
-      }
-
-      await prisma.$transaction([
-        prisma.user.update({
-          where: { id: auth.id },
-          data: {
-            twoFactorExempt: true,
-            pinLoginEnabled: true,
-            pinLoginRiskAcceptedAt: new Date(),
-            pinLoginRiskAcceptedIp: ip,
-          },
-        }),
-        prisma.auditLog.create({
-          data: {
-            userId: auth.id,
-            action: "user.pin_login_self_enabled",
-            entity: "User",
-            entityId: auth.id,
-            meta: { self: true },
-            ip,
-          },
-        }),
-      ]);
-
-      await logSecurityEvent({
-        action: "auth.pin_login_self_enabled",
-        severity: "warn",
-        userId: auth.id,
-        entity: "User",
-        entityId: auth.id,
-        ip,
-        meta: { self: true },
-      });
-
-      const fresh = await loadState(auth.id);
-      return NextResponse.json({ ok: true, ...summarize(fresh!) });
+    // ── Set the preferred method ────────────────────────────────────────────
+    // TPIN login is auto-enabled (txn PIN + completed authenticator). The user
+    // may save a preference to skip the chooser at login, or set it to null so
+    // the chooser appears every time.
+    if (body.preferred === "authenticator" && !state.twoFactorEnabled) {
+      return NextResponse.json(
+        { error: "You don't have an authenticator app set up." },
+        { status: 400 }
+      );
+    }
+    if (body.preferred === "tpin" && !state.pinLoginEnabled) {
+      return NextResponse.json(
+        { error: "TPIN login isn't available yet. Set up a transaction PIN and complete authenticator setup first." },
+        { status: 400 }
+      );
     }
 
-    // ── Disable TPIN login (restore authenticator-only) ─────────────────────
-    if (body.action === "disablePinLogin") {
-      await prisma.$transaction([
-        prisma.user.update({
-          where: { id: auth.id },
-          data: {
-            twoFactorExempt: false,
-            pinLoginEnabled: false,
-            pinLoginRiskAcceptedAt: null,
-            pinLoginRiskAcceptedIp: null,
-            preferredLoginMethod: null,
-          },
-        }),
-        prisma.auditLog.create({
-          data: {
-            userId: auth.id,
-            action: "user.pin_login_self_disabled",
-            entity: "User",
-            entityId: auth.id,
-            meta: { self: true },
-            ip,
-          },
-        }),
-      ]);
+    await prisma.user.update({
+      where: { id: auth.id },
+      data: { preferredLoginMethod: body.preferred },
+    });
 
-      const fresh = await loadState(auth.id);
-      return NextResponse.json({ ok: true, ...summarize(fresh!) });
-    }
-
-    // ── Set the preferred method (only meaningful when both are available) ───
-    if (body.action === "setPreference") {
-      if (body.preferred === "authenticator" && !state.twoFactorEnabled) {
-        return NextResponse.json(
-          { error: "You don't have an authenticator app set up." },
-          { status: 400 }
-        );
-      }
-      if (body.preferred === "tpin" && !state.pinLoginEnabled) {
-        return NextResponse.json(
-          { error: "PIN login isn't enabled for your account." },
-          { status: 400 }
-        );
-      }
-
-      await prisma.user.update({
-        where: { id: auth.id },
-        data: { preferredLoginMethod: body.preferred },
-      });
-
-      const fresh = await loadState(auth.id);
-      return NextResponse.json({ ok: true, ...summarize(fresh!) });
-    }
-
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    const fresh = await loadState(auth.id);
+    return NextResponse.json({ ok: true, ...summarize(fresh!) });
   } catch (e) {
     return toErrorResponse(e);
   }

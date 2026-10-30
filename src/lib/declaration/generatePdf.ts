@@ -5,7 +5,7 @@ import type { DeclarationData, ApprovalEvidence } from "./types";
 import { getCreatorRoleLabel, getOnboardeeRoleLabel } from "./types";
 
 // ── Palette / geometry ──────────────────────────────────────────────────────
-const BRAND = "#172b6b";
+const DEFAULT_BRAND_COLOR = "#172b6b";
 const INK = "#0f172a";
 const MUTED = "#475569";
 const LINE = "#cbd5e1";
@@ -14,6 +14,18 @@ const OK_BG = "#ecfdf5";
 const OK_LINE = "#a7f3d0";
 const OK_INK = "#065f46";
 const PAGE_MARGIN = 48;
+
+/**
+ * Optional brand override for white-label PDF generation.
+ * When provided, the platform name and brand color are replaced with the
+ * tenant's. "Powered by TRANSPE" is appended to the disclaimer.
+ */
+export type PdfBrandOptions = {
+  /** e.g. "KapoorPay" */
+  brandName: string;
+  /** Hex color, e.g. "#1b3a6b" */
+  primaryColor?: string;
+};
 
 let cachedFontBytes: Buffer | null = null;
 
@@ -31,12 +43,19 @@ const hasHindi = (t: string) => DEVANAGARI.test(t);
 type Doc = InstanceType<typeof PDFDocument>;
 
 // A small toolkit of layout helpers bound to a single PDFKit document.
-function createBuilder(fontBytes: Buffer, meta: { title: string }) {
+function createBuilder(
+  fontBytes: Buffer,
+  meta: { title: string },
+  brand?: PdfBrandOptions
+) {
+  const BRAND = brand?.primaryColor ?? DEFAULT_BRAND_COLOR;
+  const platformName = brand?.brandName ?? "TRANSPE";
+
   const doc: Doc = new PDFDocument({
     size: "A4",
     margins: { top: PAGE_MARGIN, bottom: PAGE_MARGIN, left: PAGE_MARGIN, right: PAGE_MARGIN },
     bufferPages: true,
-    info: { Title: meta.title, Author: "TRANSPE" },
+    info: { Title: meta.title, Author: platformName },
   });
   doc.registerFont("Hindi", fontBytes);
 
@@ -59,7 +78,7 @@ function createBuilder(fontBytes: Buffer, meta: { title: string }) {
 
   function header(title: string, subtitle: string, date: string) {
     doc.font("Helvetica-Bold").fontSize(18).fillColor(BRAND).text(
-      "TRANSPE",
+      platformName,
       left,
       PAGE_MARGIN,
       { align: "center", width: contentWidth }
@@ -229,7 +248,7 @@ function createBuilder(fontBytes: Buffer, meta: { title: string }) {
     field("Approval Date", "");
     doc.y += 6;
     doc.font("Helvetica-Bold").fontSize(10).fillColor(INK).text("Authorized Signatory", left, doc.y);
-    doc.font("Helvetica").fontSize(9).fillColor(MUTED).text("TRANSPE", left, doc.y + 2);
+    doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(platformName, left, doc.y + 2);
   }
 
   function footer(disclaimer: string) {
@@ -276,18 +295,24 @@ function createBuilder(fontBytes: Buffer, meta: { title: string }) {
   };
 }
 
-const DISCLAIMER =
-  "This is a system-generated declaration. TRANSPE.";
+function buildDisclaimer(brand?: PdfBrandOptions): string {
+  const name = brand?.brandName ?? "TRANSPE";
+  const suffix = brand ? ` · Powered by TRANSPE` : "";
+  return `This is a system-generated declaration. ${name}.${suffix}`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SELF DECLARATION — first person, signed & uploaded by the onboardee.
 // ─────────────────────────────────────────────────────────────────────────────
-export async function generateSelfDeclarationPdf(data: DeclarationData): Promise<Uint8Array> {
+export async function generateSelfDeclarationPdf(
+  data: DeclarationData,
+  brand?: PdfBrandOptions
+): Promise<Uint8Array> {
   const onboardeeLabel = getOnboardeeRoleLabel(data.onboardeeRole).en;
   const creatorLabel = getCreatorRoleLabel(data.creatorRole).en;
   const b = createBuilder(await loadHindiFont(), {
     title: `${onboardeeLabel} Self-Declaration & Undertaking`,
-  });
+  }, brand);
 
   b.header(`${onboardeeLabel} Self-Declaration & Undertaking Form`, "स्व-घोषणा एवं उत्तरदायित्व प्रपत्र", data.date);
 
@@ -321,7 +346,7 @@ export async function generateSelfDeclarationPdf(data: DeclarationData): Promise
   b.sectionBar(`${onboardeeLabel} Signature`);
   b.signatureBlock(data.onboardeeName);
 
-  return b.finish(DISCLAIMER);
+  return b.finish(buildDisclaimer(brand));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -331,13 +356,14 @@ export async function generateSelfDeclarationPdf(data: DeclarationData): Promise
 // ─────────────────────────────────────────────────────────────────────────────
 export async function generateSuccessorDeclarationPdf(
   data: DeclarationData,
-  evidence?: ApprovalEvidence
+  evidence?: ApprovalEvidence,
+  brand?: PdfBrandOptions
 ): Promise<Uint8Array> {
   const creatorLabel = getCreatorRoleLabel(data.creatorRole).en;
   const onboardeeLabel = getOnboardeeRoleLabel(data.onboardeeRole).en;
   const b = createBuilder(await loadHindiFont(), {
     title: `${creatorLabel} Responsibility & Indemnity Undertaking`,
-  });
+  }, brand);
 
   b.header(
     `${creatorLabel} Responsibility & Indemnity Undertaking Form`,
@@ -392,5 +418,5 @@ export async function generateSuccessorDeclarationPdf(
 
   b.companyUseOnly();
 
-  return b.finish(DISCLAIMER);
+  return b.finish(buildDisclaimer(brand));
 }

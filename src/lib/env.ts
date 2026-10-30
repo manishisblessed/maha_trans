@@ -15,6 +15,12 @@ import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  // The root domain used for white-label subdomains (e.g. "transpe.in" gives
+  // "kapoor.transpe.in"). Must NOT include protocol or trailing slash.
+  // NEXT_PUBLIC_ version is exposed to the browser; the non-prefixed version
+  // is used server-side (middleware, API routes).
+  PLATFORM_DOMAIN: z.string().min(3).default("transpe.in"),
+  NEXT_PUBLIC_PLATFORM_DOMAIN: z.string().min(3).default("transpe.in"),
 
   // Auth — optional at parse time, enforced via requireEnv() at runtime.
   NEXTAUTH_SECRET: z.string().min(16).optional(),

@@ -9,6 +9,8 @@ import { clientIp } from "@/lib/security/audit";
 import { getPartner } from "@/lib/partners";
 import { env } from "@/lib/env";
 import { renderInviteEmail, renderAccountApprovedEmail } from "@/lib/email/templates";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
+import { getEffectivePlatformUrl } from "@/lib/tenant/context";
 import { adminInviteInScope } from "@/lib/security/ownership";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
 
@@ -123,8 +125,12 @@ export async function PATCH(
     });
 
     // Resend the onboarding link to the corrected contact details
-    const appUrl = env.NEXT_PUBLIC_APP_URL;
-    const onboardingLink = `${appUrl}/onboard?token=${updated.token}`;
+    const updateBrandInfo = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+    const updateBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+    const onboardingLink = `${updateBaseUrl}/onboard?token=${updated.token}`;
+    const updateEmailBrand = updateBrandInfo
+      ? { brandName: updateBrandInfo.brandName, primaryColor: updateBrandInfo.primaryColor, supportEmail: updateBrandInfo.supportEmail ?? undefined }
+      : undefined;
     let emailSent = false;
     let emailError: string | undefined;
 
@@ -135,6 +141,7 @@ export async function PATCH(
         role: updated.role,
         onboardingLink,
         expiresAt: updated.expiresAt,
+        brand: updateEmailBrand,
       });
       const result = await emailProvider.send({
         from: process.env.EMAIL_FROM_INFO || process.env.EMAIL_FROM,
@@ -156,6 +163,7 @@ export async function PATCH(
         variables: {
           link: onboardingLink,
           role: updated.role.replace(/_/g, " "),
+          ...(updateBrandInfo ? { _brand: updateBrandInfo.brandName } : {}),
         },
       });
     } catch {
@@ -194,8 +202,14 @@ export async function PATCH(
       );
     }
 
-    const appUrl = env.NEXT_PUBLIC_APP_URL;
-    const onboardingLink = `${appUrl}/onboard?token=${invite.token}`;
+    // Resolve tenant context for this invite
+    const resendBrandInfo = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+    const resendBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+    const onboardingLink = `${resendBaseUrl}/onboard?token=${invite.token}`;
+    const resendEmailBrand = resendBrandInfo
+      ? { brandName: resendBrandInfo.brandName, primaryColor: resendBrandInfo.primaryColor, supportEmail: resendBrandInfo.supportEmail ?? undefined }
+      : undefined;
+
     let emailSent = false;
     let emailError: string | undefined;
     let smsSent = false;
@@ -209,6 +223,7 @@ export async function PATCH(
         onboardingLink,
         expiresAt: invite.expiresAt,
         isReminder: true,
+        brand: resendEmailBrand,
       });
       const result = await emailProvider.send({
         from: process.env.EMAIL_FROM_INFO || process.env.EMAIL_FROM,
@@ -227,7 +242,11 @@ export async function PATCH(
       const smsResult = await smsProvider.sendTransactional({
         phone: invite.phone,
         templateId: "onboard_invite",
-        variables: { link: onboardingLink, role: invite.role.replace(/_/g, " ") },
+        variables: {
+          link: onboardingLink,
+          role: invite.role.replace(/_/g, " "),
+          ...(resendBrandInfo ? { _brand: resendBrandInfo.brandName } : {}),
+        },
       });
       smsSent = smsResult.ok;
       if (!smsResult.ok) smsError = `${smsResult.code}: ${smsResult.message}`;
@@ -288,8 +307,12 @@ export async function PATCH(
       },
     });
 
-    const appUrl = env.NEXT_PUBLIC_APP_URL;
-    const onboardingLink = `${appUrl}/onboard?token=${updated.token}`;
+    const reshareNotifBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+    const reshareBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+    const onboardingLink = `${reshareBaseUrl}/onboard?token=${updated.token}`;
+    const reshareEmailBrand = reshareNotifBrand
+      ? { brandName: reshareNotifBrand.brandName, primaryColor: reshareNotifBrand.primaryColor, supportEmail: reshareNotifBrand.supportEmail ?? undefined }
+      : undefined;
     let emailSent = false;
     let emailError: string | undefined;
 
@@ -301,6 +324,7 @@ export async function PATCH(
         onboardingLink,
         expiresAt: updated.expiresAt,
         isReminder: true,
+        brand: reshareEmailBrand,
       });
       const result = await emailProvider.send({
         from: process.env.EMAIL_FROM_INFO || process.env.EMAIL_FROM,
@@ -322,6 +346,7 @@ export async function PATCH(
         variables: {
           link: onboardingLink,
           role: updated.role.replace(/_/g, " "),
+          ...(reshareNotifBrand ? { _brand: reshareNotifBrand.brandName } : {}),
         },
       });
     } catch {
@@ -400,12 +425,19 @@ export async function PATCH(
             select: { name: true, email: true },
           })
         : null;
-      const loginLink = `${env.NEXT_PUBLIC_APP_URL}/login`;
+      // Resolve tenant brand so approval email matches the white-label portal
+      const tenantBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+      const tenantBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+      const loginLink = `${tenantBaseUrl}/login`;
+      const emailBrand = tenantBrand
+        ? { brandName: tenantBrand.brandName, primaryColor: tenantBrand.primaryColor, supportEmail: tenantBrand.supportEmail ?? undefined }
+        : undefined;
       const { subject, html } = renderAccountApprovedEmail({
         name: approvedUser?.name ?? invite.name ?? undefined,
         role: invite.role,
         loginLink,
         email: approvedUser?.email ?? invite.email,
+        brand: emailBrand,
       });
       const emailProvider = getPartner("email");
       const result = await emailProvider.send({

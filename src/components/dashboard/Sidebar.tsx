@@ -6,13 +6,14 @@ import { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X, ChevronsLeft, ChevronsRight, ChevronDown } from "lucide-react";
-import { Logo } from "@/components/layout/Logo";
+import { Logo, LogoMark } from "@/components/layout/Logo";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
 import { toDisplayRole, type Role } from "@/lib/auth";
 import { navByRole, type NavGroup, type NavItem } from "@/lib/roles";
 import { hrefToServiceKey } from "@/lib/services/catalog";
 import { useEffectiveServices } from "@/hooks/useEffectiveServices";
+import { useTenant } from "@/components/providers/TenantProvider";
 
 export const SIDEBAR_WIDTH = 272;
 export const SIDEBAR_WIDTH_COLLAPSED = 76;
@@ -232,17 +233,46 @@ function SidebarContent({
   roleLabel: string;
 }) {
   const layoutId = variant === "desktop" ? "sidebar-active" : "sidebar-active-mobile";
+  const tenant = useTenant();
 
   return (
     <div className="relative z-10 flex h-full min-h-0 flex-col">
-      {/* Brand */}
+      {/* Brand — shows tenant logo on white-label domains, TRANSPE on native */}
       <div
         className={cn(
           "flex h-16 shrink-0 items-center border-b border-ink-100/80 md:h-20",
           collapsed ? "justify-center px-2" : "justify-between px-5"
         )}
       >
-        {collapsed ? <Logo iconOnly /> : <Logo size="sm" />}
+        {tenant ? (
+          collapsed ? (
+            /* Collapsed tenant: initials badge or tiny logo */
+            tenant.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tenant.logoUrl} alt={tenant.brandName} className="h-8 w-8 rounded-lg object-contain" />
+            ) : (
+              <span
+                className="grid h-9 w-9 place-items-center rounded-xl text-xs font-bold text-white"
+                style={{ background: tenant.primaryColor }}
+              >
+                {tenant.brandName.slice(0, 2).toUpperCase()}
+              </span>
+            )
+          ) : (
+            /* Expanded tenant: full logo or brand name */
+            tenant.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tenant.logoUrl} alt={tenant.brandName} className="h-8 max-w-[160px] object-contain" />
+            ) : (
+              <span className="truncate font-display text-lg font-bold tracking-tight text-ink-900">
+                {tenant.brandName}
+              </span>
+            )
+          )
+        ) : (
+          /* Native TRANSPE logo */
+          collapsed ? <LogoMark size={34} /> : <Logo size="sm" />
+        )}
         {variant === "mobile" && (
           <button
             type="button"
@@ -327,11 +357,17 @@ function SidebarContent({
             )}
           </>
         ) : (
-          <div className="grain relative flex items-center gap-3 overflow-hidden rounded-2xl bg-ink-950 p-2.5 text-white">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-energy-gradient opacity-50 blur-2xl"
-            />
+          <div
+            className="grain relative flex items-center gap-3 overflow-hidden rounded-2xl p-2.5 text-white"
+            style={tenant ? { background: tenant.primaryColor } : undefined}
+            data-user-card={tenant ? "tenant" : "native"}
+          >
+            {!tenant && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-energy-gradient opacity-50 blur-2xl"
+              />
+            )}
             <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-energy-gradient font-display text-xs font-semibold text-white shadow-energy-sm">
               {initials}
             </span>
@@ -358,6 +394,20 @@ function SidebarContent({
               </button>
             )}
           </div>
+        )}
+        {/* Powered-by attribution — required on all white-label deployments */}
+        {tenant && !collapsed && (
+          <p className="mt-2 text-center text-[10px] font-medium text-ink-400">
+            Powered by{" "}
+            <a
+              href="https://transpe.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-ink-500 hover:text-ink-700"
+            >
+              TRANSPE
+            </a>
+          </p>
         )}
       </div>
     </div>

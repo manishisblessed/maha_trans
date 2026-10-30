@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { getPartner } from "@/lib/partners";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { renderDocResubmissionEmail } from "@/lib/email/templates";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
 import { docTypeLabel } from "@/lib/onboarding/requiredDocuments";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
 import { getResubmitStatus } from "@/lib/onboarding/resubmission";
@@ -272,12 +273,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     // already persisted, so a delivery hiccup shouldn't fail the request).
     let emailSent = false;
     try {
+      const resubBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+      const resubEmailBrand = resubBrand
+        ? { brandName: resubBrand.brandName, primaryColor: resubBrand.primaryColor, supportEmail: resubBrand.supportEmail ?? undefined }
+        : undefined;
       const { subject, html } = renderDocResubmissionEmail({
         name: invite.name ?? undefined,
         role: invite.role,
         resubmitLink,
         expiresAt,
         documents: resolved.map((r) => ({ label: r.label, reason: r.reason })),
+        brand: resubEmailBrand,
       });
       const emailProvider = getPartner("email");
       const result = await emailProvider.send({

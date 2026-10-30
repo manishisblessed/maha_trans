@@ -9,13 +9,10 @@ import {
   HelpCircle,
   Loader2,
   Check,
-  ShieldAlert,
   Lock,
 } from "lucide-react";
 import { Key, ShieldWarning, Fingerprint } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { Button } from "@/components/ui/Button";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconTile } from "@/components/ui/Icon";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState, SectionCard, FadeIn } from "@/components/dashboard/patterns";
@@ -27,6 +24,7 @@ type State = {
   selfManageable: boolean;
   twoFactorEnabled: boolean;
   hasTxnPin: boolean;
+  hasCompletedAuthenticator: boolean;
   pinLoginEnabled: boolean;
   riskAccepted: boolean;
   canChoose: boolean;
@@ -67,8 +65,6 @@ export default function LoginMethodSettingsPage() {
   const [state, setState] = useState<State | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
-  const [declaration, setDeclaration] = useState(false);
-  const [confirmDisable, setConfirmDisable] = useState(false);
 
   async function load() {
     try {
@@ -86,45 +82,24 @@ export default function LoginMethodSettingsPage() {
     load();
   }, []);
 
-  async function post(payload: Record<string, unknown>, busyKey: string) {
-    setBusy(busyKey);
+  async function choose(id: (typeof OPTIONS)[number]["id"]) {
+    const preferred: Preferred = id === "ask" ? null : id;
+    setBusy(`pref-${id}`);
     try {
       const res = await fetch("/api/security/login-method", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ action: "setPreference", preferred }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error ?? "Something went wrong");
       setState(data);
-      return true;
+      toast.success("Login preference saved.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
-      return false;
     } finally {
       setBusy(null);
     }
-  }
-
-  async function enablePinLogin() {
-    if (!declaration) return;
-    const ok = await post({ action: "enablePinLogin", riskAccepted: true }, "enable");
-    if (ok) {
-      setDeclaration(false);
-      toast.success("PIN login enabled. You can now sign in with your transaction PIN.");
-    }
-  }
-
-  async function disablePinLogin() {
-    const ok = await post({ action: "disablePinLogin" }, "disable");
-    setConfirmDisable(false);
-    if (ok) toast.success("PIN login disabled. Your authenticator app is required again.");
-  }
-
-  async function choose(id: (typeof OPTIONS)[number]["id"]) {
-    const preferred: Preferred = id === "ask" ? null : id;
-    const ok = await post({ action: "setPreference", preferred }, `pref-${id}`);
-    if (ok) toast.success("Login preference saved.");
   }
 
   const current: (typeof OPTIONS)[number]["id"] = state?.preferred ?? "ask";
@@ -171,77 +146,56 @@ export default function LoginMethodSettingsPage() {
         </SectionCard>
       ) : (
         <FadeIn className="space-y-6">
-          {/* ── Enable / disable TPIN login ─────────────────────────────── */}
+          {/* ── TPIN login status ──────────────────────────────────────── */}
           <SectionCard
             icon={<IconTile icon={Key} tone="brand" size="sm" />}
             title="Sign in with your transaction PIN"
-            description="Use your TPIN as an alternative to the authenticator app."
-            action={state.pinLoginEnabled ? <Badge variant="success" dot>Enabled</Badge> : <Badge>Off</Badge>}
+            description="Use your TPIN as a quick alternative to the authenticator app."
+            action={
+              state.pinLoginEnabled
+                ? <Badge variant="success" dot>Available</Badge>
+                : <Badge>Not available</Badge>
+            }
           >
-            <div className="space-y-4">
-              {!state.hasTxnPin ? (
-                <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-inset ring-amber-200">
-                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                  <div className="text-sm text-amber-800">
-                    You need a transaction PIN before you can turn this on.{" "}
-                    <Link
-                      href="/dashboard/settings/txn-pin"
-                      className="font-semibold text-brand-700 hover:underline"
-                    >
-                      Set a transaction PIN
-                    </Link>
-                    .
-                  </div>
+            {state.pinLoginEnabled ? (
+              <p className="text-sm text-ink-600">
+                TPIN login is available. At sign-in you&apos;ll be able to choose
+                between your authenticator app and your transaction PIN.
+              </p>
+            ) : !state.hasTxnPin ? (
+              <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-inset ring-amber-200">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div className="text-sm text-amber-800">
+                  Set up a transaction PIN to unlock TPIN login.{" "}
+                  <Link
+                    href="/dashboard/settings/txn-pin"
+                    className="font-semibold text-brand-700 hover:underline"
+                  >
+                    Set a transaction PIN
+                  </Link>
+                  .
                 </div>
-              ) : state.pinLoginEnabled ? (
-                <>
-                  <p className="text-sm text-ink-600">
-                    PIN login is on. At sign-in you can use either your
-                    authenticator app or your transaction PIN.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => setConfirmDisable(true)}
-                    isLoading={busy === "disable"}
-                    disabled={busy !== null}
+              </div>
+            ) : !state.hasCompletedAuthenticator ? (
+              <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-inset ring-amber-200">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div className="text-sm text-amber-800">
+                  Complete your authenticator app setup first. TPIN login becomes
+                  available automatically after your first sign-in with the
+                  authenticator.{" "}
+                  <Link
+                    href="/dashboard/settings/security"
+                    className="font-semibold text-brand-700 hover:underline"
                   >
-                    Disable PIN login
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <label className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-inset ring-amber-200">
-                    <input
-                      type="checkbox"
-                      checked={declaration}
-                      onChange={(e) => setDeclaration(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 accent-amber-600"
-                    />
-                    <span className="flex items-start gap-1.5">
-                      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>
-                        <strong>Declaration.</strong> I understand that signing
-                        in with a transaction PIN instead of an authenticator app
-                        is less secure. I accept that all responsibility and risk
-                        for any activity on my account — including any suspicious
-                        or unauthorised activity — is entirely mine, and that the
-                        company bears no responsibility whatsoever.
-                      </span>
-                    </span>
-                  </label>
-                  <Button
-                    onClick={enablePinLogin}
-                    isLoading={busy === "enable"}
-                    disabled={!declaration || busy !== null}
-                  >
-                    Enable PIN login
-                  </Button>
-                </>
-              )}
-            </div>
+                    Set up authenticator
+                  </Link>
+                  .
+                </div>
+              </div>
+            ) : null}
           </SectionCard>
 
-          {/* ── Preferred method ────────────────────────────────────────── */}
+          {/* ── Preferred method (only when TPIN is available) ─────────── */}
           {state.pinLoginEnabled && (
             <SectionCard
               icon={<IconTile icon={Fingerprint} tone="royal" size="sm" />}
@@ -319,16 +273,6 @@ export default function LoginMethodSettingsPage() {
           )}
         </FadeIn>
       )}
-
-      <ConfirmDialog
-        open={confirmDisable}
-        busy={busy === "disable"}
-        title="Disable PIN login?"
-        description="You'll need your authenticator app to sign in again. If you don't have one set up, you'll be asked to set it up at your next login. Your saved preference will be cleared."
-        confirmLabel="Disable PIN login"
-        onConfirm={disablePinLogin}
-        onClose={() => setConfirmDisable(false)}
-      />
     </div>
   );
 }

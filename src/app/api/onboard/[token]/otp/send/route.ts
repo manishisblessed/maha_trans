@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { sha256 } from "@/lib/crypto";
 import { getPartner } from "@/lib/partners";
 import { isTwilioOtpEnabled, sendVerification } from "@/lib/partners/twilio";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
 
 const Body = z.object({
   channel: z.enum(["SMS", "EMAIL"]),
@@ -83,9 +84,18 @@ export async function POST(
     data: { channel, target, codeHash, purpose: "ONBOARD", expiresAt },
   });
 
+  // Resolve tenant brand for branded OTP delivery
+  const otpBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+  const platformName = otpBrand?.brandName ?? "TRANSPE";
+  const primaryColor = otpBrand?.primaryColor ?? "#172b6b";
+
   if (channel === "SMS") {
     const sms = getPartner("sms");
-    const r = await sms.sendOtp({ phone: target, otp });
+    const r = await sms.sendOtp({
+      phone: target,
+      otp,
+      variables: otpBrand ? { _brand: otpBrand.brandName } : undefined,
+    });
     if (!r.ok) {
       return NextResponse.json({ error: r.message }, { status: 502 });
     }
@@ -95,16 +105,22 @@ export async function POST(
       to: target,
       // Code in the subject: visible in the inbox preview and prevents Gmail
       // from collapsing repeated OTP mails into one stale-looking thread.
-      subject: `${otp} is your TRANSPE verification code`,
-      text: `Your TRANSPE verification code is ${otp}. It expires in 5 minutes. Do not share it with anyone.`,
+      subject: `${otp} is your ${platformName} verification code`,
+      text: `Your ${platformName} verification code is ${otp}. It expires in 5 minutes. Do not share it with anyone.`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-          <h2 style="color:#1e293b;">Verify Your Email</h2>
-          <p>Your verification code for TRANSPE onboarding is:</p>
+          <div style="background:${primaryColor};padding:16px 20px;border-radius:8px 8px 0 0;">
+            <span style="color:#fff;font-weight:700;letter-spacing:1px;font-size:13px;">${platformName}</span>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-top:0;border-radius:0 0 8px 8px;padding:20px;">
+          <h2 style="color:#1e293b;margin:0 0 12px;">Verify Your Email</h2>
+          <p>Your verification code for ${platformName} onboarding is:</p>
           <div style="background:#f1f5f9;border-radius:8px;padding:16px;text-align:center;margin:16px 0;">
-            <span style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#172b6b;">${otp}</span>
+            <span style="font-size:32px;font-weight:bold;letter-spacing:8px;color:${primaryColor};">${otp}</span>
           </div>
           <p style="color:#64748b;font-size:14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
+          ${otpBrand ? `<p style="color:#94a3b8;font-size:11px;margin-top:16px;text-align:center;">Powered by TRANSPE</p>` : ""}
+          </div>
         </div>
       `,
     });

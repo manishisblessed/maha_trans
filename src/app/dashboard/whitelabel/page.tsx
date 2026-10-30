@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Save, AlertCircle, CheckCircle2, Rocket } from "lucide-react";
-import { Globe, Headset, LockKey, PaintBrush } from "@phosphor-icons/react";
+import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check } from "lucide-react";
+
+const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "transpe.in";
+import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { FloatingInput, Input, Label } from "@/components/ui/Input";
@@ -38,6 +40,16 @@ const EMPTY: Profile = {
   status: "DRAFT",
 };
 
+type DnsVerifyResult = {
+  type: "subdomain" | "customDomain";
+  host: string;
+  ok: boolean;
+  resolved?: string[];
+  expectedCname?: string;
+  cnameMatches?: boolean;
+  error?: string;
+};
+
 export default function WhitelabelPage() {
   const [profile, setProfile] = useState<Profile>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -45,6 +57,10 @@ export default function WhitelabelPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [activeTab, setActiveTab] = useState<"brand" | "dns">("brand");
+  const [verifying, setVerifying] = useState(false);
+  const [dnsResults, setDnsResults] = useState<DnsVerifyResult[]>([]);
+  const [copied, setCopied] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -126,18 +142,37 @@ export default function WhitelabelPage() {
     );
   }
 
+  async function verifyDns() {
+    setVerifying(true);
+    setDnsResults([]);
+    try {
+      const res = await fetch("/api/platform/whitelabel/verify-domain", { method: "POST" });
+      const data = await res.json();
+      setDnsResults(data.results ?? []);
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   const canSave = profile.brandName.trim().length >= 2 && !saving && !loading;
   const canGoLive = canSave && Boolean(profile.subdomain?.trim() || profile.customDomain?.trim());
   const previewHost =
     profile.customDomain?.trim() ||
-    (profile.subdomain?.trim() ? `${profile.subdomain.trim()}.TRANSPE.in` : "your-brand.TRANSPE.in");
+    (profile.subdomain?.trim() ? `${profile.subdomain.trim()}.${PLATFORM_DOMAIN}` : `your-brand.${PLATFORM_DOMAIN}`);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Platform · Brand"
         title="White-label portal"
-        description="Run TRANSPE under your own brand, domain and colors."
+        description="Run the platform under your own brand, domain and colors."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <StatusChip
@@ -156,6 +191,21 @@ export default function WhitelabelPage() {
         }
       />
 
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-2xl bg-ink-100 p-1 w-fit">
+        {(["brand", "dns"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeTab === tab ? "bg-white text-ink-900 shadow-soft" : "text-ink-500 hover:text-ink-700"
+            }`}
+          >
+            {tab === "brand" ? "Brand & Domains" : "DNS & Verification"}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <div className="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-800 ring-1 ring-inset ring-rose-200">
           <AlertCircle className="h-4 w-4 shrink-0" /> {error}
@@ -167,7 +217,147 @@ export default function WhitelabelPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* ── DNS & Verification tab ──────────────────────────────── */}
+      {activeTab === "dns" && (
+        <div className="space-y-6">
+          {/* Subdomain guide */}
+          <SectionCard
+            icon={<IconTile icon={WifiHigh} tone="brand" size="sm" />}
+            title="Subdomain setup"
+            description={`Your portal will be live at ${profile.subdomain?.trim() ? `${profile.subdomain.trim()}.${PLATFORM_DOMAIN}` : `<subdomain>.${PLATFORM_DOMAIN}`} — no DNS changes required.`}
+          >
+            <div className="rounded-2xl bg-ink-50 p-4">
+              <p className="text-sm text-ink-600">
+                Subdomain portals are managed by us and go live as soon as you click{" "}
+                <strong>Go live</strong>. No DNS record needs to be added on your end.
+              </p>
+            </div>
+          </SectionCard>
+
+          {/* Custom domain guide */}
+          <SectionCard
+            icon={<IconTile icon={Globe} tone="accent" size="sm" />}
+            title="Custom domain setup"
+            description="Point your own domain to this platform with a CNAME record."
+          >
+            <ol className="space-y-4 text-sm text-ink-700">
+              <li className="flex gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
+                <div>
+                  <p className="font-semibold text-ink-900">Log in to your domain registrar</p>
+                  <p className="text-ink-500 mt-0.5">GoDaddy, Namecheap, Cloudflare, BigRock, etc.</p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
+                <div>
+                  <p className="font-semibold text-ink-900">Create a CNAME record</p>
+                  <div className="mt-2 overflow-x-auto rounded-xl border border-ink-200 bg-white">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-ink-100 bg-ink-50">
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Type</th>
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Name / Host</th>
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / Target</th>
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">TTL</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-4 py-2.5 font-mono font-semibold text-brand-700">CNAME</td>
+                          <td className="px-4 py-2.5 font-mono">
+                            {profile.customDomain?.trim() || "yourdomain.in"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2">
+                              <code className="font-mono text-ink-900">{PLATFORM_DOMAIN}</code>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(PLATFORM_DOMAIN)}
+                                className="rounded p-0.5 text-ink-400 hover:text-ink-700"
+                              >
+                                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2.5 font-mono text-ink-500">3600</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
+                <div>
+                  <p className="font-semibold text-ink-900">Wait for DNS propagation</p>
+                  <p className="text-ink-500 mt-0.5">Usually 15 minutes to 48 hours. Use the checker below to confirm.</p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">4</span>
+                <div>
+                  <p className="font-semibold text-ink-900">SSL is automatic</p>
+                  <p className="text-ink-500 mt-0.5">Once the CNAME propagates, TLS/HTTPS is provisioned automatically. No manual certificate work needed.</p>
+                </div>
+              </li>
+            </ol>
+          </SectionCard>
+
+          {/* DNS verifier */}
+          <SectionCard
+            icon={<IconTile icon={WifiHigh} tone="royal" size="sm" />}
+            title="Verify propagation"
+            description="Check if your domain is resolving correctly."
+          >
+            <Button variant="secondary" onClick={verifyDns} disabled={verifying || (!profile.subdomain && !profile.customDomain)}>
+              <RefreshCw className={`h-4 w-4 ${verifying ? "animate-spin" : ""}`} />
+              {verifying ? "Checking…" : "Check DNS now"}
+            </Button>
+            {!profile.subdomain && !profile.customDomain && (
+              <p className="mt-3 text-sm text-ink-400 flex items-center gap-1.5">
+                <Info size={14} /> Save a subdomain or custom domain first.
+              </p>
+            )}
+            {dnsResults.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {dnsResults.map((r) => (
+                  <div
+                    key={r.host}
+                    className={`rounded-2xl border p-4 ${
+                      r.ok ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      {r.ok ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+                      )}
+                      <span className="font-mono text-sm font-semibold">{r.host}</span>
+                      <span className={`text-xs font-semibold ${r.ok ? "text-emerald-700" : "text-rose-700"}`}>
+                        {r.ok ? "Propagated ✓" : "Not yet propagated"}
+                      </span>
+                    </div>
+                    {r.resolved && r.resolved.length > 0 && (
+                      <p className="text-xs text-ink-600">Resolved to: {r.resolved.join(", ")}</p>
+                    )}
+                    {r.expectedCname && (
+                      <p className="text-xs text-ink-600">
+                        Expected CNAME target: <code>{r.expectedCname}</code>
+                        {r.cnameMatches === false && " — CNAME not matching yet"}
+                      </p>
+                    )}
+                    {r.error && <p className="text-xs text-rose-600 mt-1">{r.error}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+        </div>
+      )}
+
+      {activeTab === "brand" && <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <SectionCard
             icon={<IconTile icon={PaintBrush} tone="royal" size="sm" />}
@@ -222,7 +412,7 @@ export default function WhitelabelPage() {
                   onChange={(e) => set("subdomain", e.target.value)}
                   placeholder="kapoorpay"
                 />
-                <span className="whitespace-nowrap text-sm font-medium text-ink-500">.TRANSPE.in</span>
+                <span className="whitespace-nowrap text-sm font-medium text-ink-500">.{PLATFORM_DOMAIN}</span>
               </div>
               <FloatingInput
                 label="Custom domain"
@@ -270,7 +460,7 @@ export default function WhitelabelPage() {
             </p>
           </SectionCard>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

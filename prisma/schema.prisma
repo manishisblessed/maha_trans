@@ -122,6 +122,19 @@ model User {
   parent   User?   @relation("Hierarchy", fields: [parentId], references: [id])
   children User[]  @relation("Hierarchy")
 
+  // ── White-label tenancy (Phase A) ────────────────────────────────────────
+  // platformOwnerId links every user created under a white-label tenant to the
+  // SD/MD who owns that tenant. NULL = native TRANSPE user (not under any
+  // white-label). All downline queries, report scopes, and scheme lookups MUST
+  // filter by platformOwnerId to keep tenants isolated.
+  // isTenantOwner marks the SD/MD who IS the white-label tenant root — they get
+  // admin-level onboarding powers scoped only within their own platformOwnerId
+  // boundary (they can create SDs under their domain, not platform-wide).
+  platformOwnerId String?
+  platformOwner   User?   @relation("TenantOwner", fields: [platformOwnerId], references: [id])
+  tenantMembers   User[]  @relation("TenantOwner")
+  isTenantOwner   Boolean @default(false)
+
   // org / shop info
   // shopName uniqueness is enforced in the application layer (see Kyc note) so a
   // master-admin can grant value-scoped IdentityException rows for it too.
@@ -1307,6 +1320,11 @@ model Invite {
 
   userId String? @unique
   name   String?
+
+  // White-label tenancy — set when the inviter is a tenant owner or a member
+  // under a white-label tenant. The onboarding link resolves to the tenant
+  // domain and the registered user inherits this platformOwnerId.
+  platformOwnerId String?
 
   expiresAt         DateTime
   registeredAt      DateTime?

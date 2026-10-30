@@ -1,11 +1,15 @@
 ﻿import type { Metadata } from "next";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { TenantProvider } from "@/components/providers/TenantProvider";
+import { getTenantBrand } from "@/lib/tenant/context";
 import "./globals.css";
 
-export const metadata: Metadata = {
+// Default (native TRANSPE) metadata — overridden per-request when a white-label
+// tenant is detected via the x-tenant-id header injected by the middleware.
+const DEFAULT_METADATA: Metadata = {
   title: {
     default: "TRANSPE — Payments. Powered for India.",
-    template: "%s · TRANSPE"
+    template: "%s · TRANSPE",
   },
   description:
     "TRANSPE is a fintech distribution platform powering payment gateway, POS terminals, QR collections, AePS, money transfer, recharges and bill payments for retailers and merchants across India.",
@@ -22,27 +26,59 @@ export const metadata: Metadata = {
     "recharge",
     "bill payment",
     "fintech India",
-    "agent banking"
+    "agent banking",
   ],
-  metadataBase: new URL("https://transpe.net"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://transpe.net"),
   openGraph: {
     title: "TRANSPE — Payments. Powered for India.",
     description:
       "Payment gateway, POS terminals, QR collections and 60+ financial services for retailers, distributors and merchants across India.",
     url: "https://transpe.net",
     siteName: "TRANSPE",
-    type: "website"
-  }
-  // Favicon + apple-touch icon are provided by the file-based conventions
-  // `src/app/icon.png` and `src/app/apple-icon.png` (the official "tp" mark),
-  // so no manual `icons` metadata is needed here.
+    type: "website",
+  },
 };
 
-export default function RootLayout({
-  children
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getTenantBrand();
+  if (!brand) return DEFAULT_METADATA;
+
+  // White-label tenant: use the tenant's brand in all metadata.
+  const platformHost = brand.customDomain
+    ? `https://${brand.customDomain}`
+    : brand.subdomain
+      ? `https://${brand.subdomain}.${process.env.PLATFORM_DOMAIN ?? "transpe.in"}`
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "https://transpe.net");
+
+  return {
+    title: {
+      default: `${brand.brandName} — Payments Platform`,
+      template: `%s · ${brand.brandName}`,
+    },
+    description:
+      brand.tagline ??
+      `${brand.brandName} — a full-service payments and distribution platform powered by TRANSPE.`,
+    metadataBase: new URL(platformHost),
+    openGraph: {
+      title: `${brand.brandName} — Payments Platform`,
+      description: brand.tagline ?? `${brand.brandName} payment services`,
+      siteName: brand.brandName,
+      type: "website",
+    },
+    icons: brand.faviconUrl
+      ? { icon: brand.faviconUrl, shortcut: brand.faviconUrl }
+      : undefined,
+    themeColor: brand.primaryColor,
+  };
+}
+
+export default async function RootLayout({
+  children,
 }: {
   children: React.ReactNode;
 }) {
+  const brand = await getTenantBrand();
+
   return (
     <html lang="en">
       {/*
@@ -59,8 +95,27 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700,500&f[]=satoshi@400,500,700,900&display=swap"
         />
+        {/* Inject tenant CSS variables at SSR time to avoid FOUC */}
+        {brand && (
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+:root {
+  --tenant-primary: ${brand.primaryColor};
+  --tenant-accent: ${brand.accentColor};
+}
+              `.trim(),
+            }}
+          />
+        )}
       </head>
-      <body><AuthProvider>{children}</AuthProvider></body>
+      <body>
+        <AuthProvider>
+          <TenantProvider brand={brand}>
+            {children}
+          </TenantProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

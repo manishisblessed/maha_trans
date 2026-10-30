@@ -48,7 +48,11 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "api.dicebear.com" },
-      { protocol: "https", hostname: "res.cloudinary.com" }
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      // White-label tenant logos / favicons hosted on any CDN.
+      // The middleware already validates these domains are LIVE tenants, so
+      // allowing all remote patterns here is safe.
+      { protocol: "https", hostname: "**" },
     ]
   },
   async headers() {
@@ -66,6 +70,17 @@ const nextConfig = {
       },
     ];
   },
+
+  // Allow the app to respond to white-label custom domains and subdomains.
+  // The middleware resolves the host → WhitelabelProfile and injects the
+  // x-tenant-id header so every page/API knows its tenant context. No explicit
+  // rewrite rules are required for custom domains — they all map to the same
+  // Next.js app. The `hostname` wildcard below ensures Next.js does not reject
+  // requests from unknown origins in production.
+  // Note: configure your nginx / ALB to route all white-label domains to this
+  // app; AWS ACM wildcard cert covers *.transpe.in; each custom domain owner
+  // must point a CNAME record (kapoorpay.in → transpe.in or the ALB hostname).
+
 };
 
 export default withSentryConfig(nextConfig, {

@@ -11,7 +11,8 @@ import {
   ArrowRight,
   Download,
 } from "lucide-react";
-import { ShieldCheck, Key, DeviceMobile } from "@phosphor-icons/react";
+import { ShieldCheck, Key, DeviceMobile, Fingerprint } from "@phosphor-icons/react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { FloatingInput } from "@/components/ui/Input";
 import { IconTile } from "@/components/ui/Icon";
@@ -158,7 +159,7 @@ export default function SecuritySettingsPage() {
 
   if (step === "done") {
     return (
-      <div className="mx-auto max-w-lg">
+      <div className="mx-auto max-w-lg space-y-4">
         <FadeIn>
           <SectionCard tone="accent" padding="lg" className="text-center">
             <IconTile icon={ShieldCheck} tone="accent" size="xl" className="mx-auto" />
@@ -177,6 +178,23 @@ export default function SecuritySettingsPage() {
               Go to dashboard <ArrowRight className="h-4 w-4" />
             </Button>
           </SectionCard>
+        </FadeIn>
+
+        <FadeIn>
+          <div className="flex items-start gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-sm text-brand-800 ring-1 ring-inset ring-brand-200">
+            <Fingerprint size={18} weight="duotone" className="mt-0.5 shrink-0" aria-hidden />
+            <span>
+              <strong>Prefer your transaction PIN?</strong> If you have a
+              transaction PIN, you&apos;ll now be able to choose between your
+              authenticator app and your TPIN at every login.{" "}
+              <Link
+                href="/dashboard/settings/login-method"
+                className="font-semibold underline underline-offset-2 hover:text-brand-900"
+              >
+                Manage your login preference →
+              </Link>
+            </span>
+          </div>
         </FadeIn>
       </div>
     );

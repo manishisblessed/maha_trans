@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generateSelfDeclarationPdf } from "@/lib/declaration/generatePdf";
 import { buildDeclarationData } from "@/lib/declaration/data";
+import { resolvePdfBrand } from "@/lib/tenant/pdfBrand";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -30,7 +31,8 @@ export async function GET(
     return NextResponse.json({ error: "Unable to prepare declaration" }, { status: 404 });
   }
 
-  const pdfBytes = await generateSelfDeclarationPdf(data);
+  const pdfBrand = await resolvePdfBrand(invite.platformOwnerId ?? null);
+  const pdfBytes = await generateSelfDeclarationPdf(data, pdfBrand);
 
   return new Response(Buffer.from(pdfBytes), {
     headers: {

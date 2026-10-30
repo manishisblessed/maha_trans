@@ -352,6 +352,9 @@ export async function POST(
           phoneVerifiedAt: invite.phoneVerifiedAt,
           emailVerifiedAt: invite.emailVerifiedAt,
           enabledServices,
+          // Propagate white-label tenant from the invite so the new user is
+          // scoped to the same tenant as their inviter.
+          ...(invite.platformOwnerId ? { platformOwnerId: invite.platformOwnerId } : {}),
         },
       });
     }
@@ -460,8 +463,15 @@ export async function POST(
     },
   });
 
-  const appUrl = env.NEXT_PUBLIC_APP_URL;
-  const loginUrl = `${appUrl}/login`;
+  // Resolve tenant-aware base URL for login link
+  const { getEffectivePlatformUrl } = await import("@/lib/tenant/context");
+  const { resolveNotificationBrand } = await import("@/lib/tenant/notifications");
+
+  const tenantBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+  const tenantBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
+  const loginUrl = `${tenantBaseUrl}/login`;
 
   // ── Notify the admin who sent the invite ──
   try {
@@ -533,7 +543,7 @@ export async function POST(
     const nextSteps = [
       { n: "1", t: "KYC & documents review", d: "Our compliance team is reviewing your submission." },
       { n: "2", t: "Approval within 48\u201372 hrs", d: "You'll be notified by email and SMS the moment it's approved." },
-      { n: "3", t: "Start transacting", d: "Log in to your dashboard and go live with TRANSPE services." },
+      { n: "3", t: "Start transacting", d: `Log in to your dashboard and go live with ${platformName} services.` },
     ];
     const nextStepsHtml = nextSteps
       .map(
@@ -553,27 +563,27 @@ export async function POST(
     const emailProvider = getPartner("email");
     await emailProvider.send({
       to: invite.email,
-      subject: `Welcome to TRANSPE, ${firstName} \u2014 you're onboarded!`,
+      subject: `Welcome to ${platformName}, ${firstName} \u2014 you're onboarded!`,
       html: `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <title>Welcome to TRANSPE</title>
+    <title>Welcome to ${platformName}</title>
   </head>
   <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#0f172a;">
     <div style="display:none;font-size:1px;color:#f1f5f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
-      You're onboarded! Sign in to your TRANSPE ${roleLabel} account.
+      You're onboarded! Sign in to your ${platformName} ${roleLabel} account.
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;padding:32px 12px;">
       <tr>
         <td align="center">
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.06);">
             <tr>
-              <td style="background:#172b6b;background-image:linear-gradient(135deg,#172b6b 0%,#172b6b 100%);padding:36px 32px;text-align:center;">
+              <td style="background:${primaryColor};padding:36px 32px;text-align:center;">
                 <div style="display:inline-block;padding:6px 14px;background:rgba(255,255,255,0.18);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1.4px;color:#ffffff;text-transform:uppercase;">
-                  TRANSPE
+                  ${platformName}
                 </div>
                 <h1 style="margin:18px 0 6px;font-size:26px;line-height:1.25;color:#ffffff;font-weight:700;">You're all set, ${firstName}!</h1>
                 <p style="margin:0;font-size:14px;color:#e0e7ff;">Your ${roleLabel} onboarding is complete.</p>
@@ -585,7 +595,7 @@ export async function POST(
                   Dear <strong style="color:#0f172a;">${data.name}</strong>,
                 </p>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#334155;">
-                  Thank you for choosing <strong>TRANSPE</strong>. We've successfully received your KYC, documents and business details for your <strong>${roleLabel}</strong> account.
+                  Thank you for choosing <strong>${platformName}</strong>. We've successfully received your KYC, documents and business details for your <strong>${roleLabel}</strong> account.
                 </p>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;background:${statusBg};border:1px solid ${statusBorder};border-left:4px solid ${statusAccent};border-radius:12px;">
                   <tr>
@@ -640,9 +650,9 @@ export async function POST(
             </tr>
             <tr>
               <td style="padding:24px 32px 28px;background:#0f172a;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
-                <p style="margin:0 0 4px;color:#f1f5f9;font-weight:700;letter-spacing:0.4px;">TRANSPE</p>
-                <p style="margin:0 0 10px;color:#cbd5e1;">transpe.net</p>
-                <p style="margin:0;color:#64748b;">&copy; ${year} TRANSPE. All rights reserved.<br />This is an automated message &mdash; please do not reply.</p>
+                <p style="margin:0 0 4px;color:#f1f5f9;font-weight:700;letter-spacing:0.4px;">${platformName}</p>
+                ${tenantBrand ? `<p style="margin:0 0 4px;color:#cbd5e1;font-size:11px;">Powered by TRANSPE</p>` : `<p style="margin:0 0 10px;color:#cbd5e1;">transpe.net</p>`}
+                <p style="margin:0;color:#64748b;">&copy; ${year} ${platformName}. All rights reserved.<br />This is an automated message &mdash; please do not reply.</p>
               </td>
             </tr>
           </table>
@@ -664,6 +674,8 @@ export async function POST(
       variables: {
         name: data.name,
         role: invite.role.replace(/_/g, " "),
+        link: loginUrl,
+        ...(tenantBrand ? { _brand: tenantBrand.brandName } : {}),
       },
     });
   } catch {

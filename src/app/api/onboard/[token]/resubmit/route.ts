@@ -130,7 +130,7 @@ export async function POST(
         const emailProvider = getPartner("email");
         await emailProvider.send({
           to: inviter.email,
-          subject: `TRANSPE — ${invite.name ?? "Applicant"} re-uploaded documents`,
+          subject: `Document re-uploaded — ${invite.name ?? "Applicant"} (review required)`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;">
               <h2 style="color:#0f172a;margin:0 0 12px;">Documents re-uploaded</h2>

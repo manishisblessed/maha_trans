@@ -355,7 +355,7 @@ export interface PanProvider {
 // ---------- SMS / OTP ----------
 export interface SmsProvider {
   name: string;
-  sendOtp(input: { phone: string; otp: string; templateId?: string }): Promise<PartnerResult<{ messageId: string }>>;
+  sendOtp(input: { phone: string; otp: string; templateId?: string; variables?: Record<string, string> }): Promise<PartnerResult<{ messageId: string }>>;
   sendTransactional(input: { phone: string; templateId: string; variables: Record<string, string> }): Promise<PartnerResult<{ messageId: string }>>;
 }
 

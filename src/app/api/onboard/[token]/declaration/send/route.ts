@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { needsSuccessorApproval } from "@/lib/declaration/types";
 import { getPartner } from "@/lib/partners";
 import { env } from "@/lib/env";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
+import { getEffectivePlatformUrl } from "@/lib/tenant/context";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -71,8 +73,12 @@ export async function POST(
     },
   });
 
-  const appUrl = env.NEXT_PUBLIC_APP_URL;
-  const approvalUrl = `${appUrl}/dashboard/approvals`;
+  // Resolve tenant brand for this invite
+  const tenantBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
+  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
+  const tenantBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
+  const approvalUrl = `${tenantBaseUrl}/dashboard/approvals`;
 
   try {
     await prisma.notification.create({
@@ -89,22 +95,27 @@ export async function POST(
     const emailProvider = getPartner("email");
     await emailProvider.send({
       to: inviter.email,
-      subject: `TRANSPE — Declaration Approval Required for ${invite.name ?? invite.phone}`,
+      subject: `${platformName} \u2014 Declaration Approval Required for ${invite.name ?? invite.phone}`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
+          <div style="background:${primaryColor};padding:20px 24px;border-radius:10px 10px 0 0;margin:0 0 0 0;">
+            <p style="margin:0;color:#fff;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">${platformName}</p>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-top:0;border-radius:0 0 10px 10px;padding:28px 24px;">
           <h1 style="color:#1e293b;font-size:22px;margin:0 0 16px;">Declaration Approval Required</h1>
           <p>Hi <strong>${inviter.name}</strong>,</p>
           <p><strong>${invite.name ?? invite.phone}</strong> is onboarding as a <strong>${invite.role.replace(/_/g, " ")}</strong> under your network and has requested your declaration approval.</p>
-          <p>As per company policy, you need to review the responsibility & indemnity declaration, provide your signature, selfie, and approve the onboarding.</p>
+          <p>As per company policy, you need to review the responsibility &amp; indemnity declaration, provide your signature, selfie, and approve the onboarding.</p>
           <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:16px;margin:20px 0;">
             <p style="margin:0;font-weight:600;color:#92400e;">By approving, you accept responsibility for all activities performed by this ${invite.role.replace(/_/g, " ")}.</p>
           </div>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${approvalUrl}" style="display:inline-block;padding:14px 32px;background:#172b6b;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;">Review & Approve</a>
+            <a href="${approvalUrl}" style="display:inline-block;padding:14px 32px;background:${primaryColor};color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;">Review &amp; Approve</a>
           </div>
           <p style="color:#64748b;font-size:13px;">Please review within 24 hours. The applicant cannot complete registration until this is approved.</p>
           <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
-          <p style="color:#94a3b8;font-size:12px;text-align:center;">TRANSPE</p>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by TRANSPE" : ""}</p>
+          </div>
         </div>
       `,
     });
@@ -119,6 +130,8 @@ export async function POST(
         name: inviter.name,
         applicantName: invite.name ?? invite.phone,
         role: invite.role.replace(/_/g, " "),
+        link: approvalUrl,
+        ...(tenantBrand ? { _brand: tenantBrand.brandName } : {}),
       },
     });
   } catch {}

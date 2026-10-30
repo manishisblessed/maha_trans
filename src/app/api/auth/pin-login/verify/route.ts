@@ -13,10 +13,12 @@ import { getLoginBlock } from "@/lib/security/accountGate";
 /**
  * POST /api/auth/pin-login/verify
  *
- * Second-factor login with the transaction PIN, for accounts a master-admin has
- * made 2FA-exempt AND enabled PIN login for. The user must accept the liability
- * (no 2FA → all account risk is theirs) at least once; the acceptance is
- * recorded. On success, returns a session grant for signIn("token-login").
+ * Second-factor login with the transaction PIN. Any user who has set a
+ * transaction PIN AND has completed authenticator setup at least once
+ * (twoFactorVerifiedAt) can use this. No admin permission required — it is
+ * purely the user's choice. The user must accept the liability (TPIN is weaker
+ * than TOTP) at least once; the acceptance is recorded. On success, returns a
+ * session grant for signIn("token-login").
  */
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -56,14 +58,13 @@ export async function POST(req: Request) {
       select: {
         id: true,
         status: true,
-        twoFactorExempt: true,
-        pinLoginEnabled: true,
         txnPinHash: true,
+        twoFactorVerifiedAt: true,
         pinLoginRiskAcceptedAt: true,
       },
     });
 
-    if (!user || !user.twoFactorExempt || !user.pinLoginEnabled || !user.txnPinHash) {
+    if (!user || !user.txnPinHash || !user.twoFactorVerifiedAt) {
       return NextResponse.json({ error: "PIN login is not available for this account." }, { status: 403 });
     }
 

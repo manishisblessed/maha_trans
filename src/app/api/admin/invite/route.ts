@@ -14,6 +14,7 @@ import {
 } from "@/lib/hierarchy";
 import { env } from "@/lib/env";
 import { renderInviteEmail } from "@/lib/email/templates";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
 import { getAdminInviteScope } from "@/lib/security/ownership";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
 
@@ -84,7 +85,14 @@ export async function POST(req: Request) {
   const { phone, email, name } = parsed.data;
   const role = parsed.data.role ?? defaultChildRole(user.role);
 
-  if (!canOnboard(user.role, role)) {
+  // Fetch isTenantOwner flag for this user to allow tenant-owner SD invite powers
+  const creatorMeta = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isTenantOwner: true },
+  });
+  const isTenantOwner = creatorMeta?.isTenantOwner ?? false;
+
+  if (!canOnboard(user.role, role, { isTenantOwner })) {
     const allowed = defaultChildRole(user.role).replace(/_/g, " ");
     return NextResponse.json(
       { error: `Your role can only invite a ${allowed}` },
@@ -140,6 +148,17 @@ export async function POST(req: Request) {
     parentId = user.id;
   }
 
+  // Determine platformOwnerId for this invite.
+  // If the creator is a tenant owner or member, carry that tenant through
+  // so the registered user is scoped to the same white-label tenant.
+  const creatorFull = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { platformOwnerId: true, isTenantOwner: true },
+  });
+  const platformOwnerId = creatorFull?.isTenantOwner
+    ? user.id                           // creator IS the tenant root
+    : creatorFull?.platformOwnerId ?? null; // creator is a tenant member
+
   const invite = await prisma.invite.create({
     data: {
       phone,
@@ -149,11 +168,20 @@ export async function POST(req: Request) {
       parentId,
       invitedById: user.id,
       expiresAt: await computeInviteExpiry(),
+      ...(platformOwnerId ? { platformOwnerId } : {}),
     },
   });
 
-  const appUrl = env.NEXT_PUBLIC_APP_URL;
-  const onboardingLink = `${appUrl}/onboard?token=${invite.token}`;
+  // Build a tenant-aware onboarding link
+  const { getEffectivePlatformUrl } = await import("@/lib/tenant/context");
+  const baseUrl = await getEffectivePlatformUrl(platformOwnerId);
+  const onboardingLink = `${baseUrl}/onboard?token=${invite.token}`;
+
+  // Resolve tenant brand for branded invite emails
+  const inviteBrandInfo = await resolveNotificationBrand(platformOwnerId);
+  const inviteEmailBrand = inviteBrandInfo
+    ? { brandName: inviteBrandInfo.brandName, primaryColor: inviteBrandInfo.primaryColor, supportEmail: inviteBrandInfo.supportEmail ?? undefined }
+    : undefined;
 
   let emailSent = false;
   let emailError: string | undefined;
@@ -164,6 +192,7 @@ export async function POST(req: Request) {
       role,
       onboardingLink,
       expiresAt: invite.expiresAt,
+      brand: inviteEmailBrand,
     });
     const result = await emailProvider.send({
       from: process.env.EMAIL_FROM_INFO || process.env.EMAIL_FROM,
@@ -183,7 +212,11 @@ export async function POST(req: Request) {
     await smsProvider.sendTransactional({
       phone,
       templateId: "onboard_invite",
-      variables: { link: onboardingLink, role: role.replace(/_/g, " ") },
+      variables: {
+        link: onboardingLink,
+        role: role.replace(/_/g, " "),
+        ...(inviteBrandInfo ? { _brand: inviteBrandInfo.brandName } : {}),
+      },
     });
   } catch {
     // SMS failure shouldn't block invite creation

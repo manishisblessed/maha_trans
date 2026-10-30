@@ -12,6 +12,8 @@ import {
 import { Logo } from "@/components/layout/Logo";
 import { heroStats, company, services } from "@/lib/data";
 import { RotatingQuote } from "@/components/auth/RotatingQuote";
+import { getTenantBrand } from "@/lib/tenant/context";
+import type { TenantBrand } from "@/lib/tenant/context";
 
 const COMPLIANCE_CHIPS = [
   "Authorised partner banks",
@@ -35,8 +37,10 @@ const CONSOLE_ROWS = [
  * Right (≥ lg): the "counter in motion" brand panel — deep navy base with an
  * energy-gradient wash, a frozen console card, rotating retailer quote and
  * the compliance row. Server component; the only client piece is the quote.
+ * On white-label domains the right panel shows the tenant brand instead.
  */
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const brand = await getTenantBrand();
   const stats = heroStats.slice(0, 3);
   const year = new Date().getFullYear();
 
@@ -45,16 +49,31 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* ── Form canvas (first in DOM and on screen) ────────────────── */}
       <div className="flex min-h-screen flex-col">
         {/* Compact brand strip (< lg) */}
-        <div className="grain relative overflow-hidden bg-ink-950 text-white lg:hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-20 -top-28 h-60 w-60 rounded-full bg-energy-gradient opacity-40 blur-3xl"
-          />
+        <div
+          className="grain relative overflow-hidden text-white lg:hidden"
+          style={brand ? { background: brand.primaryColor } : undefined}
+          data-brand={brand ? "tenant" : "native"}
+        >
+          {!brand && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-20 -top-28 h-60 w-60 rounded-full bg-energy-gradient opacity-40 blur-3xl"
+            />
+          )}
           <div className="relative z-10 flex items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
-            <Logo variant="light" size="sm" />
+            {brand ? (
+              brand.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={brand.logoUrl} alt={brand.brandName} className="h-8 w-auto object-contain" />
+              ) : (
+                <span className="font-display text-lg font-bold tracking-tight text-white">{brand.brandName}</span>
+              )
+            ) : (
+              <Logo variant="light" size="sm" />
+            )}
             <p className="hidden text-xs font-semibold text-white/70 sm:flex sm:items-center sm:gap-1.5">
-              <CheckCircle size={14} weight="fill" className="text-accent-400" aria-hidden />
-              60+ services · one counter
+              <CheckCircle size={14} weight="fill" className="text-white/80" aria-hidden />
+              {brand ? `${brand.brandName} services` : "60+ services · one counter"}
             </p>
           </div>
         </div>
@@ -74,11 +93,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               Back to home
             </Link>
             <span className="hidden lg:block">
-              <Logo size="sm" className="ml-2" />
+              {brand ? (
+                brand.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={brand.logoUrl} alt={brand.brandName} className="ml-2 h-8 w-auto object-contain" />
+                ) : (
+                  <span className="ml-2 font-display text-lg font-bold tracking-tight text-ink-900">{brand.brandName}</span>
+                )
+              ) : (
+                <Logo size="sm" className="ml-2" />
+              )}
             </span>
           </div>
           <Link
-            href="/contact"
+            href={brand?.supportEmail ? `mailto:${brand.supportEmail}` : "/contact"}
             className="focus-energy inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold text-ink-500 transition hover:bg-white hover:text-ink-900"
           >
             <Lifebuoy size={15} weight="duotone" aria-hidden />
@@ -92,9 +120,19 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="px-4 py-5 text-center text-xs text-ink-400 sm:px-6 lg:px-10">
           <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-            <span>
-              © {year} {company.brand} · {company.jurisdiction}
-            </span>
+            {brand ? (
+              <>
+                <span>© {year} {brand.brandName}</span>
+                <span aria-hidden>·</span>
+                <span className="text-ink-300">Powered by TRANSPE</span>
+              </>
+            ) : (
+              <>
+                <span>
+                  © {year} {company.brand} · {company.jurisdiction}
+                </span>
+              </>
+            )}
             <span aria-hidden>·</span>
             <Link href="/legal/privacy" className="hover:text-ink-700">
               Privacy
@@ -108,7 +146,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Brand panel (≥ lg) ─────────────────────────────────────── */}
-      <aside className="grain relative hidden overflow-hidden bg-ink-950 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:self-start">
+      <aside
+        className="grain relative hidden overflow-hidden text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:self-start"
+        style={brand ? { background: `linear-gradient(135deg, ${brand.primaryColor} 0%, ${brand.accentColor} 100%)` } : undefined}
+        data-brand={brand ? "tenant" : "native"}
+      >
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -right-32 -top-40 h-[32rem] w-[32rem] rounded-full bg-energy-gradient opacity-25 blur-3xl" />
           <div className="absolute -bottom-48 -left-32 h-[28rem] w-[28rem] rounded-full bg-accent-500/20 blur-3xl" />
@@ -117,9 +159,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-12">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
-              The counter console
-            </p>
+            {brand ? (
+              brand.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={brand.logoUrl} alt={brand.brandName} className="h-9 w-auto object-contain brightness-0 invert" />
+              ) : (
+                <span className="font-display text-xl font-bold tracking-tight text-white">{brand.brandName}</span>
+              )
+            ) : (
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+                The counter console
+              </p>
+            )}
             <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/70 ring-1 ring-inset ring-white/10">
               <span className="brand-dot" aria-hidden />
               Welcome back

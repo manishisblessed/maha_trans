@@ -166,6 +166,7 @@ export const ASSIGNABLE_ADMIN_TABS = [
   { href: "slider", label: "Banner Studio" },
   { href: "audit", label: "Audit Trail" },
   { href: "system", label: "Pulse Monitor" },
+  { href: "whitelabel", label: "White-label Tenants" },
 ] as const;
 
 /** Tabs a master-admin creator can assign to another master-admin.
@@ -249,6 +250,7 @@ const adminWorkspace: NavItem[] = [
   { href: "/dashboard/admin/slider", label: "Banner Studio", icon: Images, badge: "New" },
   { href: "/dashboard/admin/audit", label: "Audit Trail", icon: ScrollText },
   { href: "/dashboard/admin/system", label: "Pulse Monitor", icon: ServerCog },
+  { href: "/dashboard/admin/whitelabel", label: "White-label Tenants", icon: Globe, badge: "New" },
   { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
 ];
 

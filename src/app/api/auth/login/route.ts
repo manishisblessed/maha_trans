@@ -283,24 +283,24 @@ export async function POST(req: Request) {
       },
     });
 
-    // Second-factor selection. A master-admin can *allow* an account to sign in
-    // with its transaction PIN instead of an authenticator app. When allowed,
-    // the method chooser is ALWAYS shown (even if only TPIN is available) so
-    // the user makes a deliberate, conscious choice on every sign-in.
+    // Second-factor selection. Any user with a transaction PIN who has completed
+    // authenticator setup at least once can choose to sign in with their TPIN.
+    // The method chooser is ALWAYS shown when TPIN is available so the user
+    // makes a deliberate, conscious choice on every sign-in.
     //
     //   canAuthenticator  → TOTP is set up (twoFactorEnabled + secret stored)
-    //   canPinLogin       → master-admin granted TPIN login AND user has set a PIN
+    //   canPinLogin       → user has a transaction PIN AND has completed the
+    //                        authenticator setup at least once (twoFactorVerifiedAt).
+    //                        No admin toggle or self-service toggle required — the
+    //                        user simply gets the choice automatically.
     //
     // Priority:
-    //   1. TPIN enabled  → always show the method chooser. The `canAuthenticator`
-    //      flag is passed to the frontend so it can disable the authenticator
-    //      option when the user hasn't set it up yet (showing a "Set up" CTA).
-    //   2. Authenticator only (no TPIN exemption) → route straight to TOTP step.
+    //   1. TPIN available → always show the method chooser. The `canAuthenticator`
+    //      flag tells the frontend if TOTP is also usable right now.
+    //   2. Authenticator only (no txn PIN) → route straight to TOTP step.
     //   3. Neither set up → needsSetup flow (first-time 2FA setup prompt).
     const canAuthenticator = Boolean(user.twoFactorEnabled && user.twoFactorSecret);
-    const canPinLogin = Boolean(
-      user.twoFactorExempt && user.pinLoginEnabled && user.txnPinHash
-    );
+    const canPinLogin = Boolean(user.txnPinHash && user.twoFactorVerifiedAt);
 
     // TPIN is enabled → always surface the method chooser.
     // If the user has a saved preference AND that preference is currently

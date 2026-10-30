@@ -8,6 +8,9 @@ import { generateSuccessorDeclarationPdf } from "@/lib/declaration/generatePdf";
 import { uploadPdfToCloudinary } from "@/lib/cloudinary";
 import type { ApprovalEvidence } from "@/lib/declaration/types";
 import { getPartner } from "@/lib/partners";
+import { resolvePdfBrand } from "@/lib/tenant/pdfBrand";
+import { resolveNotificationBrand } from "@/lib/tenant/notifications";
+import { getEffectivePlatformUrl } from "@/lib/tenant/context";
 
 const Body = z.object({
   signatureUrl: z.string().url(),
@@ -118,7 +121,14 @@ export async function POST(
         approvedAt: approvedAtLabel,
         ip: ip ?? undefined,
       };
-      const pdf = await generateSuccessorDeclarationPdf(data, evidence);
+      // Fetch platformOwnerId for brand (invite declared later in the outer scope,
+      // so we do a targeted lookup here to avoid dependency ordering issues)
+      const inviteForBrand = await prisma.invite.findFirst({
+        where: { id: approval.inviteId },
+        select: { platformOwnerId: true },
+      });
+      const pdfBrand = await resolvePdfBrand(inviteForBrand?.platformOwnerId ?? null);
+      const pdf = await generateSuccessorDeclarationPdf(data, evidence, pdfBrand);
       const uploaded = await uploadPdfToCloudinary(Buffer.from(pdf), {
         userId: user.id,
         type: "successor_declaration",
@@ -152,8 +162,14 @@ export async function POST(
 
   const invite = await prisma.invite.findFirst({
     where: { id: approval.inviteId },
-    select: { name: true, phone: true, email: true, role: true, userId: true },
+    select: { name: true, phone: true, email: true, role: true, userId: true, platformOwnerId: true },
   });
+
+  // Resolve tenant brand once for all downstream email/SMS/PDF
+  const tenantBrand = await resolveNotificationBrand(invite?.platformOwnerId ?? null);
+  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
+  const tenantBaseUrl = await getEffectivePlatformUrl(invite?.platformOwnerId ?? null);
 
   // The onboardee is typically still mid-wizard (no user account yet) and polls
   // the declaration status, so reach them via their invite contact. Only create
@@ -176,15 +192,23 @@ export async function POST(
       const emailProvider = getPartner("email");
       await emailProvider.send({
         to: invite.email,
-        subject: "TRANSPE — Your declaration has been approved",
+        subject: `${platformName} \u2014 Your declaration has been approved`,
         html: `
           <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-            <h1 style="color:#1e293b;font-size:22px;margin:0 0 16px;">Declaration Approved</h1>
+            <div style="background:${primaryColor};padding:16px 24px;border-radius:8px 8px 0 0;">
+              <p style="margin:0;color:#fff;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">${platformName}</p>
+            </div>
+            <div style="border:1px solid #e2e8f0;border-top:0;border-radius:0 0 8px 8px;padding:24px;">
+            <h1 style="color:#1e293b;font-size:22px;margin:0 0 16px;">Declaration Approved ✓</h1>
             <p>Hi <strong>${invite.name ?? "there"}</strong>,</p>
             <p><strong>${user.name}</strong> (${approval.approverRole.replace(/_/g, " ")}) has approved your responsibility declaration.</p>
             <p>You can now return to your onboarding and complete your registration.</p>
+            <div style="text-align:center;margin:20px 0;">
+              <a href="${tenantBaseUrl}/onboard/${invite?.role ?? ""}" style="display:inline-block;padding:12px 28px;background:${primaryColor};color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Registration</a>
+            </div>
             <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
-            <p style="color:#94a3b8;font-size:12px;text-align:center;">TRANSPE</p>
+            <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by TRANSPE" : ""}</p>
+            </div>
           </div>
         `,
       });
@@ -200,6 +224,7 @@ export async function POST(
         variables: {
           name: invite.name ?? "",
           approverName: user.name,
+          ...(tenantBrand ? { _brand: tenantBrand.brandName } : {}),
         },
       });
     } catch {}

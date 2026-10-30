@@ -56,7 +56,7 @@ function toMsg91Mobile(phone: string): string {
 
 export const msg91Sms: SmsProvider = {
   name: "MSG91",
-  async sendOtp({ phone, otp, templateId }) {
+  async sendOtp({ phone, otp, templateId, variables: _vars }) {
     const mobile = toMsg91Mobile(phone);
     const r = await call<{ request_id: string }>(`/otp?template_id=${templateId ?? process.env.MSG91_TEMPLATE_ID}&mobile=${mobile}&otp=${otp}`, {});
     return r.ok ? { ok: true, data: { messageId: r.data.request_id } } : r;

@@ -3,7 +3,7 @@ import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { ONBOARD_CAPABLE_ROLES } from "@/lib/hierarchy";
-import { onboardingLinkFor } from "@/lib/onboarding/inviteNotifications";
+import { onboardingLinkFor, onboardingLinkForTenant } from "@/lib/onboarding/inviteNotifications";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -39,18 +39,21 @@ export async function GET() {
     });
 
     const now = new Date();
-    const out = invites.map((inv) => ({
-      id: inv.id,
-      name: inv.name,
-      phone: inv.phone,
-      email: inv.email,
-      role: inv.role,
-      status:
-        inv.status === "PENDING" && inv.expiresAt < now ? "EXPIRED" : inv.status,
-      createdAt: inv.createdAt.toISOString(),
-      expiresAt: inv.expiresAt.toISOString(),
-      onboardingLink: onboardingLinkFor(inv.token),
-    }));
+    // Build tenant-aware onboarding links in parallel
+    const out = await Promise.all(
+      invites.map(async (inv) => ({
+        id: inv.id,
+        name: inv.name,
+        phone: inv.phone,
+        email: inv.email,
+        role: inv.role,
+        status:
+          inv.status === "PENDING" && inv.expiresAt < now ? "EXPIRED" : inv.status,
+        createdAt: inv.createdAt.toISOString(),
+        expiresAt: inv.expiresAt.toISOString(),
+        onboardingLink: await onboardingLinkForTenant(inv.token, inv.platformOwnerId),
+      }))
+    );
 
     return NextResponse.json({ invites: out });
   } catch (e) {

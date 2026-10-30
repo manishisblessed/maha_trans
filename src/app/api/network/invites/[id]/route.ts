@@ -7,7 +7,7 @@ import { clientIp } from "@/lib/security/audit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { ONBOARD_CAPABLE_ROLES } from "@/lib/hierarchy";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
-import { sendInviteLink, onboardingLinkFor } from "@/lib/onboarding/inviteNotifications";
+import { sendInviteLink, onboardingLinkForTenant } from "@/lib/onboarding/inviteNotifications";
 import { getOnboardingProgressForInvite } from "@/lib/onboarding/status";
 
 export const fetchCache = "force-no-store";
@@ -283,7 +283,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
     return NextResponse.json({
       ok: true,
-      onboardingLink: onboardingLink ?? onboardingLinkFor(updated.token),
+      onboardingLink: onboardingLink ?? await onboardingLinkForTenant(updated.token, updated.platformOwnerId),
       emailSent,
       ...(emailError ? { emailError } : {}),
     });

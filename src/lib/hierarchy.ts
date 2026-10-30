@@ -94,8 +94,15 @@ export const ONBOARD_CAPABLE_ROLES: DbRole[] = [
  * - SUPER_DISTRIBUTOR can ONLY create MASTER_DISTRIBUTOR.
  * - MASTER_DISTRIBUTOR can ONLY create DISTRIBUTOR.
  * - DISTRIBUTOR can ONLY create RETAILER.
+ * - isTenantOwner (SD/MD) can create SDs under their own domain boundary.
+ *   Pass `opts.isTenantOwner = true` from the API layer when the caller has
+ *   the white-label tenant-owner flag set.
  */
-export function canOnboard(creatorRole: string, targetRole: string): boolean {
+export function canOnboard(
+  creatorRole: string,
+  targetRole: string,
+  opts?: { isTenantOwner?: boolean }
+): boolean {
   const cRank = ROLE_RANK[creatorRole as DbRole];
   const tRank = ROLE_RANK[targetRole as DbRole];
   if (cRank === undefined || tRank === undefined) return false;
@@ -108,6 +115,12 @@ export function canOnboard(creatorRole: string, targetRole: string): boolean {
     return targetRole === "SUPER_DISTRIBUTOR";
   }
 
+  // White-label tenant owners (SD or MD) can create any network tier within
+  // their own domain boundary. The API layer enforces platformOwnerId scoping.
+  if (opts?.isTenantOwner && NETWORK_TIERS.includes(creatorRole as DbRole)) {
+    return NETWORK_TIERS.includes(targetRole as DbRole);
+  }
+
   const cIdx = NETWORK_TIERS.indexOf(creatorRole as DbRole);
   const tIdx = NETWORK_TIERS.indexOf(targetRole as DbRole);
   return cIdx > 0 && tIdx >= 0 && cIdx === tIdx + 1;
@@ -116,13 +129,23 @@ export function canOnboard(creatorRole: string, targetRole: string): boolean {
 /**
  * Returns the list of network roles that `creatorRole` is allowed to invite.
  * Used by the frontend to populate the role dropdown dynamically.
+ *
+ * Pass `isTenantOwner = true` when the caller has the white-label owner flag —
+ * they can then invite any network tier (SD/MD/DT/RT) on their domain.
  */
-export function allowedInviteRoles(creatorRole: string): DbRole[] {
+export function allowedInviteRoles(
+  creatorRole: string,
+  opts?: { isTenantOwner?: boolean }
+): DbRole[] {
   if (creatorRole === "MASTER_ADMIN") {
     return [...NETWORK_TIERS].reverse();
   }
   if (creatorRole === "ADMIN") {
     return ["SUPER_DISTRIBUTOR"];
+  }
+  // Tenant owner: can invite any tier under their domain
+  if (opts?.isTenantOwner && NETWORK_TIERS.includes(creatorRole as DbRole)) {
+    return [...NETWORK_TIERS].reverse();
   }
   const child = defaultChildRole(creatorRole);
   return child ? [child] : [];
