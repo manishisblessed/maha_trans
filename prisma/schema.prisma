@@ -202,6 +202,7 @@ model User {
   commissionSlabs        CommissionSlab[]
   payoutRequests         PayoutRequest[]         @relation("PayoutOwner")
   payoutBeneficiaries    PayoutBeneficiary[]     @relation("PayoutBeneficiaries")
+  knteerBeneficiaries    KnteerBeneficiary[]
   schemesCreated         Scheme[]                @relation("SchemeCreator")
   posMachines            PosMachine[]            @relation("PosAssignee")
   slidersCreated         Slider[]                @relation("SliderCreator")
@@ -252,6 +253,10 @@ model User {
   cashCollections        CashCollection[]        @relation("CashCollectionRequester")
   cashCollectionsApproved CashCollection[]       @relation("CashCollectionApprover")
   companyBankAccountsCreated CompanyBankAccount[] @relation("CompanyBankAccountCreator")
+
+  // User Kit relations
+  kitsOwned   UserKit[] @relation("KitOwner")   // kits this user has purchased
+  kitActivated UserKit? @relation("KitActivated") // the kit whose code was applied to this user
 
   // POS acquirer settlement mode (admin-toggleable only).
   // true = proceeds credit instantly on webhook; false = T+1 cron.
@@ -626,6 +631,7 @@ enum WalletReason {
   INCENTIVE // Monthly volume incentive / reverse cashback (QR/POS) credited by the month-end engine
   CASH_COLLECTION          // User deposits cash via NEFT/RTGS/UPI/CASH_DEPOSIT; admin credits wallet
   CASH_COLLECTION_CHARGE   // Platform charge deducted from the deposited amount before crediting
+  KIT_PURCHASE             // Parent buys a User Kit (MD-Kit / DT-Kit / RT-Kit); deducted from their wallet
 }
 
 /// Which wallet book a ledger entry belongs to. PRIMARY = the main spendable
@@ -695,6 +701,7 @@ enum ServiceCode {
   INSURANCE
   POS // POS acquirer settlement (first-class so earnings/commission attribute per-service)
   QR // Static QR collection settlement (first-class so revenue/commission attribute per-service, incl. per-leg split)
+  KNTEER_PAYOUT // Bank Transfer via Same Day Knteer rail (separate scheme/vendor from PAYOUT)
 }
 
 enum TxnStatus {
@@ -762,6 +769,11 @@ model Transaction {
   // refunds
   refundedAt     DateTime?
   refundRefId    String?
+  // Deferred-refund cooling-off (SameDay recon-capable rails). The first
+  // confirmed failure stamps this timestamp (now + REFUND_HOLD_MINUTES); the
+  // reserve is credited back only after it passes AND a fresh status re-check
+  // still reports failure AND no REVERSAL was already posted. Cleared on settle.
+  refundEligibleAt DateTime?
 
   ipAddress String?
   device    String?
@@ -1340,6 +1352,7 @@ model Invite {
   updatedAt DateTime @updatedAt
 
   verificationResults VerificationResult[]
+  kit                 UserKit? // back-relation: the UserKit reserved for this invite
 
   @@index([token])
   @@index([invitedById, status])
@@ -1389,6 +1402,77 @@ model JoinRequest {
   @@index([status, createdAt])
   @@index([phone])
   @@index([email])
+}
+
+// ---------- User Kit System ----------
+// A parent (SD/MD/DT) must purchase a User Kit before inviting a child.
+// Each kit holds a pre-minted, globally-unique userCode that is applied to
+// the child's account when admin approves their KYC.
+//
+// Flow: AVAILABLE → RESERVED (invite created) → ASSIGNED (child registers)
+//       → ACTIVE (admin approves KYC → userCode written to User.userCode)
+//       or → COOLING (invite expired/cancelled or KYC hard-rejected)
+//       → AVAILABLE (after cooling period)
+
+enum KitType {
+  MD_KIT // SD purchases to give userCode to their MD child
+  DT_KIT // MD purchases to give userCode to their DT child
+  RT_KIT // DT purchases to give userCode to their RT child
+}
+
+enum KitStatus {
+  AVAILABLE // purchased, not yet linked to any invite
+  RESERVED  // linked to a live invite; invite not yet registered
+  ASSIGNED  // child registered via the invite; awaiting admin KYC approval
+  ACTIVE    // admin approved KYC → userCode written to User.userCode
+  COOLING   // invite expired/cancelled or KYC hard-rejected; waiting period before reuse
+}
+
+model UserKit {
+  id      String    @id @default(cuid())
+  kitType KitType
+
+  // Pre-minted at purchase time — unique across BOTH User.userCode AND UserKit.userCode
+  // so the same code is never re-issued to any user at any point.
+  userCode String @unique // e.g. "MD0105", "DT0212", "RT0318"
+
+  // Parent who purchased this kit (SD/MD/DT)
+  ownerId String
+  owner   User   @relation("KitOwner", fields: [ownerId], references: [id])
+
+  // The invite this kit was reserved for (set when parent creates invite)
+  inviteId String?  @unique
+  invite   Invite?  @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+
+  // The child user this kit was activated for (set at KYC approval)
+  activatedForId String? @unique
+  activatedFor   User?   @relation("KitActivated", fields: [activatedForId], references: [id])
+
+  status KitStatus @default(AVAILABLE)
+
+  // Financial trail
+  purchaseAmount Decimal @db.Decimal(14, 2) // kit price at time of purchase
+  walletTxnId    String? // → WalletTxn DEBIT row
+
+  // Timestamps
+  purchasedAt    DateTime  @default(now())
+  reservedAt     DateTime? // when linked to an invite
+  registeredAt   DateTime? // when child registered via the invite
+  activatedAt    DateTime? // when admin approved → userCode applied
+  coolingStartAt DateTime? // when cooling period began
+  coolingEndsAt  DateTime? // when kit becomes AVAILABLE again (coolingStartAt + invite_expiry_days)
+
+  // Admin review trail (from KYC approval/rejection)
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, status])
+  @@index([kitType, status])
+  @@index([inviteId])
+  @@index([status, coolingEndsAt]) // for the daily cooling sweep
 }
 
 // ---------- Verification Results (eKYC Hub) ----------
@@ -1598,9 +1682,65 @@ model PayoutRequest {
   processedAt DateTime? // when handed to the payout provider
   completedAt DateTime? // terminal (success/failed/reversed)
 
+  // Knteer (Bank Transfer) rail — null for legacy SETTLEMENT rows
+  rail                String              @default("SETTLEMENT")
+  knteerBeneficiaryId String?
+  knteerBeneficiary   KnteerBeneficiary?  @relation(fields: [knteerBeneficiaryId], references: [id])
+  // GST rate percentage locked at quote time (0 = no GST, 18 = 18%). Separate
+  // from the gst Decimal which stores the rupee amount.
+  gstRate             Int                 @default(0)
+
   @@index([userId, status])
   @@index([status, createdAt])
   @@index([checkerId, status])
+  @@index([userId, rail, accountLast4, status, createdAt])
+}
+
+// KnteerBeneficiary stores every bank account a retailer has registered via
+// the Knteer (Bank Transfer) rail. Account numbers are AES-256-GCM encrypted.
+// Only the last-4 digits are stored in plain text for display.
+model KnteerBeneficiary {
+  id     String @id @default(cuid())
+
+  // Owner (the retailer/network user whose book this account belongs to).
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Full account number — AES-256-GCM encrypted (fieldEncryption.ts).
+  // Never stored in plain text. Decrypted server-side when initiating a transfer.
+  accountNumber     String // ENCRYPTED at rest
+  accountLast4      String // plain — display-only ("2946")
+  ifscCode          String
+  accountHolderName String // bank-verified name when isBankVerified = true
+  bankName          String
+  mobile            String
+
+  // Same Day partner reference id (KBENE_…). NOT unique — the partner registers
+  // accounts at the company level, so the same account registered by two
+  // retailers can carry the same reference. Kept as metadata only.
+  referenceId String?
+
+  // Registration state
+  registrationType   String  @default("register") // "register" | "verify"
+  verificationCharge Decimal @default(0) @db.Decimal(8, 2)
+  isRegistered       Boolean @default(true)
+  isBankVerified     Boolean @default(false) // true only when eKYC Hub verified
+
+  // Optional email for transfer notifications
+  email String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Every Bank Transfer initiated to this account rides the shared PayoutRequest
+  // lifecycle (rail=KNTEER), so the ledger lives there — not in a parallel table.
+  payoutRequests PayoutRequest[]
+
+  // One book entry per (owner, account, ifsc) — re-registering updates in place.
+  @@unique([userId, accountLast4, ifscCode])
+  @@index([userId])
+  @@index([ifscCode])
+  @@map("knteer_beneficiaries")
 }
 
 // ---------- Payout beneficiary book (penny-drop verified) ----------

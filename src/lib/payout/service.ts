@@ -5,6 +5,7 @@ import { decryptField } from "@/lib/crypto/fieldEncryption";
 import { toNumber, sub, round } from "@/lib/money";
 import { creditServiceMargin, reverseServiceMargin } from "@/lib/commission/revenue";
 import { getPartner, assertRealMoneyProvider } from "@/lib/partners";
+import { samedayKnteerPayout } from "@/lib/partners/sameday-knteer-payout";
 import { sendOpsAlert } from "@/lib/monitoring/alerts";
 import { enqueue, QUEUES } from "@/lib/queue";
 import { emitWebhookEvent } from "@/lib/platform/webhooks";
@@ -38,6 +39,28 @@ const TERMINAL: PayoutStatus[] = ["SUCCESS", "FAILED", "REJECTED", "REVERSED"];
 /** JSON-safe snapshot of a provider payload (never contains raw PII). */
 function asJson(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
   return (value ?? Prisma.JsonNull) as Prisma.InputJsonValue | typeof Prisma.JsonNull;
+}
+
+/**
+ * Thrown by resolveOnePayout when the KNTEER age gate (Rule #7) prevents
+ * force_failed within the 30-min cooldown window.
+ */
+export class PayoutResolveGateError extends Error {
+  public statusCode = 409;
+  public code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "PayoutResolveGateError";
+    this.code = code;
+  }
+}
+
+/**
+ * Routes KNTEER rows to the samedayKnteerPayout provider;
+ * all other (SETTLEMENT) rows go to the default payout partner.
+ */
+function payoutProviderForRow(row: { rail?: string | null }) {
+  return row.rail === "KNTEER" ? samedayKnteerPayout : getPartner("payout");
 }
 
 /** Enqueue the worker job that actually calls the payout provider. */
@@ -251,7 +274,11 @@ function payoutFailureReason(res: { code: string; message: string }): string {
 }
 
 /** Build the decrypted beneficiary block for the provider call. */
-function beneficiaryFor(row: PayoutRequest, contactMobile?: string) {
+function beneficiaryFor(
+  row: PayoutRequest,
+  contactMobile?: string,
+  knteerBene?: { bankName?: string | null; contactMobile?: string | null } | null
+) {
   if (row.mode === "UPI") {
     return { name: row.beneficiaryName, vpa: decryptField(row.accountNumber) };
   }
@@ -261,7 +288,8 @@ function beneficiaryFor(row: PayoutRequest, contactMobile?: string) {
     ifsc: row.ifsc ? decryptField(row.ifsc) : undefined,
     // Same Day requires a non-blank contact mobile on the registered account or
     // the transfer is rejected; the requester's own mobile is always present.
-    mobile: contactMobile,
+    mobile: knteerBene?.contactMobile || contactMobile,
+    bankName: knteerBene?.bankName ?? undefined,
   };
 }
 
@@ -307,7 +335,17 @@ export async function processPayoutInitiate(payoutRequestId: string): Promise<vo
     select: { userCode: true, phone: true },
   });
 
-  const provider = getPartner("payout");
+  // For KNTEER rows, fetch bankName + mobile from the linked KnteerBeneficiary.
+  let knteerBene: { bankName: string | null; contactMobile: string | null } | null = null;
+  if ((row as { rail?: string | null }).rail === "KNTEER" && (row as { knteerBeneficiaryId?: string | null }).knteerBeneficiaryId) {
+    const kb = await prisma.knteerBeneficiary.findUnique({
+      where: { id: (row as { knteerBeneficiaryId: string }).knteerBeneficiaryId },
+      select: { bankName: true, mobile: true },
+    });
+    if (kb) knteerBene = { bankName: kb.bankName, contactMobile: kb.mobile };
+  }
+
+  const provider = payoutProviderForRow(row as { rail?: string | null });
   // Never push real money through a mock in production. A mock "PAID" would
   // capture the hold (debit the user) without any bank transfer. Refuse instead
   // — the request stays PROCESSING (funds held) for ops/recon to resolve.
@@ -320,7 +358,7 @@ export async function processPayoutInitiate(payoutRequestId: string): Promise<vo
     userId: row.userId,
     mode: row.mode,
     amount: toNumber(row.amount),
-    beneficiary: beneficiaryFor(row, toContactMobile(user?.phone)),
+    beneficiary: beneficiaryFor(row, toContactMobile(user?.phone), knteerBene),
     purpose: user?.userCode
       ? `Pay by NxtGenPay by RT Code - ${user.userCode}`
       : `Pay by NxtGenPay ${row.userId}`,
@@ -433,7 +471,7 @@ export async function recoverPayoutReference(payoutRequestId: string): Promise<s
     return row?.bulkpeTxnId ?? null;
   }
 
-  const provider = getPartner("payout");
+  const provider = payoutProviderForRow(row as { rail?: string | null });
   if (typeof provider.listRecent !== "function") return null;
   assertRealMoneyProvider(
     provider,
@@ -533,7 +571,7 @@ export async function reconcilePayout(payoutRequestId: string): Promise<void> {
     }
   }
 
-  const provider = getPartner("payout");
+  const provider = payoutProviderForRow(row as { rail?: string | null });
   // A mock status poll unconditionally returns "PAID" — never let recon finalize
   // a phantom success (capture the hold with no real transfer) in production.
   assertRealMoneyProvider(
@@ -693,6 +731,20 @@ export async function resolveOnePayout(
       response: { operatorResolved: true, note: opts.note ?? null },
     });
   } else if (opts.action === "force_failed") {
+    // Rule #7: KNTEER rows require a 30-min age gate before force_failed to
+    // prevent accidental premature releases while the rail is still settling.
+    const isKnteer = (row as { rail?: string | null }).rail === "KNTEER";
+    if (isKnteer) {
+      const minAgeMs =
+        Number(process.env.KNTEER_MANUAL_REFUND_MIN_AGE_SEC ?? 1800) * 1000;
+      const ageMs = Date.now() - (row.processedAt ?? row.createdAt).getTime();
+      if (ageMs < minAgeMs) {
+        throw new PayoutResolveGateError(
+          "KNTEER_TOO_RECENT",
+          `Bank Transfer payouts must be at least ${Math.ceil(minAgeMs / 60000)} min old before manual force_failed (age: ${Math.ceil(ageMs / 60000)} min)`
+        );
+      }
+    }
     await finalizePayoutFailure(row.id, {
       failureReason: opts.note?.trim() || "Operator confirmed bank did not disburse",
       response: { operatorResolved: true, note: opts.note ?? null },

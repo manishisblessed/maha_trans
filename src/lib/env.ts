@@ -41,6 +41,16 @@ const schema = z.object({
   PARTNER_DMT_ENABLED: z.string().default("false"),
   PARTNER_UPI_ENABLED: z.string().default("false"),
   PARTNER_PAYOUT_ENABLED: z.string().default("false"),
+  PARTNER_KNTEER_PAYOUT_ENABLED: z.string().default("false"),
+  // Knteer (Bank Transfer) rail credentials — separate from SETTLEMENT
+  SAMEDAY_KNTEER_PAYOUT_API_KEY: z.string().min(1).optional(),
+  SAMEDAY_KNTEER_PAYOUT_API_SECRET: z.string().min(1).optional(),
+  // AES-256-GCM key for KnteerBeneficiary.accountNumber encryption (hex, 64 chars)
+  KNTEER_ACCOUNT_ENCRYPTION_KEY: z.string().min(1).optional(),
+  // Cooldown window (seconds) for same-account duplicate transfer guard
+  KNTEER_DUP_GUARD_COOLDOWN_SEC: z.string().default("1800"),
+  // Minimum age (seconds) of a KNTEER NEEDS_REVIEW row before operator can force_failed
+  KNTEER_MANUAL_REFUND_MIN_AGE_SEC: z.string().default("1800"),
   PARTNER_BBPS_ENABLED: z.string().default("false"),
   PARTNER_RECHARGE_ENABLED: z.string().default("false"),
   PARTNER_TRAVEL_ENABLED: z.string().default("false"),
@@ -82,6 +92,9 @@ const schema = z.object({
   // Falls back to POS key pair when unset. Gated by flags.rechargekit.
   SAMEDAY_RECHARGEKIT_API_KEY: z.string().min(1).optional(),
   SAMEDAY_RECHARGEKIT_API_SECRET: z.string().min(1).optional(),
+  // Cooling-off window (minutes) before a provider-confirmed-failed SameDay
+  // recon-capable txn is actually refunded to the retailer. 0 = no hold.
+  REFUND_HOLD_MINUTES: z.coerce.number().int().min(0).default(30),
 
   // Direct RechargeKit API — "Offline CC Bill Payment". Talks straight to
   // RechargeKit (no Same Day HMAC wrapper); auth via Authorization: Bearer.
@@ -257,6 +270,7 @@ export const flags = {
   dmt: env.PARTNER_DMT_ENABLED === "true",
   upi: env.PARTNER_UPI_ENABLED === "true",
   payout: env.PARTNER_PAYOUT_ENABLED === "true",
+  knteerPayout: env.PARTNER_KNTEER_PAYOUT_ENABLED === "true",
   bbps: env.PARTNER_BBPS_ENABLED === "true",
   recharge: env.PARTNER_RECHARGE_ENABLED === "true",
   travel: env.PARTNER_TRAVEL_ENABLED === "true",

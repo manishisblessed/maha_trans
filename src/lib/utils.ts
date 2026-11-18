@@ -135,3 +135,33 @@ export function generateRandomPassword(length = 10): string {
     .sort(() => Math.random() - 0.5)
     .join("");
 }
+
+/**
+ * Format an ISO timestamp in Indian Standard Time (IST / Asia/Kolkata).
+ * Returns "—" for null/undefined/invalid. Accepts optional Intl.DateTimeFormatOptions
+ * to override the default date+time format.
+ */
+export function formatIST(
+  iso: string | Date | undefined | null,
+  opts?: Intl.DateTimeFormatOptions
+): string {
+  if (!iso) return "—";
+  try {
+    const defaultOpts: Intl.DateTimeFormatOptions = {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return new Date(iso instanceof Date ? iso.toISOString() : iso).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      ...defaultOpts,
+      ...opts,
+    });
+  } catch {
+    return String(iso);
+  }
+}

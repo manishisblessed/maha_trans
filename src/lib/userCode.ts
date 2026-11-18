@@ -3,8 +3,11 @@ import { buildUserCode, USER_CODE_PREFIX } from "@/lib/utils";
 
 /**
  * Generate the next sequential userCode for a given role.
- * Queries the DB for the highest existing code with that prefix,
- * extracts its numeric suffix, and returns prefix + (max + 1).
+ *
+ * Checks BOTH the User table AND the UserKit table for the highest existing
+ * code with that prefix, then returns prefix + (MAX + 1). This guarantees
+ * global uniqueness: once a code is pre-minted into a kit it is permanently
+ * reserved and can never collide with a later user registration.
  *
  * Safe for concurrent use: the caller should retry on unique-constraint
  * violation (race between two simultaneous creates for the same role).
@@ -13,20 +16,27 @@ export async function generateNextUserCode(role: string): Promise<string> {
   const prefix = USER_CODE_PREFIX[role];
   if (!prefix) throw new Error(`No userCode prefix defined for role: ${role}`);
 
-  const latest = await prisma.user.findFirst({
-    where: { userCode: { startsWith: prefix } },
-    orderBy: { userCode: "desc" },
-    select: { userCode: true },
-  });
+  // Query both tables in parallel — take the MAX sequence across both.
+  const [latestUser, latestKit] = await Promise.all([
+    prisma.user.findFirst({
+      where: { userCode: { startsWith: prefix } },
+      orderBy: { userCode: "desc" },
+      select: { userCode: true },
+    }),
+    prisma.userKit.findFirst({
+      where: { userCode: { startsWith: prefix } },
+      orderBy: { userCode: "desc" },
+      select: { userCode: true },
+    }),
+  ]);
 
-  let seq = 1;
-  if (latest?.userCode) {
-    const numPart = parseInt(latest.userCode.slice(prefix.length), 10);
-    if (!isNaN(numPart)) {
-      seq = numPart - 100 + 1;
-    }
-  }
+  const extractSeq = (code?: string | null): number => {
+    if (!code) return 0;
+    const n = parseInt(code.slice(prefix.length), 10);
+    return isNaN(n) ? 0 : n - 100;
+  };
 
+  const seq = Math.max(extractSeq(latestUser?.userCode), extractSeq(latestKit?.userCode)) + 1;
   return buildUserCode(role, seq);
 }
 

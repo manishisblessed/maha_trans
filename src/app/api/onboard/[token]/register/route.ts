@@ -8,6 +8,7 @@ import { env } from "@/lib/env";
 import { needsSuccessorApproval } from "@/lib/declaration/types";
 import { getRequiredDocTypes, docTypeLabel } from "@/lib/onboarding/requiredDocuments";
 import { generateNextUserCode } from "@/lib/userCode";
+import { KIT_REQUIRED_ROLES } from "@/lib/kit/service";
 import { defaultServicesForRole } from "@/lib/settings";
 import {
   checkIdentityAvailability,
@@ -307,10 +308,26 @@ export async function POST(
   const isExistingUser = Boolean(invite.userId && existingUser);
   let newUserCode: string | undefined;
   let newEnabledServices: string[] = [];
+
+  // Check whether this invite has a kit reserved. If yes, the userCode comes
+  // from the kit (applied at KYC approval), so we do NOT generate one now.
+  // If no kit is linked (admin-created SD invites, or legacy invites), we
+  // generate a userCode at registration time as before.
+  const linkedKit = !isExistingUser
+    ? await prisma.userKit.findFirst({
+        where: { inviteId: invite.id, status: "RESERVED" },
+        select: { id: true, userCode: true },
+      })
+    : null;
+
+  const roleNeedsKit = KIT_REQUIRED_ROLES.includes(invite.role);
+
   if (!isExistingUser) {
-    newUserCode = await generateNextUserCode(invite.role);
-    // New network users start with only the tier's configured default services
-    // (empty = none); admins grant the rest per user afterwards.
+    if (!linkedKit && !roleNeedsKit) {
+      // SD / admin-created user: generate userCode at registration (no kit system).
+      newUserCode = await generateNextUserCode(invite.role);
+    }
+    // For kit-backed roles: userCode stays null until KYC approval (kit activation).
     newEnabledServices = await defaultServicesForRole(invite.role);
   }
 
@@ -436,6 +453,17 @@ export async function POST(
       where: { inviteId: invite.id, userId: null },
       data: { userId: user.id },
     });
+
+    // ── Kit: advance RESERVED → ASSIGNED ───────────────────────────────────
+    // The kit was reserved when the parent created the invite. Now that the
+    // child has registered, mark it ASSIGNED so it enters the admin approval
+    // queue alongside the KYC review.
+    if (linkedKit) {
+      await tx.userKit.update({
+        where: { id: linkedKit.id },
+        data: { status: "ASSIGNED", registeredAt: new Date() },
+      });
+    }
 
     return user;
   }, {

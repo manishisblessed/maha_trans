@@ -17,6 +17,7 @@ import { renderInviteEmail } from "@/lib/email/templates";
 import { resolveNotificationBrand } from "@/lib/tenant/notifications";
 import { getAdminInviteScope } from "@/lib/security/ownership";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
+import { KIT_REQUIRED_ROLES, getKitTypeForRole } from "@/lib/kit/service";
 
 /**
  * A PENDING invite whose link has passed `expiresAt` is effectively EXPIRED —
@@ -56,6 +57,8 @@ const CreateBody = z.object({
   name: z.string().min(2).optional(),
   role: z.enum(["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR"]).optional(),
   parentId: z.string().cuid().optional(),
+  // Required for network parents (SD/MD/DT). Admin/MASTER_ADMIN are exempt.
+  kitId: z.string().cuid().optional(),
 });
 
 export const fetchCache = "force-no-store";
@@ -123,6 +126,49 @@ export async function POST(req: Request) {
     );
   }
 
+  // ── Kit gate (network parents only) ─────────────────────────────────────
+  // SD / MD / DT MUST select an AVAILABLE kit before the invite is created.
+  // The kit's pre-minted userCode is reserved for this invite immediately.
+  // Admins (MASTER_ADMIN / ADMIN / SUPPORT) are exempt from the kit gate.
+  const isNetworkParent = KIT_REQUIRED_ROLES.includes(user.role);
+  let reservedKitId: string | null = null;
+
+  if (isNetworkParent) {
+    if (!parsed.data.kitId) {
+      return NextResponse.json(
+        { error: "You must select a kit code before sending an invite. Purchase kits from Kit Manager first.", code: "KIT_REQUIRED" },
+        { status: 400 }
+      );
+    }
+
+    const expectedKitType = getKitTypeForRole(user.role);
+    const kit = await prisma.userKit.findUnique({
+      where: { id: parsed.data.kitId },
+      select: { id: true, ownerId: true, status: true, kitType: true, userCode: true },
+    });
+
+    if (!kit) {
+      return NextResponse.json({ error: "Kit not found" }, { status: 404 });
+    }
+    if (kit.ownerId !== user.id) {
+      return NextResponse.json({ error: "This kit does not belong to you" }, { status: 403 });
+    }
+    if (kit.status !== "AVAILABLE") {
+      return NextResponse.json(
+        { error: `Kit ${kit.userCode} is not available (status: ${kit.status}). Choose a different kit.` },
+        { status: 409 }
+      );
+    }
+    if (kit.kitType !== expectedKitType) {
+      return NextResponse.json(
+        { error: `Wrong kit type for inviting a ${role.replace(/_/g, " ")}` },
+        { status: 400 }
+      );
+    }
+
+    reservedKitId = kit.id;
+  }
+
   // Determine parentId:
   // - Network roles creating their child → they are the parent
   // - Master Admin providing an explicit parentId → use it (validated below)
@@ -171,6 +217,18 @@ export async function POST(req: Request) {
       ...(platformOwnerId ? { platformOwnerId } : {}),
     },
   });
+
+  // ── Reserve the kit for this invite (network parents only) ────────────────
+  if (reservedKitId) {
+    await prisma.userKit.update({
+      where: { id: reservedKitId },
+      data: {
+        status:     "RESERVED",
+        inviteId:   invite.id,
+        reservedAt: new Date(),
+      },
+    });
+  }
 
   // Build a tenant-aware onboarding link
   const { getEffectivePlatformUrl } = await import("@/lib/tenant/context");

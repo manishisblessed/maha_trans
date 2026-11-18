@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Send, CheckCircle2, Copy } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Send, CheckCircle2, Copy, PackagePlus, AlertTriangle, Package } from "lucide-react";
 import { LinkSimple, UserPlus, CheckCircle } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -11,26 +11,80 @@ import { Badge } from "@/components/ui/Badge";
 import { FadeIn, SectionCard } from "@/components/dashboard/patterns";
 import { type Role } from "@/lib/auth";
 import { useAuth } from "@/lib/useAuth";
+import Link from "next/link";
+
+type AvailableKit = {
+  id: string;
+  userCode: string;
+  kitType: string;
+  purchasedAt: string;
+};
+
+type KitsResponse = {
+  kits: AvailableKit[];
+  total: number;
+};
+
+/** Roles that must select a kit before inviting */
+const KIT_REQUIRED_ROLES: Role[] = ["super-distributor", "master-distributor", "distributor"];
 
 export default function OnboardInvitePage() {
   const { session } = useAuth();
   const role: Role = session?.role ?? "retailer";
-  const [done, setDone] = useState(false);
+
+  const [done, setDone]           = useState(false);
   const [onboardingLink, setOnboardingLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [error, setError]         = useState("");
+  const [copied, setCopied]       = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-  });
+  const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  const [selectedKitId, setSelectedKitId] = useState("");
+
+  // Available kits for kit-required roles
+  const [availableKits, setAvailableKits]       = useState<AvailableKit[]>([]);
+  const [kitsLoading, setKitsLoading]           = useState(false);
+  const [kitsLoadError, setKitsLoadError]       = useState("");
+
+  const needsKit = KIT_REQUIRED_ROLES.includes(role);
 
   const childLabel =
-    role === "super-distributor" ? "Master Distributor" :
+    role === "super-distributor"  ? "Master Distributor" :
     role === "master-distributor" ? "Distributor" :
     "Retailer";
+
+  const kitLabel =
+    role === "super-distributor"  ? "MD-Kit" :
+    role === "master-distributor" ? "DT-Kit" :
+    "RT-Kit";
+
+  const loadAvailableKits = useCallback(async () => {
+    if (!needsKit) return;
+    setKitsLoading(true);
+    setKitsLoadError("");
+    try {
+      const res = await fetch("/api/network/kits?status=AVAILABLE&limit=100");
+      const data: KitsResponse = await res.json();
+      if (!res.ok) {
+        setKitsLoadError("Could not load available kits");
+        return;
+      }
+      setAvailableKits(data.kits ?? []);
+      // Auto-select the first available kit
+      if (data.kits?.length > 0 && !selectedKitId) {
+        setSelectedKitId(data.kits[0].id);
+      }
+    } catch {
+      setKitsLoadError("Network error loading kits");
+    } finally {
+      setKitsLoading(false);
+    }
+  }, [needsKit, selectedKitId]);
+
+  useEffect(() => {
+    loadAvailableKits();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsKit]);
 
   function updateForm(key: string, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -38,18 +92,27 @@ export default function OnboardInvitePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (needsKit && !selectedKitId) {
+      setError("Please select a kit code before sending the invite.");
+      return;
+    }
     setSubmitting(true);
     setError("");
 
     try {
+      const body: Record<string, unknown> = {
+        name:  form.name || undefined,
+        email: form.email,
+        phone: form.phone.replace(/\s/g, ""),
+      };
+      if (needsKit && selectedKitId) {
+        body.kitId = selectedKitId;
+      }
+
       const res = await fetch("/api/admin/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name || undefined,
-          email: form.email,
-          phone: form.phone.replace(/\s/g, ""),
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -73,6 +136,7 @@ export default function OnboardInvitePage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  // ── Success screen ────────────────────────────────────────────────────────
   if (done) {
     return (
       <div className="mx-auto max-w-xl">
@@ -105,7 +169,12 @@ export default function OnboardInvitePage() {
             </div>
 
             <div className="mt-6">
-              <Button onClick={() => { setDone(false); setForm({ name: "", phone: "", email: "" }); }}>
+              <Button onClick={() => {
+                setDone(false);
+                setForm({ name: "", phone: "", email: "" });
+                setSelectedKitId("");
+                loadAvailableKits();
+              }}>
                 <Send className="h-4 w-4" /> Send another invite
               </Button>
             </div>
@@ -114,6 +183,9 @@ export default function OnboardInvitePage() {
       </div>
     );
   }
+
+  // ── No kits warning ───────────────────────────────────────────────────────
+  const hasNoKits = needsKit && !kitsLoading && availableKits.length === 0 && !kitsLoadError;
 
   return (
     <div className="space-y-6">
@@ -158,7 +230,75 @@ export default function OnboardInvitePage() {
                 onChange={(e) => updateForm("email", e.target.value)}
               />
 
-              <Button type="submit" isLoading={submitting} className="w-full" size="lg">
+              {/* ── Kit selector (SD/MD/DT only) ─────────────────────────── */}
+              {needsKit && (
+                <div className="rounded-2xl border border-ink-200 bg-ink-50 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-brand-600" />
+                    <span className="text-sm font-semibold text-ink-800">
+                      Select {kitLabel} Code <span className="text-rose-500">*</span>
+                    </span>
+                  </div>
+
+                  {kitsLoading && (
+                    <p className="text-sm text-ink-500">Loading available kits…</p>
+                  )}
+
+                  {kitsLoadError && (
+                    <p className="text-sm text-rose-600">{kitsLoadError}</p>
+                  )}
+
+                  {hasNoKits && (
+                    <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 space-y-2">
+                      <div className="flex items-center gap-2 text-amber-700">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        <span className="text-sm font-medium">No kits available</span>
+                      </div>
+                      <p className="text-xs text-amber-600">
+                        You must purchase at least one {kitLabel} before you can invite a {childLabel}.
+                      </p>
+                      <Link href="/dashboard/network/kits">
+                        <Button variant="outline" size="sm" className="mt-1">
+                          <PackagePlus className="h-3.5 w-3.5" />
+                          Buy {kitLabel}s
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+
+                  {availableKits.length > 0 && (
+                    <>
+                      <select
+                        value={selectedKitId}
+                        onChange={(e) => setSelectedKitId(e.target.value)}
+                        required
+                        className="w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      >
+                        <option value="">— Select a kit code —</option>
+                        {availableKits.map((kit) => (
+                          <option key={kit.id} value={kit.id}>
+                            {kit.userCode} · {kit.kitType.replace("_KIT", "-Kit")} · purchased {new Date(kit.purchasedAt).toLocaleDateString("en-IN")}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-ink-500">
+                        {availableKits.length} kit{availableKits.length !== 1 ? "s" : ""} available ·{" "}
+                        <Link href="/dashboard/network/kits" className="text-brand-600 underline underline-offset-2">
+                          Buy more
+                        </Link>
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                isLoading={submitting}
+                disabled={needsKit && (hasNoKits || !selectedKitId)}
+                className="w-full"
+                size="lg"
+              >
                 <Send className="h-4 w-4" />
                 Send onboarding invite
               </Button>
@@ -186,6 +326,22 @@ export default function OnboardInvitePage() {
               <Badge variant="energy">Direct child</Badge>
             </div>
           </SectionCard>
+
+          {needsKit && (
+            <SectionCard title="Kit Code" padding="md">
+              <p className="text-xs text-ink-600 leading-relaxed">
+                A <strong>{kitLabel}</strong> code is pre-minted for the {childLabel.toLowerCase()}.
+                It becomes their permanent user ID after admin approval.
+                One kit = one onboarding slot.
+              </p>
+              <Link href="/dashboard/network/kits" className="mt-3 block">
+                <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
+                  <PackagePlus className="h-4 w-4" />
+                  Manage my kits
+                </Button>
+              </Link>
+            </SectionCard>
+          )}
         </div>
       </div>
     </div>

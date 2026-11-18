@@ -118,6 +118,10 @@ export const QUEUES = {
   // and credits the reward. Idempotent per (user, scheme, YYYY-MM). See
   // src/lib/incentive/engine.ts.
   INCENTIVE_MONTHLY: "incentive.monthly",
+  // User Kit cooling sweep (daily at 00:30 IST): transitions COOLING kits whose
+  // coolingEndsAt has passed back to AVAILABLE, making them reusable. Fully
+  // idempotent — safe to run multiple times. See src/lib/kit/coolingSweep.ts.
+  KIT_COOLING_SWEEP: "kit.cooling.sweep",
   // Outcome verification sweep (hourly): re-polls recent TERMINAL service rows
   // (SUCCESS/FAILED/REFUNDED on BBPS + RechargeKit) against the provider and
   // flags provider clawbacks, false refunds, and amount mismatches (surfaced on

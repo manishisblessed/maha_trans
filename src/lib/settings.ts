@@ -263,6 +263,20 @@ const SETTING_SCHEMAS = {
     MASTER_DISTRIBUTOR: z.array(z.string()).default([]),
     SUPER_DISTRIBUTOR: z.array(z.string()).default([]),
   }),
+
+  // ── User Kit pricing ──────────────────────────────────────────────────────
+  // The price a parent pays (from their wallet) to purchase one kit of that
+  // type. MD_KIT is purchased by SD (to onboard MDs), DT_KIT by MD (DTs),
+  // RT_KIT by DT (RTs). Admin-editable; changing affects future purchases only.
+  "kit.MD_KIT.price": z.object({
+    amount: z.number().positive().default(500),
+  }),
+  "kit.DT_KIT.price": z.object({
+    amount: z.number().positive().default(300),
+  }),
+  "kit.RT_KIT.price": z.object({
+    amount: z.number().positive().default(100),
+  }),
 } as const;
 
 /** Network (non-staff) roles that carry a per-tier default service allowlist. */

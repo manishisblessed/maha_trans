@@ -11,6 +11,7 @@ import { resolveNotificationBrand } from "@/lib/tenant/notifications";
 import { docTypeLabel } from "@/lib/onboarding/requiredDocuments";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
 import { getResubmitStatus } from "@/lib/onboarding/resubmission";
+import { activateKitOnKycApproval, handleKycRejectedKit } from "@/lib/kit/service";
 
 const PatchBody = z.object({
   action: z.enum(["approve", "reject", "request_resubmission"]),
@@ -146,6 +147,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
           // ignore — the DB row is already gone, which is what matters
         }
       }
+    }
+
+    // ── Kit activation ───────────────────────────────────────────────────────
+    // If this user was onboarded via a kit-backed invite, apply the pre-minted
+    // userCode to their account and mark the kit ACTIVE. Best-effort — a missing
+    // kit (admin-invited SD, legacy invites) is silently skipped.
+    try {
+      await activateKitOnKycApproval(kyc.user.id, admin.id);
+    } catch (e) {
+      // Kit activation failure should not block the KYC approval itself.
+      console.error("[kyc.approve] kit activation error:", e);
     }
 
     return NextResponse.json({ status: "APPROVED" });
@@ -371,6 +383,16 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
       },
     }),
   ]);
+
+  // ── Kit cooling on hard rejection ─────────────────────────────────────────
+  // The kit linked to this user's onboarding invite enters the cooling period
+  // so the parent must wait before reusing the code for a different invitee.
+  try {
+    await handleKycRejectedKit(kyc.user.id, admin.id);
+  } catch (e) {
+    // Non-fatal — the KYC rejection has already committed.
+    console.error("[kyc.reject] kit cooling error:", e);
+  }
 
   return NextResponse.json({ status: "REJECTED" });
 }

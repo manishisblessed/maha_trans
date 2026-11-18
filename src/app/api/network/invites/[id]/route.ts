@@ -9,6 +9,7 @@ import { ONBOARD_CAPABLE_ROLES } from "@/lib/hierarchy";
 import { computeInviteExpiry } from "@/lib/onboarding/inviteExpiry";
 import { sendInviteLink, onboardingLinkForTenant } from "@/lib/onboarding/inviteNotifications";
 import { getOnboardingProgressForInvite } from "@/lib/onboarding/status";
+import { handleInviteCancelledKit, handleInviteExpiredKit } from "@/lib/kit/service";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -129,6 +130,15 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     // onDelete: SetNull), so the KYC audit trail is preserved. We log the
     // revocation to the AuditLog first, before the row is gone.
     if (action === "cancel") {
+      // ── Kit cooling: free the reserved/assigned kit before deleting invite ──
+      // The kit's inviteId FK uses onDelete: SetNull, so if we delete the invite
+      // first the kit loses its reference — we must transition it BEFORE delete.
+      try {
+        await handleInviteCancelledKit(invite.id);
+      } catch (e) {
+        console.error("[invite.cancel] kit cooling error:", e);
+      }
+
       await prisma.auditLog.create({
         data: {
           userId: user.id,
@@ -182,6 +192,15 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
           { error: `Cannot reshare an invite with status ${invite.status}` },
           { status: 400 }
         );
+      }
+      // If the invite was expired and had a RESERVED kit, free it into cooling
+      // before resharing. The parent must select a new kit for the reshared link.
+      if (invite.expiresAt < now) {
+        try {
+          await handleInviteExpiredKit(invite.id);
+        } catch (e) {
+          console.error("[invite.reshare] kit expiry cooling error:", e);
+        }
       }
       const updated = await prisma.invite.update({
         where: { id: invite.id },

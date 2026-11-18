@@ -31,6 +31,7 @@ export async function handlePayoutWebhookEvent(
       [
         pick(data, ["reference_id", "referenceId"]),
         pick(data, ["transcation_id", "transaction_id", "txn_id", "txnId"]),
+        pick(data, ["partner_trans_id", "partnerTransId"]),
         pick(data, ["utr", "rrn"]),
       ].filter(Boolean) as string[]
     )

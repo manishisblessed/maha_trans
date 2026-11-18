@@ -5,6 +5,19 @@ import { priceScopeFamily } from "../services/priceScope";
 import { resolveUserScheme, type SchemeSource } from "./resolve-scheme";
 
 /**
+ * Thrown when no active scheme slab matches the user/service/amount combination.
+ * Callers should respond with 422 and block the transaction (fail-closed).
+ */
+export class PricingUnavailableError extends Error {
+  public statusCode = 422;
+  public code = "PRICING_UNAVAILABLE";
+  constructor(message = "No active pricing slab found for this service and amount") {
+    super(message);
+    this.name = "PricingUnavailableError";
+  }
+}
+
+/**
  * Scheme resolver — the single source of truth for "what does this user pay
  * (charge) and earn (commission) for a given service + amount?".
  *

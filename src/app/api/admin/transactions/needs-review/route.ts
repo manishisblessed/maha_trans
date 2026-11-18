@@ -2,58 +2,82 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { deriveTxnRefs } from "@/lib/recon/refs";
+import { toNumber } from "@/lib/money";
 
 /**
- * Admin "Needs review" queue.
- *
- * Lists transactions parked in NEEDS_REVIEW — bill payments / recharges whose
- * provider outcome was INDETERMINATE (lost response, timeout, 5xx). Their funds
- * are HELD (never blind-refunded); an operator verifies each against the
- * provider panel and resolves it via POST /api/admin/transactions/resolve.
+ * Admin "Needs review" queue — enhanced with biller details, pollable refs,
+ * pagination, and total exposure so the UI can show operators everything
+ * they need to verify each held payment against the provider panel.
  */
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+/** GET /api/admin/transactions/needs-review?page=1 */
+export async function GET(req: Request) {
   try {
     await requireRole("MASTER_ADMIN", "ADMIN");
 
-    const rows = await prisma.transaction.findMany({
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
+    const pageSize = 25;
+    const skip = (page - 1) * pageSize;
+
+    const [rows, total] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { status: "NEEDS_REVIEW" },
+        orderBy: { createdAt: "asc" },
+        take: pageSize,
+        skip,
+        select: {
+          id: true,
+          refId: true,
+          userId: true,
+          status: true,
+          service: true,
+          partner: true,
+          partnerTxnId: true,
+          amount: true,
+          fee: true,
+          operator: true,
+          customer: true,
+          request: true,
+          response: true,
+          errorCode: true,
+          errorMessage: true,
+          createdAt: true,
+          updatedAt: true,
+          refundEligibleAt: true,
+          user: { select: { phone: true, userCode: true } },
+        },
+      }),
+      prisma.transaction.count({ where: { status: "NEEDS_REVIEW" } }),
+    ]);
+
+    const exposure = await prisma.transaction.aggregate({
       where: { status: "NEEDS_REVIEW" },
-      orderBy: { createdAt: "asc" },
-      take: 200,
-      select: {
-        id: true,
-        refId: true,
-        service: true,
-        partner: true,
-        partnerTxnId: true,
-        amount: true,
-        fee: true,
-        status: true,
-        errorCode: true,
-        errorMessage: true,
-        createdAt: true,
-        user: { select: { id: true, name: true, email: true } },
-      },
+      _sum: { amount: true },
+    });
+
+    const items = rows.map((r) => {
+      const { request, response, ...rest } = r;
+      return {
+        ...rest,
+        amount: toNumber(r.amount),
+        fee: toNumber(r.fee),
+        refs: deriveTxnRefs({ partnerTxnId: r.partnerTxnId, request, response }),
+        createdAt: r.createdAt.toISOString(),
+        updatedAt: r.updatedAt.toISOString(),
+      };
     });
 
     return NextResponse.json({
-      rows: rows.map((t) => ({
-        id: t.id,
-        refId: t.refId,
-        service: t.service,
-        partner: t.partner,
-        partnerTxnId: t.partnerTxnId,
-        amount: Number(t.amount),
-        fee: Number(t.fee),
-        status: t.status,
-        errorCode: t.errorCode,
-        errorMessage: t.errorMessage,
-        createdAt: t.createdAt.toISOString(),
-        user: t.user,
-      })),
+      items,
+      total,
+      page,
+      pageSize,
+      exposure: toNumber(exposure._sum?.amount ?? 0),
     });
   } catch (e) {
     return toErrorResponse(e);

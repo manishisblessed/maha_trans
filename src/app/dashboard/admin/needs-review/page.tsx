@@ -2,212 +2,664 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, RefreshCw, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  Copy,
+  Loader2,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { DataTable, type Column } from "@/components/dashboard/DataTable";
 import { StatusChip } from "@/components/dashboard/patterns/StatusChip";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatINR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-type Row = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type NeedsReviewItem = {
   id: string;
   refId: string;
+  userId: string;
+  status: string;
   service: string;
   partner: string | null;
   partnerTxnId: string | null;
   amount: number;
   fee: number;
-  status: string;
+  operator: string | null;
+  customer: string | null;
   errorCode: string | null;
   errorMessage: string | null;
+  refs: string[];
   createdAt: string;
-  user: { id: string; name: string; email: string };
+  updatedAt: string;
+  refundEligibleAt: string | null;
+  user: { phone: string; userCode: string | null } | null;
 };
 
-function prettyService(s: string) {
-  return s
-    .split("_")
-    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-    .join(" ");
+type LiveStatus = {
+  found: boolean;
+  refId?: string;
+  status?: string;
+  rail?: string;
+  pollable?: boolean;
+  providerStatus?: string;
+  requestId?: string | null;
+  matchedRef?: string | null;
+  amount?: number | null;
+  candidates?: string[];
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function istFull(iso: string) {
+  return new Date(iso).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
+/** "Refund in Xm" / "Refund ready" label for cooling-off window rows. */
+function etaLabel(iso: string): string {
+  const remaining = Math.ceil((new Date(iso).getTime() - Date.now()) / 60_000);
+  if (remaining <= 0) return "Refund ready";
+  if (remaining < 60) return `Refund in ${remaining}m`;
+  const hrs = Math.floor(remaining / 60);
+  return `Refund in ${hrs}h ${remaining % 60}m`;
+}
+
+function serviceName(code: string) {
+  const map: Record<string, string> = {
+    BILL_ELECTRICITY: "Electricity",
+    BILL_WATER: "Water",
+    BILL_GAS: "Gas",
+    BILL_CREDIT_CARD: "Credit Card",
+    BILL_EDUCATION: "Education",
+    BILL_INSURANCE: "Insurance",
+    RECHARGE_BROADBAND: "Broadband",
+    RECHARGE_PREPAID: "Mobile Recharge",
+  };
+  return map[code] ?? code.split("_").map((w) => w[0] + w.slice(1).toLowerCase()).join(" ");
+}
+
+function CopyChip({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+  return (
+    <button
+      onClick={copy}
+      title={`Copy ${value}`}
+      className="inline-flex max-w-[14ch] items-center gap-1 overflow-hidden rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 font-mono text-[11px] text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+    >
+      <span className="truncate">{value}</span>
+      {copied ? (
+        <ClipboardCheck className="h-3 w-3 shrink-0 text-emerald-500" />
+      ) : (
+        <Copy className="h-3 w-3 shrink-0" />
+      )}
+    </button>
+  );
+}
+
+function ProviderStatusChip({ status }: { status: string }) {
+  return <StatusChip status={status} />;
+}
+
+// ─── Resolve step state machine ───────────────────────────────────────────────
+// Step 1: confirmRef         — confirm which internal refId to resolve
+// Step 2: needProviderRef    — ask for the provider-panel ref (or "not found")
+// Step 3: confirmNotFound    — final "are you SURE this is not in provider panel?"
+type Step = "idle" | "confirmRef" | "needProviderRef" | "confirmNotFound";
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function NeedsReviewPage() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [resolving, setResolving] = useState(false);
+  const [items, setItems] = useState<NeedsReviewItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const [exposure, setExposure] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // Resolve dialog state
-  const [target, setTarget] = useState<Row | null>(null);
+  const [selected, setSelected] = useState<NeedsReviewItem | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const notify = useCallback((text: string, ok: boolean) => {
-    if (ok) toast.success(text);
-    else toast.error(text);
-  }, []);
+  // Resolve flow
+  const [step, setStep] = useState<Step>("idle");
+  const [resolveBusy, setResolveBusy] = useState(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  // Live status
+  const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
+  const [liveStatusLoading, setLiveStatusLoading] = useState(false);
+
+  const load = useCallback(async (p: number) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/transactions/needs-review");
-      const d = await res.json();
-      if (!res.ok) throw new Error(d?.error ?? "Failed to load held payments");
-      setRows(d.rows);
-    } catch (e) {
-      notify(e instanceof Error ? e.message : "Failed to load held payments", false);
+      const r = await fetch(`/api/admin/transactions/needs-review?page=${p}`);
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        toast.error(d?.error ?? "Failed to load held payments");
+        return;
+      }
+      const d = await r.json();
+      setItems(d.items ?? []);
+      setTotal(d.total ?? 0);
+      setExposure(d.exposure ?? 0);
+    } catch {
+      toast.error("Failed to load held payments");
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(page); }, [load, page]);
 
-  function openResolve(row: Row) {
-    setTarget(row);
+  function openDetails(row: NeedsReviewItem) {
+    setSelected(row);
+    setDetailsOpen(true);
+    setLiveStatus(null);
+    setResolveError(null);
+    setStep("idle");
   }
 
-  async function confirmResolve(providerRef: string) {
-    if (!target) return;
-    setResolving(true);
+  async function fetchLiveStatus() {
+    if (!selected) return;
+    setLiveStatusLoading(true);
+    setLiveStatus(null);
     try {
-      const res = await fetch("/api/admin/transactions/resolve", {
+      const r = await fetch("/api/admin/transactions/status-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ref: target.refId,
-          providerRef: providerRef.trim() || undefined,
-        }),
+        body: JSON.stringify({ refId: selected.refId }),
       });
-      const d = await res.json();
-      if (!res.ok) {
-        throw new Error(typeof d?.error === "string" ? d.error : "Could not resolve this payment");
-      }
-      const o = d.result?.outcome as string | undefined;
-      const msg =
-        o === "settled"
-          ? "Provider confirmed SUCCESS — payment settled."
-          : o === "refunded"
-            ? "Provider confirmed failure — reserve returned to the retailer."
-            : o === "corrected"
-              ? "Corrected to SUCCESS; any earlier refund was clawed back via a lien."
-              : "Resolved.";
-      notify(msg, true);
-      setTarget(null);
-      await load();
-    } catch (e) {
-      notify(e instanceof Error ? e.message : "Could not resolve this payment", false);
+      const d = await r.json();
+      setLiveStatus(d);
+    } catch {
+      toast.error("Failed to fetch live status");
     } finally {
-      setResolving(false);
+      setLiveStatusLoading(false);
     }
   }
 
-  const columns: Column<Row>[] = [
+  async function runResolve(opts: { providerRef?: string }) {
+    if (!selected) return;
+    setResolveBusy(true);
+    setResolveError(null);
+    try {
+      const r = await fetch("/api/admin/transactions/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          refId: selected.refId,
+          providerRef: opts.providerRef || undefined,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setResolveError(d.error ?? "Resolve failed");
+        return;
+      }
+      const outcome = d.outcome as string | undefined;
+      const msg =
+        outcome === "settled"
+          ? "Provider confirmed SUCCESS — payment settled."
+          : outcome === "refunded"
+          ? "Provider confirmed failure — reserve returned to retailer."
+          : outcome === "corrected"
+          ? "Corrected to SUCCESS; any earlier refund was clawed back via a lien."
+          : outcome === "noop"
+          ? "Already resolved — no change needed."
+          : "Resolved.";
+      toast.success(msg);
+      setDetailsOpen(false);
+      setStep("idle");
+      load(page);
+    } catch {
+      setResolveError("Network error — please retry.");
+    } finally {
+      setResolveBusy(false);
+    }
+  }
+
+  async function runForceRefundNotFound() {
+    if (!selected) return;
+    setResolveBusy(true);
+    setResolveError(null);
+    try {
+      const r = await fetch("/api/admin/transactions/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refId: selected.refId, forceRefundNotFound: true }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setResolveError(d.error ?? "Force refund failed");
+        return;
+      }
+      toast.success("Payment not found in provider panel — refund issued to retailer.");
+      setDetailsOpen(false);
+      setStep("idle");
+      load(page);
+    } catch {
+      setResolveError("Network error — please retry.");
+    } finally {
+      setResolveBusy(false);
+    }
+  }
+
+  // ─── DataTable columns ────────────────────────────────────────────────────
+
+  const columns: Column<NeedsReviewItem>[] = [
     {
       key: "refId",
-      header: "Ref",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="font-mono text-xs text-ink-900">{r.refId}</span>
-          <span className="text-[11px] text-ink-400">
-            {new Date(r.createdAt).toLocaleString("en-IN")}
-          </span>
+      header: "Ref ID",
+      render: (row) => (
+        <div className="flex flex-col gap-0.5">
+          <CopyChip value={row.refId} />
+          <span className="text-[11px] text-ink-400">{istFull(row.createdAt)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "service",
+      header: "Biller / Card",
+      render: (row) => (
+        <div className="min-w-0">
+          <div className="text-xs font-semibold text-ink-800">{serviceName(row.service)}</div>
+          {row.operator && <div className="text-[11px] text-ink-500 truncate">{row.operator}</div>}
+          {row.customer && (
+            <div className="font-mono text-[11px] text-ink-400 truncate">{row.customer}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "refs",
+      header: "Verify Refs",
+      render: (row) =>
+        row.refs.length === 0 ? (
+          <span className="text-xs text-ink-400 italic">None</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {row.refs.slice(0, 3).map((ref) => (
+              <CopyChip key={ref} value={ref} />
+            ))}
+            {row.refs.length > 3 && (
+              <span className="text-[11px] text-ink-400">+{row.refs.length - 3} more</span>
+            )}
+          </div>
+        ),
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      align: "right",
+      render: (row) => (
+        <div className="flex flex-col items-end">
+          <span className="font-semibold tabular-nums">{formatINR(row.amount)}</span>
+          {row.fee > 0 && (
+            <span className="text-[11px] text-ink-400">+ {formatINR(row.fee)} fee</span>
+          )}
         </div>
       ),
     },
     {
       key: "user",
       header: "Retailer",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="text-sm text-ink-900">{r.user.name}</span>
-          <span className="text-[11px] text-ink-400">{r.user.email}</span>
-        </div>
-      ),
-    },
-    {
-      key: "service",
-      header: "Service",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="text-sm text-ink-900">{prettyService(r.service)}</span>
-          <span className="text-[11px] text-ink-400">{r.partner ?? "—"}</span>
-        </div>
-      ),
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      align: "right",
-      render: (r) => (
-        <div className="flex flex-col items-end">
-          <span className="font-medium text-ink-900">{formatINR(r.amount)}</span>
-          {r.fee > 0 && <span className="text-[11px] text-ink-400">+ {formatINR(r.fee)} fee</span>}
+      render: (row) => (
+        <div className="min-w-0">
+          <div className="text-xs text-ink-800">{row.user?.userCode ?? "—"}</div>
+          <div className="text-[11px] text-ink-500">{row.user?.phone ?? "—"}</div>
         </div>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (r) => (
+      render: (row) => (
         <div className="flex flex-col gap-1">
-          <StatusChip status={r.status} />
-          {r.errorCode && <span className="text-[11px] text-ink-400">{r.errorCode}</span>}
+          {row.refundEligibleAt ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+              <Clock className="h-3 w-3" />
+              {etaLabel(row.refundEligibleAt)}
+            </span>
+          ) : (
+            <StatusChip status={row.status} />
+          )}
+          {row.errorCode && <span className="text-[11px] text-ink-400">{row.errorCode}</span>}
         </div>
       ),
     },
     {
-      key: "actions",
+      key: "id",
       header: "",
       align: "right",
-      render: (r) => (
-        <Button size="sm" variant="outline" onClick={() => openResolve(r)}>
+      render: (row) => (
+        <Button size="sm" variant="outline" onClick={() => openDetails(row)}>
           <ShieldCheck className="mr-1.5 h-4 w-4" />
-          Verify & resolve
+          Details
         </Button>
       ),
     },
   ];
 
+  // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
     <>
       <PageHeader
+        eyebrow="Admin / Transactions"
         title="Needs Review"
-        description="Payments with an INDETERMINATE provider outcome (lost response, timeout, 5xx). Funds are HELD — never auto-refunded — until verified against the provider panel."
         icon={AlertTriangle}
+        description={`${total} payment${total !== 1 ? "s" : ""} held for verification · Exposure ${formatINR(exposure)}`}
         actions={
-          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-            <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Button variant="outline" size="sm" onClick={() => load(page)} disabled={loading}>
+            <RefreshCw className={cn("mr-1.5 h-4 w-4", loading && "animate-spin")} />
             Refresh
           </Button>
         }
       />
 
-      <DataTable<Row>
-        title={`Held payments (${rows.length})`}
+      <DataTable<NeedsReviewItem>
+        title={`Held payments (${total})`}
         columns={columns}
-        data={rows}
+        data={items}
         loading={loading}
         emptyIcon={ShieldCheck}
         empty="No payments are awaiting review — all clear."
       />
 
-      <ConfirmDialog
-        open={!!target}
-        title="Verify & resolve with provider"
-        description={
-          target
-            ? `Re-checks ${target.refId} (${formatINR(target.amount)}) against the provider's own status API. It settles, refunds, or — if the provider confirms SUCCESS on a wrongly-failed row — corrects it with a lien clawback. Nothing changes if the provider can't confirm. Optionally paste the pay-step reference (order_id / txn_id) from the partner panel below.`
-            : ""
-        }
-        confirmLabel="Verify now"
-        cancelLabel="Cancel"
-        tone="default"
-        busy={resolving}
-        onConfirm={confirmResolve}
-        onClose={() => !resolving && setTarget(null)}
-        input={{ label: "Provider pay-step reference (optional)", placeholder: "order_id / txn_id" }}
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={(p) => { setPage(p); load(p); }}
+        className="mt-4"
       />
+
+      {/* ─── Details Modal ─────────────────────────────────────────────── */}
+      {selected && (
+        <Modal
+          open={detailsOpen}
+          onClose={() => { setDetailsOpen(false); setStep("idle"); }}
+          title={
+            <span className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-amber-500" />
+              Transaction Details
+            </span>
+          }
+          size="lg"
+        >
+          <div className="space-y-5 text-sm">
+            {/* Summary row */}
+            <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusChip status={selected.status} />
+                <span className="font-mono text-xs text-ink-700">{selected.refId}</span>
+                <span className="ml-auto font-semibold text-ink-900">
+                  {formatINR(selected.amount)}
+                </span>
+              </div>
+              {selected.errorCode && (
+                <p className="mt-2 text-xs text-amber-700">
+                  {selected.errorCode} — {selected.errorMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Detail grid */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+              <div>
+                <p className="font-medium text-ink-500">Service</p>
+                <p className="text-ink-900">{serviceName(selected.service)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Partner</p>
+                <p className="text-ink-900">{selected.partner ?? "—"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Operator</p>
+                <p className="text-ink-900">{selected.operator ?? "—"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Customer / Number</p>
+                <p className="font-mono text-ink-900">{selected.customer ?? "—"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Fee</p>
+                <p className="text-ink-900">{formatINR(selected.fee)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Retailer</p>
+                <p className="text-ink-900">
+                  {selected.user?.userCode ?? "—"} · {selected.user?.phone ?? "—"}
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Partner Txn ID</p>
+                <p className="font-mono text-[11px] text-ink-900">
+                  {selected.partnerTxnId ?? "—"}
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-ink-500">Created</p>
+                <p className="text-ink-900">{istFull(selected.createdAt)}</p>
+              </div>
+            </div>
+
+            {/* Verify Refs */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-ink-500">
+                Provider Verify Refs — tap to copy, then check in provider panel
+              </p>
+              {selected.refs.length === 0 ? (
+                <p className="text-xs italic text-ink-400">
+                  No refs found — supply the ref manually during resolve.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {selected.refs.map((ref) => (
+                    <CopyChip key={ref} value={ref} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Live Status Panel */}
+            <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-ink-700">Live Provider Status</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={fetchLiveStatus}
+                  disabled={liveStatusLoading}
+                >
+                  {liveStatusLoading ? (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Search className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  {liveStatusLoading ? "Polling…" : "Fetch live status"}
+                </Button>
+              </div>
+
+              {liveStatus ? (
+                liveStatus.found === false ? (
+                  <p className="text-xs text-ink-500">Transaction not found in provider.</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                    <div>
+                      <p className="font-medium text-ink-500">Provider Status</p>
+                      <ProviderStatusChip status={liveStatus.providerStatus ?? "—"} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-ink-500">Rail</p>
+                      <p className="uppercase text-ink-900">{liveStatus.rail}</p>
+                    </div>
+                    {liveStatus.matchedRef && (
+                      <div>
+                        <p className="font-medium text-ink-500">Matched Ref</p>
+                        <CopyChip value={liveStatus.matchedRef} />
+                      </div>
+                    )}
+                    {liveStatus.requestId && (
+                      <div>
+                        <p className="font-medium text-ink-500">Pay Ref</p>
+                        <CopyChip value={liveStatus.requestId} />
+                      </div>
+                    )}
+                    {liveStatus.amount != null && (
+                      <div>
+                        <p className="font-medium text-ink-500">Provider Amount</p>
+                        <p className="font-semibold tabular-nums text-ink-900">
+                          {formatINR(liveStatus.amount)}
+                        </p>
+                      </div>
+                    )}
+                    {liveStatus.providerStatus === "UNRESOLVED" && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-orange-600">
+                          Provider could not confirm any reference. If you have verified in the
+                          provider panel that this transaction does not exist, use the
+                          "Not found — refund" action below.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
+              ) : (
+                <p className="text-xs italic text-ink-400">
+                  Click "Fetch live status" to poll the provider in real-time.
+                </p>
+              )}
+            </div>
+
+            {/* Error banner */}
+            {resolveError && (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-xs text-rose-700">
+                {resolveError}
+              </div>
+            )}
+
+            {/* Resolve actions */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                onClick={() => { setStep("confirmRef"); }}
+                disabled={resolveBusy}
+              >
+                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                Resolve / verify with provider
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ─── Step 1: Confirm which refId to resolve ───────────────────── */}
+      {selected && (
+        <ConfirmDialog
+          open={step === "confirmRef"}
+          onClose={() => setStep("idle")}
+          title="Resolve / verify with provider"
+          description={
+            <span>
+              This will poll the provider's status API for{" "}
+              <span className="font-mono font-semibold">{selected.refId}</span> (
+              {formatINR(selected.amount)}) and apply the authoritative outcome. Money moves
+              only after the provider confirms — never on admin say-so alone.
+            </span>
+          }
+          confirmLabel="Continue"
+          tone="default"
+          onConfirm={() => setStep("needProviderRef")}
+        />
+      )}
+
+      {/* ─── Step 2: Optionally supply provider-panel ref ─────────────── */}
+      {selected && (
+        <ConfirmDialog
+          open={step === "needProviderRef"}
+          onClose={() => setStep("idle")}
+          busy={resolveBusy}
+          title="Provider panel reference (optional)"
+          description={
+            <span>
+              Copy the Order ID / Request ID from the{" "}
+              <span className="font-semibold">{selected.partner ?? "provider"}</span> panel and
+              paste it below. Leave blank to let the system try stored refs.
+            </span>
+          }
+          confirmLabel="Resolve now"
+          cancelLabel="Cancel"
+          tone="default"
+          input={{
+            label: "Provider ref (Order ID / Request ID / Txn ID)",
+            placeholder: "P2N_PAY_... or SDS...",
+            required: false,
+          }}
+          onConfirm={(ref) => runResolve({ providerRef: ref || undefined })}
+          extraActions={
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-orange-300 text-orange-700 hover:bg-orange-50"
+              disabled={resolveBusy}
+              onClick={() => setStep("confirmNotFound")}
+            >
+              <XCircle className="mr-1.5 h-4 w-4" />
+              Not found — refund
+            </Button>
+          }
+        />
+      )}
+
+      {/* ─── Step 3: Double-confirm "Not found — refund" ──────────────── */}
+      {selected && (
+        <ConfirmDialog
+          open={step === "confirmNotFound"}
+          onClose={() => setStep("idle")}
+          busy={resolveBusy}
+          tone="danger"
+          title="Confirm: not found in provider panel?"
+          description={
+            <span>
+              You are confirming that{" "}
+              <span className="font-mono font-semibold">{selected.refId}</span> (
+              {formatINR(selected.amount)}) does NOT exist in the{" "}
+              <span className="font-semibold">{selected.partner ?? "provider"}</span> panel. The
+              held reserve will be{" "}
+              <span className="font-semibold text-rose-700">refunded immediately</span>. This
+              action is logged and irreversible.
+            </span>
+          }
+          confirmLabel="Yes — refund now"
+          cancelLabel="Go back"
+          onConfirm={() => runForceRefundNotFound()}
+        />
+      )}
     </>
   );
 }

@@ -45,7 +45,7 @@ function railFor(partner: string | null, service: ServiceCode): Rail | null {
 async function resolveProviderStatus(
   rail: Rail,
   refs: string[]
-): Promise<{ status: ProviderStatus; payRef: string | null; amount: number | null; raw: unknown } | null> {
+): Promise<{ status: ProviderStatus; matchedRef: string; payRef: string | null; amount: number | null; raw: unknown } | null> {
   if (rail === "rechargekit") {
     for (const ref of refs) {
       let r = await rechargekitStatus({ txnId: ref });
@@ -53,7 +53,8 @@ async function resolveProviderStatus(
       if (r.ok)
         return {
           status: r.data.status,
-          payRef: r.data.txnId || r.data.requestId || ref,
+          matchedRef: ref,
+          payRef: r.data.txnId || r.data.requestId || null,
           amount: typeof r.data.amount === "number" && r.data.amount > 0 ? r.data.amount : null,
           raw: r.raw,
         };
@@ -69,7 +70,8 @@ async function resolveProviderStatus(
     if (r.ok)
       return {
         status: r.data.status,
-        payRef: r.data.orderId ?? r.data.requestId ?? ref,
+        matchedRef: ref,
+        payRef: r.data.orderId ?? r.data.requestId ?? null,
         amount: typeof r.data.amount === "number" && r.data.amount > 0 ? r.data.amount : null,
         raw: r.raw,
       };
@@ -105,7 +107,7 @@ export type CorrectOneResult =
 
 export async function correctOneTransaction(
   ref: string,
-  opts: { actorId: string; providerRef?: string; source?: string; remarks?: string }
+  opts: { actorId: string; providerRef?: string; source?: string; remarks?: string; forceRefundNotFound?: boolean }
 ): Promise<CorrectOneResult> {
   const txn = await prisma.transaction.findFirst({
     where: { OR: [{ refId: ref }, { partnerTxnId: ref }] },
@@ -123,12 +125,46 @@ export async function correctOneTransaction(
   );
   const resolved = await resolveProviderStatus(rail, refs);
   const source = opts.source ?? "admin_resolve";
+  const isTerminalFailed = txn.status === "FAILED" || txn.status === "REFUNDED";
 
   if (!resolved) {
+    // When the admin has confirmed the transaction does not exist in the
+    // provider panel AND the status API agrees (UNRESOLVED for every candidate
+    // ref), it is safe to refund the held reserve.
+    if (opts.forceRefundNotFound && !isTerminalFailed) {
+      const res = await finalizeServiceTransaction({
+        txn,
+        status: "FAILED",
+        errorCode: "PROVIDER_NOT_FOUND",
+        errorMessage: "Provider has no record of this payment — refunded by admin after verification",
+        source: `${source}_not_found`,
+        immediate: true, // admin has confirmed not in provider panel — bypass cooling-off
+      });
+      if (res.finalized) {
+        await prisma.auditLog.create({
+          data: {
+            userId: opts.actorId,
+            action: "txn.resolve.force_refund_not_found",
+            entity: "Transaction",
+            entityId: txn.id,
+            meta: {
+              refId: txn.refId,
+              source,
+              candidates: refs,
+              note: "Provider returned UNRESOLVED for all refs — admin confirmed not in panel",
+            },
+          },
+        });
+      }
+      return {
+        found: true, refId: txn.refId, rail, status: txn.status,
+        providerStatus: "UNRESOLVED",
+        outcome: res.finalized ? "refunded" : "noop",
+      };
+    }
     return { found: true, refId: txn.refId, rail, status: txn.status, providerStatus: "UNRESOLVED", outcome: "unresolved" };
   }
 
-  const isTerminalFailed = txn.status === "FAILED" || txn.status === "REFUNDED";
   const partnerTxnId = resolved.payRef ?? txn.partnerTxnId;
 
   // Already-terminal failed row that the provider confirms SUCCESS → corrective
@@ -264,5 +300,90 @@ export async function reconcileNonTerminalByRef(
     status: txn.status,
     providerStatus: resolved.status,
     outcome: res.outcome === "settled" ? "settled" : res.outcome === "refunded" ? "refunded" : "noop",
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// READ-ONLY live status probe (powers the admin "Fetch live status" button)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type LiveStatusResult =
+  | { found: false }
+  | {
+      found: true;
+      refId: string;
+      status: TxnStatus;
+      rail: Rail | "unsupported";
+      pollable: boolean;
+      /**
+       * Authoritative provider status. "UNRESOLVED" = every ref returned
+       * no match — the signal for a "Not found — refund" action.
+       * "NOT_POLLED" = unsupported rail.
+       */
+      providerStatus: ProviderStatus | "UNRESOLVED" | "NOT_POLLED";
+      /** Pay-step reference recovered from the poll response (order_id / txn_id). */
+      requestId: string | null;
+      /** Which of our candidate refs the provider answered on. */
+      matchedRef: string | null;
+      amount: number | null;
+      candidates: string[];
+    };
+
+/**
+ * READ-ONLY live provider status probe for a single transaction.
+ *
+ * Mutates NOTHING — no ledger movement, no status transition. Re-polls the
+ * rail's status API across every reference we hold and returns the authoritative
+ * provider status plus the recovered pay-step reference (request_id / order_id).
+ *
+ * Powers the admin "Fetch live status" action so ops can see the current provider
+ * verdict before deciding to Resolve/verify or force a "Not found — refund".
+ * MUST run on the IP-whitelisted host.
+ */
+export async function checkProviderStatusOne(ref: string): Promise<LiveStatusResult> {
+  const needle = ref.trim();
+  if (!needle) return { found: false };
+
+  const row = await prisma.transaction.findFirst({
+    where: { OR: [{ refId: needle }, { partnerTxnId: needle }] },
+    select: { ...FINALIZABLE_TXN_SELECT, request: true, response: true },
+  });
+  if (!row) return { found: false };
+
+  const { request, response, ...txn } = row;
+  const rail = railFor(txn.partner, txn.service);
+
+  if (!rail) {
+    return {
+      found: true, refId: txn.refId, status: txn.status, rail: "unsupported", pollable: false,
+      providerStatus: "NOT_POLLED", requestId: null, matchedRef: null, amount: null, candidates: [],
+    };
+  }
+
+  const candidates = Array.from(
+    new Set(
+      deriveTxnRefs({ partnerTxnId: txn.partnerTxnId, request, response }).filter((s) => s.length > 0)
+    )
+  );
+
+  const resolved = candidates.length ? await resolveProviderStatus(rail, candidates) : null;
+  if (!resolved) {
+    return {
+      found: true, refId: txn.refId, status: txn.status, rail, pollable: candidates.length > 0,
+      providerStatus: "UNRESOLVED", requestId: null, matchedRef: null, amount: null, candidates,
+    };
+  }
+
+  return {
+    found: true,
+    refId: txn.refId,
+    status: txn.status,
+    rail,
+    pollable: true,
+    providerStatus: resolved.status,
+    requestId: resolved.payRef,
+    matchedRef: resolved.matchedRef,
+    amount: resolved.amount,
+    candidates,
   };
 }

@@ -13,7 +13,11 @@ import { correctOneTransaction } from "@/lib/recon/reconcileOne";
  * pay-step ref recovered from the provider panel) and only then settles,
  * refunds, or — for a wrongly-FAILED row the provider confirms SUCCESS —
  * corrects it with a LIEN clawback of any earlier refund (never a negative
- * wallet). If the provider can't confirm, it returns 422 and changes nothing.
+ * wallet).
+ *
+ * forceRefundNotFound: when the admin has verified in the provider panel that
+ * the transaction does not exist and the status API returns UNRESOLVED for all
+ * refs, this flag authorises an immediate refund of the held reserve.
  */
 
 export const fetchCache = "force-no-store";
@@ -21,9 +25,10 @@ export const dynamic = "force-dynamic";
 
 const PostBody = z
   .object({
-    ref: z.string().trim().min(1), // refId or partnerTxnId
-    providerRef: z.string().trim().min(1).optional(), // pay-step ref from the panel
+    refId: z.string().trim().min(1),
+    providerRef: z.string().trim().min(1).optional(),
     remarks: z.string().trim().max(500).optional(),
+    forceRefundNotFound: z.boolean().optional(),
   })
   .strict();
 
@@ -40,46 +45,24 @@ export async function POST(req: Request) {
     if (!parsed.success)
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-    const result = await correctOneTransaction(parsed.data.ref, {
+    const result = await correctOneTransaction(parsed.data.refId, {
       actorId: actor.id,
       providerRef: parsed.data.providerRef,
       source: "admin_resolve",
       remarks: parsed.data.remarks,
+      forceRefundNotFound: parsed.data.forceRefundNotFound,
     });
 
-    if (!result.found) {
+    if (!result.found)
       return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
-    }
 
-    // Provider confirms SUCCESS but for a DIFFERENT amount than the row — almost
-    // certainly a twin double-attempt (same bill_fetch_ref, two amounts). Refuse
-    // the clawback and surface both amounts for a human to pick the correct leg.
-    if (result.found && result.outcome === "amount_mismatch") {
-      return NextResponse.json(
-        {
-          error:
-            `Amount mismatch vs provider — the provider confirms SUCCESS for ₹${result.providerAmount ?? "?"}, ` +
-            "which differs from this row's amount. This looks like a twin double-attempt; no clawback was placed. " +
-            "Resolve the correct leg manually.",
-          result,
-        },
-        { status: 409 }
-      );
-    }
+    if (result.outcome === "unresolved")
+      return NextResponse.json({ ...result }, { status: 409 });
 
-    // Provider couldn't confirm the outcome from any reference — hold stays put.
-    if (result.outcome === "unresolved") {
-      return NextResponse.json(
-        {
-          error:
-            "Provider could not confirm this payment from any reference. The hold remains in place — verify the pay-step reference in the partner panel and retry.",
-          result,
-        },
-        { status: 422 }
-      );
-    }
+    if (result.outcome === "amount_mismatch")
+      return NextResponse.json({ ...result }, { status: 422 });
 
-    return NextResponse.json({ result });
+    return NextResponse.json(result);
   } catch (e) {
     return toErrorResponse(e);
   }
